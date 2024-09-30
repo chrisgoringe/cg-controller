@@ -54,12 +54,15 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     static showing() { return ControllerPanel.instance }
-    static remove() { if (ControllerPanel.instance) document.body.removeChild(ControllerPanel.instance) }
+    static remove() { 
+        if (ControllerPanel.instance) document.body.removeChild(ControllerPanel.instance) 
+        ControllerPanel.instance = undefined
+    }
 
     build() { 
         this.innerHTML = ""
         app.graph._nodes.forEach(node => {
-            if (node.color == '#322') {
+            if (node.color == '#322'  && node.mode == 0) {
                 var valid = false
                 const nd = create("span", "controller_node")
                 nd.update = function () { this.children.forEach((node) => node?.update()) }.bind(nd)
