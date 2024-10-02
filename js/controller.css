@@ -5,13 +5,14 @@
     border: thin solid white;
     border-radius: 4px;
     position: absolute;
-    top: 10px;
+    top: 2vh;
     left: 10px;
     z-index: 5;
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
-    min-width:600px;
+    /*min-width:600px;*/
+    max-height: 96vh;
 }
 
 .controller_node {
@@ -21,7 +22,17 @@
     padding: 2px;
 }
 
-.controller-entry {
+.node_up {
+    position:absolute;
+}
+.node_down {
+    top: -20px;
+    position: relative;
+    height: 0px;
+    display: block;
+}
+
+.controller_entry {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -37,12 +48,25 @@
 }
 
 .controller_item_label {
-    font-size: 75%;
-    width: 25%;
+    font-size: 65%;
+    max-width: 80px;
+    min-width: 80px;
     text-align: right;
-    padding-right: 4px;
+    margin-right: 4px;
 }
 
 .controller_input {
-    width:75%;
+    width:100%;
+    min-width:250px;
+    max-width:300px;
+    margin-bottom: 2px;
+}
+
+textarea.controller_input {
+    height: 72px;
+    resize: vertical;
+}
+
+.hidden {
+    display:none;
 }
