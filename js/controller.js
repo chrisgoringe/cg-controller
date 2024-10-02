@@ -6,6 +6,27 @@ import { create } from "./elements.js";
 app.registerExtension({
 	name: "cg.controller",
 
+    async afterConfigureGraph() {
+        // Delete the CGControllerNode if it isn't the right one
+        if (CGControllerNode.instance) {
+            if (app.graph._nodes_by_id[CGControllerNode.instance.id] != CGControllerNode.instance) {
+                CGControllerNode.instance = undefined
+            }
+        }
+
+        // Create the CGControllerNode if there isn't one already
+        if (!CGControllerNode.instance) {
+            app.graph.add( LiteGraph.createNode("CGControllerNode") )
+        }
+
+        new ControllerPanel()
+
+        if (ControllerPanel.showing()) {
+            app.ui.menuContainer.style.display = "none";
+            app.ui.menuHamburger.style.display = "flex";
+        }
+    },
+
     async setup() {
         // Add the css call to the document
         create('link', null, document.getElementsByTagName('HEAD')[0], 
@@ -29,20 +50,6 @@ app.registerExtension({
             return options
         }
 
-        // Create the CGControllerNode if there isn't one already
-        if (!CGControllerNode.instance) {
-            app.graph.add( LiteGraph.createNode("CGControllerNode") )
-        }
-
-        // Now we can create the panel
-        new ControllerPanel()
-
-        //document.getElementById('comfy-close-menu-btn')?.click()
-        if (ControllerPanel.showing()) {
-            app.ui.menuContainer.style.display = "none";
-            app.ui.menuHamburger.style.display = "flex";
-        }
-        
         // Don't draw the CGControllerNode - instead, update the ControllerPanel
         const original_drawNode = LGraphCanvas.prototype.drawNode;
         LGraphCanvas.prototype.drawNode = function(node, ctx) {

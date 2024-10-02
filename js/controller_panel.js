@@ -78,6 +78,7 @@ export class ControllerPanel extends HTMLDivElement {
     instance = undefined
     constructor() {
         super()
+        if (ControllerPanel.instance) { ControllerPanel.instance.remove()}
         ControllerPanel.instance = this
         this.classList.add("controller")
         document.body.appendChild(this);
