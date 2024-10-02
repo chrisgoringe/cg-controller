@@ -29,10 +29,6 @@ git clone https://github.com/chrisgoringe/cg-controller
 cd custom_nodes/cg-controller
 git pull
 ```
- 
-## Limitations
-
-Doesn't work with image upload (yet)
 
 ## Bugs or ideas
 
