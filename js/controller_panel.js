@@ -1,13 +1,14 @@
 import { app } from "../../scripts/app.js";
 import { CGControllerNode } from "./controller_node.js"
 import { create } from "./elements.js";
+import { api } from "../../scripts/api.js";
 
 class Entry extends HTMLDivElement {
     constructor(node, target_widget) {
         super()
         this.classList.add('controller_entry')
         create('span','controller_item_label', this, {'innerText':target_widget.name} )  
-        this.valid = false
+        this.valid_entry = false
 
         this.input_element = undefined
         if (target_widget.type=='text' || target_widget.type=='number' ) {
@@ -26,7 +27,7 @@ class Entry extends HTMLDivElement {
             } )
             this.target_widget = target_widget
             this.update()
-            this.valid = true
+            this.valid_entry = true
         } 
     }
 
@@ -42,24 +43,24 @@ class NodeBlock extends HTMLSpanElement {
         this.classList.add("controller_node")
         const up_arrow = create("span", 'node_up', this, {'innerHTML':"&uarr;"})
         create("span", 'controller_node_label', this, {"innerText":node.title})
-        this.valid = false
+        this.valid_nodeblock = false
         node.widgets.forEach(w => {
             const e = new Entry(node, w)
-            if (e.valid) {
+            if (e.valid_entry) {
                 this.appendChild(e)
-                this.valid = true
+                this.valid_nodeblock = true
             } 
         })
         const down_arrow = create("span", 'node_down', this, {'innerHTML':"&darr;"})
 
         up_arrow.addEventListener('click',(e)=> {
-            if (this.previousSibling) {
+            if (this.previousSibling && this.previousSibling.valid_nodeblock) {
                 this.parentElement.insertBefore(this, this.previousSibling)
                 this.parentElement.save_node_order()
             }
         })
         down_arrow.addEventListener('click',(e)=> {
-            if (this.nextSibling) {
+            if (this.nextSibling && this.nextSibling.valid_nodeblock) {
                 this.parentElement.insertBefore(this.nextSibling, this)
                 this.parentElement.save_node_order()
             }
@@ -88,7 +89,7 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     static showing() { 
-        return (ControllerPanel.instance?.state['showing'] == '1')
+        return (ControllerPanel.instance?.state?.showing == '1')
     }
 
     static show() {
@@ -115,7 +116,7 @@ export class ControllerPanel extends HTMLDivElement {
     create_node_block_for_node(node) {
         if (this.include_node(node)) {
             const node_block = new NodeBlock(node)
-            if (node_block.valid) {
+            if (node_block.valid_nodeblock) {
                 this.node_blocks[node.id] = node_block
                 return node_block
             }
@@ -152,6 +153,9 @@ export class ControllerPanel extends HTMLDivElement {
         if (this.state['node_order'].length == 0) {
             create('span', 'empty_message', this, {'innerText':'Nothing to control'})
         }
+
+        this.submit_button = create("button","submit_button",this,{"innerText":"Submit"})
+        this.submit_button.addEventListener('click', () => { document.getElementById('queue-button').click() } )
     }
 
     save_node_order() {
@@ -164,6 +168,14 @@ export class ControllerPanel extends HTMLDivElement {
         for (let node of ControllerPanel.instance.children) { if (node.update) node.update() }
     }
 }
+
+function onStatus(exec_info) {
+    if (ControllerPanel?.instance?.submit_button) {
+        if (exec_info?.detail?.exec_info?.queue_remaining) ControllerPanel.instance.submit_button.disabled = true;
+        else ControllerPanel.instance.submit_button.disabled = false;
+    }
+}
+api.addEventListener('status', onStatus)
 
 customElements.define('cp-div',    ControllerPanel, {extends: 'div'})
 customElements.define('cp-span',   NodeBlock,       {extends: 'span'})

@@ -29,12 +29,18 @@ app.registerExtension({
             return options
         }
 
-        // Create the panel
-        if (!ControllerPanel.instance) new ControllerPanel()
-
         // Create the CGControllerNode if there isn't one already
         if (!CGControllerNode.instance) {
             app.graph.add( LiteGraph.createNode("CGControllerNode") )
+        }
+
+        // Now we can create the panel
+        new ControllerPanel()
+
+        //document.getElementById('comfy-close-menu-btn')?.click()
+        if (ControllerPanel.showing()) {
+            app.ui.menuContainer.style.display = "none";
+            app.ui.menuHamburger.style.display = "flex";
         }
         
         // Don't draw the CGControllerNode - instead, update the ControllerPanel
