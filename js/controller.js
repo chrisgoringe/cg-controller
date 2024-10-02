@@ -1,7 +1,8 @@
-import { app } from "../../scripts/app.js";
+import { app } from "../../scripts/app.js"
+import { api } from "../../scripts/api.js" 
 import { ControllerPanel } from "./controller_panel.js"
 import { CGControllerNode } from "./controller_node.js"
-import { create } from "./elements.js";
+import { create } from "./elements.js"
 
 app.registerExtension({
 	name: "cg.controller",
@@ -59,6 +60,8 @@ app.registerExtension({
             }
             original_drawNode.apply(this, arguments);
         }
+
+        api.addEventListener('graphCleared', ControllerPanel.hide) 
     },
 
     registerCustomNodes() {

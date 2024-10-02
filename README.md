@@ -23,8 +23,8 @@ git clone https://github.com/chrisgoringe/cg-controller
 ## Anything else?
 
 - You can make nodes brown to designate them as advanced controls
-- If you change colors or widgets or names, use 'Update Controller Panel'
-- To update the controller (it's under development...)
+- If you change colors or widgets or names, use the 'Update Controller Panel' canvas menu (to be fixed  - issue #9)
+- To update the controller code (will add to manager - issue #14)
 ```
 cd custom_nodes/cg-controller
 git pull
@@ -33,3 +33,19 @@ git pull
 ## Bugs or ideas
 
 Raise them as [issues](https://github.com/chrisgoringe/cg-controller/issues)
+
+## Release history
+
+### v0.2 3/10/2024
+
+- Preserve height of resized text areas
+- Close panel when workflow cleared
+
+### v0.1 2/10/2024
+
+- Added support for Image nodes
+- Added 'advanced' colour
+
+### v0.0.9 1/10/2024
+
+- Initial release
