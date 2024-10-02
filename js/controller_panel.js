@@ -201,7 +201,17 @@ export class ControllerPanel extends HTMLDivElement {
             }
         })
 
+        const reOb = new ResizeObserver( (entries) => this.save_heights() )
+        this.childNodes.forEach((child)=>{
+            child.childNodes.forEach((grandchild) => {
+                if (grandchild?.target_widget?.type=="customtext") {
+                    reOb.observe(grandchild.input_element)
+                }
+            })
+        })
+
         this.save_node_order()
+        this.restore_heights()
 
         if (this.state['node_order'].length == 0) {
             create('span', 'empty_message', this, {'innerText':'Nothing to control'})
@@ -237,6 +247,30 @@ export class ControllerPanel extends HTMLDivElement {
         const node_id_list = []
         this.childNodes.forEach((child)=>{if (child?.node?.id) node_id_list.push(child.node.id)})
         this.state['node_order'] = node_id_list
+    }
+
+    save_heights() {
+        this.state.heights = []
+        this.childNodes.forEach((child)=>{
+            child.childNodes.forEach((grandchild) => {
+                if (grandchild?.target_widget?.type=="customtext") {
+                    this.state.heights.push( [child.node.id, grandchild.target_widget.name, grandchild.input_element.style.height] )
+                }
+            })
+        })  
+    }
+
+    restore_heights() {
+        this.state?.heights?.forEach((id_name_height) => {
+            if (this.node_blocks[id_name_height[0]]) {
+                const nb = this.node_blocks[id_name_height[0]]
+                nb.childNodes.forEach((grandchild) => {
+                    if (grandchild?.target_widget?.name==id_name_height[1]) {
+                        grandchild.input_element.style.height = id_name_height[2]
+                    }
+                })
+            }
+        })
     }
 
     static update() {
