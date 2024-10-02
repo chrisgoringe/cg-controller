@@ -107,7 +107,7 @@ export class ControllerPanel extends HTMLDivElement {
         return this.include_node(app.graph._nodes_by_id[node_id])
     }
     include_node(node) { 
-        return (node && node.color == '#322'  && node.mode == 0) 
+        return (node && (node.color == '#322' || node.color == '#332922') && node.mode == 0) 
     }
 
     create_node_block_for_node_id(node_id) {
@@ -126,6 +126,8 @@ export class ControllerPanel extends HTMLDivElement {
 
     build() { 
         this.innerHTML = ""
+
+        create('span', 'title_message', this, {'innerHTML':'Comfy Controller'})
 
         // restore existing node_blocks (in order)
         this.state.node_order?.forEach((node_id) => {
@@ -156,6 +158,28 @@ export class ControllerPanel extends HTMLDivElement {
 
         this.submit_button = create("button","submit_button",this,{"innerText":"Submit"})
         this.submit_button.addEventListener('click', () => { document.getElementById('queue-button').click() } )
+
+        // show or hide advanced nodes
+        var anyAdvancedNodes = false
+        this.state.node_order.forEach((node_id) => {
+            const node_block = this.node_blocks[node_id]
+            if (node_block.node.color == '#332922') {
+                anyAdvancedNodes = true
+                node_block.classList.add('advanced')
+                if (this.state?.advanced=='1') node_block.classList.remove('hidden')
+                else node_block.classList.add('hidden')
+            }
+        })
+
+        if (anyAdvancedNodes) {
+            const add_span = create('span', 'advanced advanced_controls', this)
+            this.show_advanced = create("input", "advanced_checkbox", add_span, {"type":"checkbox", "checked":(this.state?.advanced=='1')})
+            create('span', 'advanced_label', add_span, {"innerHTML":"Show advanced controls"})
+            this.show_advanced.addEventListener('input', function (e) {
+                this.state.advanced = e.target.checked ? '1':'0'
+                this.build()
+            }.bind(this))
+        }
     }
 
     save_node_order() {

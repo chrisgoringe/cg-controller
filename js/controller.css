@@ -13,6 +13,7 @@
     flex-wrap: wrap;
     /*min-width:600px;*/
     max-height: 96vh;
+    align-items: center;
 }
 
 .controller_node {
@@ -20,6 +21,25 @@
     position: relative;
     border: thin dashed #ffffff3d;
     padding: 2px;
+}
+
+.advanced {
+    background-color: #473a31;
+}
+
+.advanced_controls {
+    margin: 5px;
+    padding: 2px;
+    font-size: 75%;
+    border: thin dashed #ffffff3d;
+    width: 98%;
+}
+
+.submit_button {
+    margin: 5px 30px 5px 30px;
+    padding: 2px;
+    background-color: #451010;
+    width: 120px;
 }
 
 .node_up {
