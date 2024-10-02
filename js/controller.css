@@ -21,6 +21,8 @@
     position: relative;
     border: thin dashed #ffffff3d;
     padding: 2px;
+    width: 340px;
+    min-height: 40px;
 }
 
 .advanced {
@@ -44,12 +46,14 @@
 
 .node_up {
     position:absolute;
+    cursor:grab;
 }
 .node_down {
-    top: -20px;
-    position: relative;
+    bottom: 20px;
+    position: absolute;
     height: 0px;
     display: block;
+    cursor: grab;
 }
 
 .controller_entry {
@@ -78,8 +82,12 @@
 .controller_input {
     width:100%;
     min-width:250px;
-    max-width:300px;
+    max-width:250px;
     margin-bottom: 2px;
+}
+
+.controller_node_image {
+    width:100%;
 }
 
 textarea.controller_input {
@@ -89,4 +97,11 @@ textarea.controller_input {
 
 .hidden {
     display:none;
+}
+
+.no_image {
+    width: 100%;
+    height: 10px;
+    border: none;
+    display:block;
 }

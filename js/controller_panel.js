@@ -18,13 +18,22 @@ class Entry extends HTMLDivElement {
         } else if (target_widget.type=="combo") {
             this.input_element = create("select", 'controller_input', this) 
             target_widget.options.values.forEach((o) => this.input_element.add(new Option(o,o)))
-        }
+        }  
         
         if (this.input_element) {
             this.input_element.addEventListener('input', (e) => {
                 target_widget.value = e.target.value
+                target_widget.callback?.()
                 app.graph.setDirtyCanvas(true,true)
             } )
+        }
+
+        if (target_widget.type=="button") {
+            this.input_element = create("button", 'controller_input', this, {"innerText":target_widget.label})
+            this.input_element.addEventListener('click', (e)=>this.target_widget.callback())
+        }
+
+        if (this.input_element) {
             this.target_widget = target_widget
             this.update()
             this.valid_entry = true
@@ -36,6 +45,15 @@ class Entry extends HTMLDivElement {
     }
 }
 
+function is_image_node(node) {
+    return (
+        node.imgs ||
+        ( node.widgets &&
+          node.widgets.findIndex((obj) => obj.name === 'image') >= 0) ||
+        node.title.indexOf('Image')>=0
+      )
+}
+
 class NodeBlock extends HTMLSpanElement {
     constructor(node) { 
         super()
@@ -44,13 +62,26 @@ class NodeBlock extends HTMLSpanElement {
         const up_arrow = create("span", 'node_up', this, {'innerHTML':"&uarr;"})
         create("span", 'controller_node_label', this, {"innerText":node.title})
         this.valid_nodeblock = false
-        node.widgets.forEach(w => {
+        node.widgets?.forEach(w => {
             const e = new Entry(node, w)
             if (e.valid_entry) {
                 this.appendChild(e)
                 this.valid_nodeblock = true
             } 
         })
+        if (is_image_node(node)) {
+            this.image_panel = create("span", "controller_node_image no_image", this)
+            node._imgs = node.imgs
+            if (!Object.hasOwn(node, "imgs")) {
+                Object.defineProperty(node, "imgs", {
+                    get : () => { return node._imgs },
+                    set : (v) => { node._imgs = v; this.show_image(v) }
+                })
+            }
+            if (node._imgs) this.show_image(node._imgs)
+            this.valid_nodeblock = true
+        }
+
         const down_arrow = create("span", 'node_down', this, {'innerHTML':"&darr;"})
 
         up_arrow.addEventListener('click',(e)=> {
@@ -66,6 +97,20 @@ class NodeBlock extends HTMLSpanElement {
             }
         })
     }
+
+    show_image(v) {
+        if (this.image_panel.firstChild) this.image_panel.firstChild.remove()
+        if (v.length>0) {
+            this.image_panel.classList.remove('no_image')
+            create('img', 'controller_node_image', this.image_panel, {'src':v[0].src})
+            //this.image_panel.src = v[0].src
+        } else {
+            this.image_panel.classList.add('no_image')
+        }    
+        // some browsers the flex doesn't update when the image is changed!
+        ControllerPanel.force_redraw()
+    }
+
     update() { 
         // TODO check if the list of widgets has changed
         for (let element of this.children) { 
@@ -102,6 +147,11 @@ export class ControllerPanel extends HTMLDivElement {
     static hide() {
         ControllerPanel.instance.classList.add('hidden')
         ControllerPanel.instance.state['showing'] = '0'
+    }
+
+    static force_redraw() {
+        const temp = create('span',null,ControllerPanel.instance)
+        setTimeout(()=>{temp.remove()}, 100)
     }
 
     include_node_id(node_id) {
