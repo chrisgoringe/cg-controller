@@ -210,7 +210,7 @@ export class ControllerPanel extends HTMLDivElement {
         if (this.include_node(nd)) {
             const node_block = new NodeBlock(nd)
             if (node_block.valid_nodeblock) {
-                this.node_blocks[node_or_node_id.id] = node_block
+                this.node_blocks[nd.id] = node_block
                 return node_block
             }
         }
