@@ -230,35 +230,35 @@ export class ControllerPanel extends HTMLDivElement {
         this.recursive_observe(this)
     }
 
+    consider_adding_node(node_or_node_id) {
+        const node_id = (node_or_node_id.id) ? node_or_node_id.id : node_or_node_id
+        if (this.new_node_id_list.includes(node_id)) return   // already got it
+        if (this.include_node(node_or_node_id)) {             // is it still valid?
+            if (!this.node_blocks[node_id]) {            // if we don't have it, try to create it
+                this.create_node_block_for_node(node_id) 
+            }
+            if (this.node_blocks[node_id]) {             // if it now exists, add it
+                this.node_blocks[node_id]._update()
+                this.main_container.append(this.node_blocks[node_id])
+                this.new_node_id_list.push(node_id)
+            }
+        }        
+    }
+
     build() { 
         this.innerHTML = ""
 
         create('span', 'title_message', this, {'innerHTML':'Comfy Controller'})
         this.main_container = create('span','controller_main',this)
 
+        this.new_node_id_list = []
         // restore existing node_blocks (in order)
-        this.state.node_order?.forEach((node_id) => {
-            if (this.include_node(node_id)) {             // is it still valid?
-                if (!this.node_blocks[node_id]) {            // if we don't have it, try to create it
-                    this.create_node_block_for_node(node_id) 
-                }
-                if (this.node_blocks[node_id]) {             // if it now exists, add it
-                    this.node_blocks[node_id]._update()
-                    this.main_container.append(this.node_blocks[node_id])
-                }
-            }
-        })
-        
+        this.state.node_order?.forEach( (n) => {this.consider_adding_node(n)} )
         // now check all the nodes
-        app.graph._nodes.forEach(node => {
-            if (!this.node_blocks[node.id]) {                 // if we don't have it
-                const nb = this.create_node_block_for_node(node) // try to create it
-                if (nb) this.main_container.appendChild(nb)                  // and add it
-            }
-        })
+        app.graph._nodes.forEach( (n) => {this.consider_adding_node(n)} )
+        this.state['node_order'] = this.new_node_id_list
 
         this.setup_resize_observer()
-        this.save_node_order()
         this.restore_heights()
 
         if (this.state['node_order'].length == 0) {
@@ -289,12 +289,6 @@ export class ControllerPanel extends HTMLDivElement {
                 this.build()
             }.bind(this))
         }
-    }
-
-    save_node_order() {
-        const node_id_list = []
-        this.main_container.childNodes.forEach((child)=>{if (child?.node?.id) node_id_list.push(child.node.id)})
-        this.state['node_order'] = node_id_list
     }
 
     save_heights() {
