@@ -1,11 +1,18 @@
-import { app } from "../../scripts/app.js";
+import { app } from "../../scripts/app.js"
+import { api } from "../../scripts/api.js" 
 import { ControllerPanel } from "./controller_panel.js"
 import { CGControllerNode } from "./controller_node.js"
-import { create } from "./elements.js";
+import { create } from "./elements.js"
 
 app.registerExtension({
 	name: "cg.controller",
 
+    /*
+    Called when the graph has been configured (page load, workflow load).
+    Here we:
+    - ensure we have exactly one CGControllerNode, and that it corresponds to this workflow
+    - create the ControllerPanel (*after* sorting the node, so it can read any reloaded properties)
+    */
     async afterConfigureGraph() {
         // Delete the CGControllerNode if it isn't the right one
         if (CGControllerNode.instance) {
@@ -59,6 +66,18 @@ app.registerExtension({
             }
             original_drawNode.apply(this, arguments);
         }
+
+        // when the graph is cleared, hide the control panel
+        api.addEventListener('graphCleared', ControllerPanel.hide) 
+
+
+        function onStatus(exec_info) {
+            if (ControllerPanel?.instance?.submit_button) {
+                if (exec_info?.detail?.exec_info?.queue_remaining) ControllerPanel.instance.submit_button.disabled = true;
+                else ControllerPanel.instance.submit_button.disabled = false;
+            }
+        }
+        api.addEventListener('status', onStatus)
     },
 
     registerCustomNodes() {

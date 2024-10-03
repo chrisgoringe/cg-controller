@@ -1,7 +1,6 @@
 import { app } from "../../scripts/app.js";
 import { CGControllerNode } from "./controller_node.js"
 import { create } from "./elements.js";
-import { api } from "../../scripts/api.js";
 
 class Entry extends HTMLDivElement {
     constructor(node, target_widget) {
@@ -14,7 +13,8 @@ class Entry extends HTMLDivElement {
         if (target_widget.type=='text' || target_widget.type=='number' ) {
             this.input_element = create('input', 'controller_input', this)  
         } else if (target_widget.type=="customtext") {
-            this.input_element = create("textarea", 'controller_input', this)       
+            this.input_element = create("textarea", 'controller_input', this)
+            this.resizable = true  
         } else if (target_widget.type=="combo") {
             this.input_element = create("select", 'controller_input', this) 
             target_widget.options.values.forEach((o) => this.input_element.add(new Option(o,o)))
@@ -35,12 +35,12 @@ class Entry extends HTMLDivElement {
 
         if (this.input_element) {
             this.target_widget = target_widget
-            this.update()
+            this._update()
             this.valid_entry = true
         } 
     }
 
-    update() {
+    _update() {
         this.input_element.value = this.target_widget.value
     }
 }
@@ -52,6 +52,11 @@ function is_image_node(node) {
           node.widgets.findIndex((obj) => obj.name === 'image') >= 0) ||
         node.title.indexOf('Image')>=0
       )
+}
+
+function get_node(node_or_node_id) {
+    if (node_or_node_id.id) return node_or_node_id
+    return app.graph._nodes_by_id[node_or_node_id]
 }
 
 class NodeBlock extends HTMLSpanElement {
@@ -87,13 +92,13 @@ class NodeBlock extends HTMLSpanElement {
         up_arrow.addEventListener('click',(e)=> {
             if (this.previousSibling && this.previousSibling.valid_nodeblock) {
                 this.parentElement.insertBefore(this, this.previousSibling)
-                this.parentElement.save_node_order()
+                this.parentElement.parentElement.save_node_order()
             }
         })
         down_arrow.addEventListener('click',(e)=> {
             if (this.nextSibling && this.nextSibling.valid_nodeblock) {
                 this.parentElement.insertBefore(this.nextSibling, this)
-                this.parentElement.save_node_order()
+                this.parentElement.parentElement.save_node_order()
             }
         })
     }
@@ -111,11 +116,8 @@ class NodeBlock extends HTMLSpanElement {
         ControllerPanel.force_redraw()
     }
 
-    update() { 
+    _update() { 
         // TODO check if the list of widgets has changed
-        for (let element of this.children) { 
-            if (element.update) element.update()
-        }
     }
 }
 
@@ -129,6 +131,8 @@ export class ControllerPanel extends HTMLDivElement {
         document.body.appendChild(this);
         this.node_blocks = {}   // map from node.id to NodeBlock
         this.state = CGControllerNode.instance.properties
+        this.main_color = '#322'
+        this.advn_color = '#332922'
         
         if (ControllerPanel.showing()) ControllerPanel.show()
         else ControllerPanel.hide()
@@ -149,46 +153,72 @@ export class ControllerPanel extends HTMLDivElement {
         ControllerPanel.instance.state['showing'] = '0'
     }
 
+    last_redraw_request = undefined
     static force_redraw() {
-        const temp = create('span',null,ControllerPanel.instance)
-        setTimeout(()=>{temp.remove()}, 100)
+        const time_now = new Date()
+        if (!ControllerPanel.last_redraw_request || (time_now-ControllerPanel.last_redraw_request)>100) {
+            ControllerPanel.last_redraw_request = time_now
+            const temp = create('span',null,ControllerPanel.instance.main_container)
+            ControllerPanel.instance.restore_heights()
+            setTimeout(()=>{temp.remove()}, 100)
+        }
     }
 
-    include_node_id(node_id) {
-        return this.include_node(app.graph._nodes_by_id[node_id])
-    }
-    include_node(node) { 
-        return (node && (node.color == '#322' || node.color == '#332922') && node.mode == 0) 
+    static update() {
+        function recursive_update(node) {
+            for (var i = 0; i < node.childNodes.length; i++) {
+              var child = node.childNodes[i];
+              recursive_update(child);
+              if (child._update) child._update()
+            }
+        }
+        if (ControllerPanel.instance) recursive_update(ControllerPanel.instance)
     }
 
-    create_node_block_for_node_id(node_id) {
-        return this.create_node_block_for_node( app.graph._nodes_by_id[node_id] )
+    include_node(node_or_node_id) { 
+        const nd = get_node(node_or_node_id)
+        return (nd && (nd.color == this.main_color || nd.color == this.advn_color) && nd.mode == 0) 
     }
-    create_node_block_for_node(node) {
-        if (this.include_node(node)) {
-            const node_block = new NodeBlock(node)
+
+    create_node_block_for_node(node_or_node_id) {
+        const nd = get_node(node_or_node_id)
+        if (this.include_node(nd)) {
+            const node_block = new NodeBlock(nd)
             if (node_block.valid_nodeblock) {
-                this.node_blocks[node.id] = node_block
+                this.node_blocks[node_or_node_id.id] = node_block
                 return node_block
             }
         }
         return null
     }
 
+    recursive_observe(node) {
+        node.childNodes.forEach((child) => {
+            this.recursive_observe(child);
+            if (child.resizable) this.resize_observer.observe(child.input_element)                
+        })
+    }
+
+    setup_resize_observer() {
+        this.resize_observer = new ResizeObserver( (entries) => {this.save_heights(); ControllerPanel.force_redraw();} )
+        this.recursive_observe(this)
+    }
+
     build() { 
         this.innerHTML = ""
 
         create('span', 'title_message', this, {'innerHTML':'Comfy Controller'})
+        this.main_container = create('span','controller_main',this)
 
         // restore existing node_blocks (in order)
         this.state.node_order?.forEach((node_id) => {
-            if (this.include_node_id(node_id)) {             // is it still valid?
+            if (this.include_node(node_id)) {             // is it still valid?
                 if (!this.node_blocks[node_id]) {            // if we don't have it, try to create it
-                    this.create_node_block_for_node_id(node_id) 
+                    this.create_node_block_for_node(node_id) 
                 }
-                if (this.node_blocks[node_id]) {             // if it exists, add it
-                    this.node_blocks[node_id].update()
-                    this.append(this.node_blocks[node_id])
+                if (this.node_blocks[node_id]) {             // if it now exists, add it
+                    this.node_blocks[node_id]._update()
+                    this.main_container.append(this.node_blocks[node_id])
                 }
             }
         })
@@ -197,11 +227,13 @@ export class ControllerPanel extends HTMLDivElement {
         app.graph._nodes.forEach(node => {
             if (!this.node_blocks[node.id]) {                 // if we don't have it
                 const nb = this.create_node_block_for_node(node) // try to create it
-                if (nb) this.appendChild(nb)                  // and add it
+                if (nb) this.main_container.appendChild(nb)                  // and add it
             }
         })
 
+        this.setup_resize_observer()
         this.save_node_order()
+        this.restore_heights()
 
         if (this.state['node_order'].length == 0) {
             create('span', 'empty_message', this, {'innerText':'Nothing to control'})
@@ -223,7 +255,7 @@ export class ControllerPanel extends HTMLDivElement {
         })
 
         if (anyAdvancedNodes) {
-            const add_span = create('span', 'advanced advanced_controls', this)
+            const add_span = create('span', 'advanced advanced_controls', this.main_container)
             this.show_advanced = create("input", "advanced_checkbox", add_span, {"type":"checkbox", "checked":(this.state?.advanced=='1')})
             create('span', 'advanced_label', add_span, {"innerHTML":"Show advanced controls"})
             this.show_advanced.addEventListener('input', function (e) {
@@ -235,22 +267,36 @@ export class ControllerPanel extends HTMLDivElement {
 
     save_node_order() {
         const node_id_list = []
-        this.childNodes.forEach((child)=>{if (child?.node?.id) node_id_list.push(child.node.id)})
+        this.main_container.childNodes.forEach((child)=>{if (child?.node?.id) node_id_list.push(child.node.id)})
         this.state['node_order'] = node_id_list
     }
 
-    static update() {
-        for (let node of ControllerPanel.instance.children) { if (node.update) node.update() }
+    save_heights() {
+        this.state.heights = []
+        this.main_container.childNodes.forEach((child)=>{
+            child.childNodes.forEach((grandchild) => {
+                if (grandchild.resizable) {
+                    this.state.heights.push( [child.node.id, grandchild.target_widget.name, grandchild.input_element.style.height] )
+                }
+            })
+        })  
     }
-}
 
-function onStatus(exec_info) {
-    if (ControllerPanel?.instance?.submit_button) {
-        if (exec_info?.detail?.exec_info?.queue_remaining) ControllerPanel.instance.submit_button.disabled = true;
-        else ControllerPanel.instance.submit_button.disabled = false;
+    restore_heights() {
+        this.state?.heights?.forEach((id_name_height) => {
+            if (this.node_blocks[id_name_height[0]]) {
+                const nb = this.node_blocks[id_name_height[0]]
+                nb.childNodes.forEach((grandchild) => {
+                    if (grandchild?.target_widget?.name==id_name_height[1]) {
+                        grandchild.input_element.style.height = id_name_height[2]
+                    }
+                })
+            }
+        })
     }
+
+
 }
-api.addEventListener('status', onStatus)
 
 customElements.define('cp-div',    ControllerPanel, {extends: 'div'})
 customElements.define('cp-span',   NodeBlock,       {extends: 'span'})
