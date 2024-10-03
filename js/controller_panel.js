@@ -107,7 +107,7 @@ class NodeBlock extends HTMLSpanElement {
         if (is_image_node(this.node)) {
             this.image_panel = create("span", "controller_node_image no_image", this)
             this.node._imgs = this.node.imgs
-            if (!Object.hasOwn(node, "imgs")) {
+            if (!Object.hasOwn(this.node, "imgs")) {
                 Object.defineProperty(this.node, "imgs", {
                     get : () => { return this.node._imgs },
                     set : (v) => { this.node._imgs = v; this.show_image(v) }
