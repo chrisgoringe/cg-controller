@@ -36,6 +36,12 @@ Raise them as [issues](https://github.com/chrisgoringe/cg-controller/issues)
 
 ## Release history
 
+### v0.3 3/10/2024
+
+- Updating the panel now picks up changes in widgets and colors 
+- Title changes now picked up
+- Node order preserved in cases where it was lost
+
 ### v0.2 3/10/2024
 
 - Preserve height of resized text areas
