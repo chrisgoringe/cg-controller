@@ -63,6 +63,9 @@ class Entry extends HTMLDivElement {
         if (this.target_widget?.options?.round) {
             v = Math.round((v + Number.EPSILON) / this.target_widget.options.round) * this.target_widget.options.round
         }
+        if (this.target_widget?.options?.precision) {
+            v = v.toFixed(this.target_widget.options.precision)
+        }
         this.input_element.value = v
     }
 }
