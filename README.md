@@ -40,6 +40,7 @@ Raise them as [issues](https://github.com/chrisgoringe/cg-controller/issues)
 
 - Preserve height of resized text areas
 - Close panel when workflow cleared
+- Cleaned up the layout when multi column
 
 ### v0.1 2/10/2024
 
