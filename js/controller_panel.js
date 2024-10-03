@@ -321,6 +321,12 @@ export class ControllerPanel extends HTMLDivElement {
         })
     }
 
+    save_node_order() {
+        const node_id_list = []
+        this.main_container.childNodes.forEach((child)=>{if (child?.node?.id) node_id_list.push(child.node.id)})
+        this.state['node_order'] = node_id_list
+    }
+
 
 }
 
