@@ -89,26 +89,31 @@ class NodeBlock extends HTMLSpanElement {
         super()
         this.node = node
         this.classList.add("controller_node")
+        this.build()
+    }
+
+    build() {
+        this.innerHTML = ""
         const up_arrow = create("span", 'node_up', this, {'innerHTML':"&uarr;"})
-        this.label = create("span", 'controller_node_label', this, {"innerText":node.title})
+        this.label = create("span", 'controller_node_label', this, {"innerText":this.node.title})
         this.valid_nodeblock = false
-        node.widgets?.forEach(w => {
-            const e = new Entry(node, w)
+        this.node.widgets?.forEach(w => {
+            const e = new Entry(this.node, w)
             if (e.valid_entry) {
                 this.appendChild(e)
                 this.valid_nodeblock = true
             } 
         })
-        if (is_image_node(node)) {
+        if (is_image_node(this.node)) {
             this.image_panel = create("span", "controller_node_image no_image", this)
-            node._imgs = node.imgs
+            this.node._imgs = this.node.imgs
             if (!Object.hasOwn(node, "imgs")) {
-                Object.defineProperty(node, "imgs", {
-                    get : () => { return node._imgs },
-                    set : (v) => { node._imgs = v; this.show_image(v) }
+                Object.defineProperty(this.node, "imgs", {
+                    get : () => { return this.node._imgs },
+                    set : (v) => { this.node._imgs = v; this.show_image(v) }
                 })
             }
-            if (node._imgs) this.show_image(node._imgs)
+            if (this.node._imgs) this.show_image(this.node._imgs)
             this.valid_nodeblock = true
         }
 
@@ -143,7 +148,6 @@ class NodeBlock extends HTMLSpanElement {
 
     _update() { 
         this.label.innerText = this.node.title
-        // TODO check if the list of widgets has changed
     }
 }
 
@@ -234,7 +238,9 @@ export class ControllerPanel extends HTMLDivElement {
         const node_id = (node_or_node_id.id) ? node_or_node_id.id : node_or_node_id
         if (this.new_node_id_list.includes(node_id)) return   // already got it
         if (this.include_node(node_or_node_id)) {             // is it still valid?
-            if (!this.node_blocks[node_id]) {            // if we don't have it, try to create it
+            if (this.node_blocks[node_id]) {     
+                this.node_blocks[node_id].build()
+            } else {
                 this.create_node_block_for_node(node_id) 
             }
             if (this.node_blocks[node_id]) {             // if it now exists, add it
