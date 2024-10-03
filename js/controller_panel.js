@@ -90,7 +90,7 @@ class NodeBlock extends HTMLSpanElement {
         this.node = node
         this.classList.add("controller_node")
         const up_arrow = create("span", 'node_up', this, {'innerHTML':"&uarr;"})
-        create("span", 'controller_node_label', this, {"innerText":node.title})
+        this.label = create("span", 'controller_node_label', this, {"innerText":node.title})
         this.valid_nodeblock = false
         node.widgets?.forEach(w => {
             const e = new Entry(node, w)
@@ -142,6 +142,7 @@ class NodeBlock extends HTMLSpanElement {
     }
 
     _update() { 
+        this.label.innerText = this.node.title
         // TODO check if the list of widgets has changed
     }
 }
