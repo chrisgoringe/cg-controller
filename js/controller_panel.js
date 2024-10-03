@@ -153,9 +153,15 @@ export class ControllerPanel extends HTMLDivElement {
         ControllerPanel.instance.state['showing'] = '0'
     }
 
+    last_redraw_request = undefined
     static force_redraw() {
-        const temp = create('span',null,ControllerPanel.instance)
-        setTimeout(()=>{temp.remove()}, 100)
+        const time_now = new Date()
+        if (!ControllerPanel.last_redraw_request || (time_now-ControllerPanel.last_redraw_request)>100) {
+            ControllerPanel.last_redraw_request = time_now
+            const temp = create('span',null,ControllerPanel.instance.main_container)
+            ControllerPanel.instance.restore_heights()
+            setTimeout(()=>{temp.remove()}, 100)
+        }
     }
 
     static update() {
@@ -186,6 +192,18 @@ export class ControllerPanel extends HTMLDivElement {
         return null
     }
 
+    recursive_observe(node) {
+        node.childNodes.forEach((child) => {
+            this.recursive_observe(child);
+            if (child.resizable) this.resize_observer.observe(child.input_element)                
+        })
+    }
+
+    setup_resize_observer() {
+        this.resize_observer = new ResizeObserver( (entries) => {this.save_heights(); ControllerPanel.force_redraw();} )
+        this.recursive_observe(this)
+    }
+
     build() { 
         this.innerHTML = ""
 
@@ -213,15 +231,7 @@ export class ControllerPanel extends HTMLDivElement {
             }
         })
 
-        const reOb = new ResizeObserver( (entries) => this.save_heights() )
-        this.childNodes.forEach((child)=>{
-            child.childNodes.forEach((grandchild) => {
-                if (grandchild?.target_widget?.type=="customtext") {
-                    reOb.observe(grandchild.input_element)
-                }
-            })
-        })
-
+        this.setup_resize_observer()
         this.save_node_order()
         this.restore_heights()
 

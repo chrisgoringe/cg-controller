@@ -19,7 +19,7 @@
     flex-direction: column;
     flex-wrap: wrap;
     align-items: center;
-    max-height: calc(100vh - 40px);
+    max-height: calc(96vh - 60px);
 }
 
 .controller_node {
