@@ -23,13 +23,13 @@ class Entry extends HTMLDivElement {
         if (target_widget.type=='number') {
             this.typecheck = (v) => {
                 const vv = parseFloat(v)
-                return (isNaN(vv)) ? null : vv
+                if (isNaN(vv)) return null
+                return vv
             }
         } else {
             this.typecheck = (v) => {return v}
         }
         
-        //this.pause_update_until = new Date() + 100
         if (this.input_element) {
             this.input_element.addEventListener('input', (e) => {
                 const v = this.typecheck(e.target.value)
@@ -39,6 +39,9 @@ class Entry extends HTMLDivElement {
                     app.graph.setDirtyCanvas(true,true)
                 }
             } )
+            this.input_element.addEventListener('keydown', (e) => {
+                if (e.key=="Enter") document.activeElement.blur();
+            })
         }
 
         if (target_widget.type=="button") {
@@ -55,8 +58,12 @@ class Entry extends HTMLDivElement {
 
     _update() {
         if (document.activeElement == this.input_element) return
-        //if (this.pause_update_until && new Date()<this.pause_update_until) return
-        this.input_element.value = this.target_widget.value
+        if (this.input_element.value == this.target_widget.value) return
+        var v = this.target_widget.value
+        if (this.target_widget?.options?.round) {
+            v = Math.round((v + Number.EPSILON) / this.target_widget.options.round) * this.target_widget.options.round
+        }
+        this.input_element.value = v
     }
 }
 

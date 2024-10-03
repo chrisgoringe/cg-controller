@@ -57,14 +57,17 @@ app.registerExtension({
             return options
         }
 
-        // Don't draw the CGControllerNode - instead, update the ControllerPanel
+        // Don't draw the CGControllerNode
         const original_drawNode = LGraphCanvas.prototype.drawNode;
         LGraphCanvas.prototype.drawNode = function(node, ctx) {
-            if (node.type=="CGControllerNode") { 
-                ControllerPanel.update()
-                return
-            }
+            if (node.type=="CGControllerNode") return
             original_drawNode.apply(this, arguments);
+        }
+
+        const draw = LGraphCanvas.prototype.draw;
+        LGraphCanvas.prototype.draw = function() {
+            ControllerPanel.update()
+            draw.apply(this,arguments);
         }
 
         // when the graph is cleared, hide the control panel
