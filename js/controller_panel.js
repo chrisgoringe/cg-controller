@@ -19,12 +19,25 @@ class Entry extends HTMLDivElement {
             this.input_element = create("select", 'controller_input', this) 
             target_widget.options.values.forEach((o) => this.input_element.add(new Option(o,o)))
         }  
+
+        if (target_widget.type=='number') {
+            this.typecheck = (v) => {
+                const vv = parseFloat(v)
+                return (isNaN(vv)) ? null : vv
+            }
+        } else {
+            this.typecheck = (v) => {return v}
+        }
         
+        //this.pause_update_until = new Date() + 100
         if (this.input_element) {
             this.input_element.addEventListener('input', (e) => {
-                target_widget.value = e.target.value
-                target_widget.callback?.()
-                app.graph.setDirtyCanvas(true,true)
+                const v = this.typecheck(e.target.value)
+                if (v != null) {
+                    target_widget.value = v
+                    target_widget.callback?.(v)
+                    app.graph.setDirtyCanvas(true,true)
+                }
             } )
         }
 
@@ -41,6 +54,8 @@ class Entry extends HTMLDivElement {
     }
 
     _update() {
+        if (document.activeElement == this.input_element) return
+        //if (this.pause_update_until && new Date()<this.pause_update_until) return
         this.input_element.value = this.target_widget.value
     }
 }
