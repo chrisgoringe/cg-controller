@@ -28,7 +28,7 @@ function shortcut_keys() {
         name: "Toggle controller visibility:",
         type: "combo",
         options: [ {value:0, text:"Off"}, {value:"c", text:"c"}, {value:"C", text:"shift-C"}, 
-                                          {value:"p", text:"p"}, {value:"P", text:"shift-P"}],
+                                          {value:"o", text:"o"}, {value:"O", text:"shift-O"}],
         defaultValue: "C",
     });
 
