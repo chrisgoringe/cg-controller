@@ -1,6 +1,8 @@
 import { app } from "../../scripts/app.js";
 import { CGControllerNode } from "./controller_node.js"
 import { create } from "./elements.js";
+import { InputSlider } from "./input_slider.js";
+import { rounding } from "./utilities.js";
 
 class Entry extends HTMLDivElement {
     /*
@@ -13,8 +15,16 @@ class Entry extends HTMLDivElement {
         this.valid_entry = false
 
         this.input_element = undefined
+
+        /* These all update the target on 'input' */
         if (target_widget.type=='text' || target_widget.type=='number' ) {
-            this.input_element = create('input', 'controller_input', this)  
+            if (target_widget.type=='number' && 
+                InputSlider.can_be_slider(target_widget.options, app.ui.settings.getSettingValue('Controller.sliders', 1), target_widget.name)) {
+                this.input_element = new InputSlider(target_widget.value, target_widget.options, target_widget.name)
+                this.appendChild(this.input_element)
+            } else {
+                this.input_element = create('input', 'controller_input', this)  
+            }
         } else if (target_widget.type=="customtext") {
             this.input_element = create("textarea", 'controller_input', this)
             this.resizable = true  
@@ -62,14 +72,7 @@ class Entry extends HTMLDivElement {
     on_update() {
         if (document.activeElement == this.input_element) return
         if (this.input_element.value == this.target_widget.value) return
-        var v = this.target_widget.value
-        if (this.target_widget?.options?.round) {
-            v = Math.round((v + Number.EPSILON) / this.target_widget.options.round) * this.target_widget.options.round
-        }
-        if (this.target_widget?.options?.precision) {
-            v = v.toFixed(this.target_widget.options.precision)
-        }
-        this.input_element.value = v
+        this.input_element.value = rounding(this.target_widget.value, this.target_widget.options)
     }
 }
 
@@ -235,7 +238,9 @@ export class ControllerPanel extends HTMLDivElement {
 
     on_update() {
         const qt = document.getElementsByClassName('comfy-menu-queue-size')
-        this.submit_button.disabled = ( qt && qt.length>0 && !(qt[0].innerText.includes(' 0')) )
+        if (this.submit_button) {
+            this.submit_button.disabled = ( qt && qt.length>0 && !(qt[0].innerText.includes(' 0')) )
+        }
     }
 
     include_node(node_or_node_id) { 

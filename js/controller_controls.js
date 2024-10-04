@@ -32,6 +32,21 @@ function shortcut_keys() {
         defaultValue: "C",
     });
 
+    app.ui.settings.addSetting({
+        id: "Controller.sliders",
+        name: "Use sliders for numbers:",
+        type: "combo",
+        options: [ {value:0, text:"No"}, {value:1, text:"When exact"}, {value:2, text:"When possible"} ],
+        defaultValue: 1,
+    });
+    app.ui.settings.addSetting({
+        id: "Controller.sliders.max",
+        name: "Override max values:",
+        tooltip: "Max values for sliders eg 'guidance=10,steps=50'",
+        type: 'text',
+        defaultValue: 'guidance=10, steps=50'
+    });
+
     window.addEventListener('keypress', (e) => {
         if (e.target.tagName=="CANVAS") {
             const keysetting = app.ui.settings.getSettingValue('Controller.keyboard', 0) 
