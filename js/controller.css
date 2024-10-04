@@ -101,6 +101,26 @@ textarea.controller_input {
     resize: vertical;
 }
 
+.controller_slider_span {
+    width: 100%;
+}
+
+.controller_slider {
+    width: 200px;
+}
+
+.controller_slider_display {
+    font-size: 80%;
+    border: thin inset;
+    background-color: #514141;
+    padding: 1px;
+    position: relative;
+    bottom: 3px;
+    display: inline-block;
+    text-align: right;
+    width: 46px;
+}
+
 .hidden {
     display:none;
 }
