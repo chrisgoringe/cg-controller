@@ -24,6 +24,10 @@ git clone https://github.com/chrisgoringe/cg-controller
 
 In the main comfy menu there are some options:
 
+### Show control after generate
+
+By default the control_after_generate widget (attached to seeds and int primitives) is hidden. You can choose to show it.
+
 ### Toggle controller visibility
 
 You can choose one of four keyboard shortcuts to make the controller appear or disappear, or set it to none. Default is `c`.

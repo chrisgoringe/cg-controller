@@ -47,6 +47,14 @@ function shortcut_keys() {
         defaultValue: 'guidance=10, steps=50'
     });
 
+    app.ui.settings.addSetting({
+        id: "Controller.extras.control_after_generate",
+        name: "Show control after generate",
+        tooltip: "Allow the control_after_generate widget to be shown",
+        type: "boolean",
+        defaultValue: true
+    })
+
     window.addEventListener('keypress', (e) => {
         if (e.target.tagName=="CANVAS") {
             const keysetting = app.ui.settings.getSettingValue('Controller.keyboard', 0) 

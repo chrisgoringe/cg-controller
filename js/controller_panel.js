@@ -29,6 +29,9 @@ class Entry extends HTMLDivElement {
             this.input_element = create("textarea", 'controller_input', this)
             this.resizable = true  
         } else if (target_widget.type=="combo") {
+            if ( target_widget.name=='control_after_generate' && !app.ui.settings.getSettingValue("Controller.extras.control_after_generate", false) ) {
+                return
+            }
             this.input_element = create("select", 'controller_input', this) 
             target_widget.options.values.forEach((o) => this.input_element.add(new Option(o,o)))
         }  
