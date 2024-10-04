@@ -3,84 +3,40 @@ import { api } from "../../scripts/api.js"
 import { ControllerPanel } from "./controller_panel.js"
 import { CGControllerNode } from "./controller_node.js"
 import { create } from "./elements.js"
+import { add_controls } from "./controller_controls.js"
 
 app.registerExtension({
 	name: "cg.controller",
 
-    /*
-    Called when the graph has been configured (page load, workflow load).
-    Here we:
-    - ensure we have exactly one CGControllerNode, and that it corresponds to this workflow
-    - create the ControllerPanel (*after* sorting the node, so it can read any reloaded properties)
-    */
+    /* Called when the graph has been configured (page load, workflow load) */
     async afterConfigureGraph() {
-        // Delete the CGControllerNode if it isn't the right one
-        if (CGControllerNode.instance) {
-            if (app.graph._nodes_by_id[CGControllerNode.instance.id] != CGControllerNode.instance) {
-                CGControllerNode.instance = undefined
-            }
-        }
-
-        // Create the CGControllerNode if there isn't one already
-        if (!CGControllerNode.instance) {
-            app.graph.add( LiteGraph.createNode("CGControllerNode") )
-        }
-
+        /* create a CGController node unless one has been loaded with the workflow, and then create the panel */
+        CGControllerNode.create()
         new ControllerPanel()
 
+        /* If the panel is showing (because we reloaded a workflow in which it was), hide the main menu */
         if (ControllerPanel.showing()) {
             app.ui.menuContainer.style.display = "none";
             app.ui.menuHamburger.style.display = "flex";
         }
     },
 
+    /* Called at the end of the application startup */
     async setup() {
         // Add the css call to the document
         create('link', null, document.getElementsByTagName('HEAD')[0], 
             {'rel':'stylesheet', 'type':'text/css', 'href':'extensions/cg-controller/controller.css' } )
 
-        // Add our items to the canvas menu
-        const original_getCanvasMenuOptions = LGraphCanvas.prototype.getCanvasMenuOptions;
-        LGraphCanvas.prototype.getCanvasMenuOptions = function () {
-            const options = original_getCanvasMenuOptions.apply(this, arguments);
-            options.push(null);
-            options.push({
-                content: ControllerPanel.showing() ? "Update Controller Panel" : "Show Controller Panel",
-                callback: () => ControllerPanel.show()
-            })
-            if (ControllerPanel.showing()) {
-                options.push({
-                    content: "Hide Controller Panel",
-                    callback: () => ControllerPanel.hide()
-                })                
-            }
-            return options
-        }
-
-        // Don't draw the CGControllerNode
-        const original_drawNode = LGraphCanvas.prototype.drawNode;
-        LGraphCanvas.prototype.drawNode = function(node, ctx) {
-            if (node.type=="CGControllerNode") return
-            original_drawNode.apply(this, arguments);
-        }
-
-        const draw = LGraphCanvas.prototype.draw;
-        LGraphCanvas.prototype.draw = function() {
-            ControllerPanel.update()
-            draw.apply(this,arguments);
-        }
+        // Allow our elements to do any setup they want
+        CGControllerNode.on_setup()
+        ControllerPanel.on_setup()
 
         // when the graph is cleared, hide the control panel
         api.addEventListener('graphCleared', ControllerPanel.hide) 
 
+        // add to the canvas menu, and keyboard shortcuts
+        add_controls()
 
-        function onStatus(exec_info) {
-            if (ControllerPanel?.instance?.submit_button) {
-                if (exec_info?.detail?.exec_info?.queue_remaining) ControllerPanel.instance.submit_button.disabled = true;
-                else ControllerPanel.instance.submit_button.disabled = false;
-            }
-        }
-        api.addEventListener('status', onStatus)
     },
 
     registerCustomNodes() {

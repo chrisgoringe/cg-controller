@@ -3,6 +3,9 @@ import { CGControllerNode } from "./controller_node.js"
 import { create } from "./elements.js";
 
 class Entry extends HTMLDivElement {
+    /*
+    Entry represents a single widget within a NodeBlock
+    */
     constructor(node, target_widget) {
         super()
         this.classList.add('controller_entry')
@@ -51,12 +54,12 @@ class Entry extends HTMLDivElement {
 
         if (this.input_element) {
             this.target_widget = target_widget
-            this._update()
+            this.on_update()
             this.valid_entry = true
         } 
     }
 
-    _update() {
+    on_update() {
         if (document.activeElement == this.input_element) return
         if (this.input_element.value == this.target_widget.value) return
         var v = this.target_widget.value
@@ -70,21 +73,11 @@ class Entry extends HTMLDivElement {
     }
 }
 
-function is_image_node(node) {
-    return (
-        node.imgs ||
-        ( node.widgets &&
-          node.widgets.findIndex((obj) => obj.name === 'image') >= 0) ||
-        node.title.indexOf('Image')>=0
-      )
-}
-
-function get_node(node_or_node_id) {
-    if (node_or_node_id.id) return node_or_node_id
-    return app.graph._nodes_by_id[node_or_node_id]
-}
-
 class NodeBlock extends HTMLSpanElement {
+    /*
+    NodeBlock represents a single node - zero or more Entry children, and zero or one images.
+    If neither Entry nor images, it is not 'valid' (ie should not be included)
+    */
     constructor(node) { 
         super()
         this.node = node
@@ -104,7 +97,7 @@ class NodeBlock extends HTMLSpanElement {
                 this.valid_nodeblock = true
             } 
         })
-        if (is_image_node(this.node)) {
+        if (this.is_image_node()) {
             this.image_panel = create("span", "controller_node_image no_image", this)
             this.node._imgs = this.node.imgs
             if (!Object.hasOwn(this.node, "imgs")) {
@@ -133,6 +126,15 @@ class NodeBlock extends HTMLSpanElement {
         })
     }
 
+    is_image_node() {
+        return (
+            this.node.imgs ||
+            ( this.node.widgets &&
+              this.node.widgets.findIndex((obj) => obj.name === 'image') >= 0) ||
+            this.node.title.indexOf('Image')>=0
+          )
+    }
+
     show_image(v) {
         if (this.image_panel.firstChild) this.image_panel.firstChild.remove()
         if (v.length>0) {
@@ -146,19 +148,37 @@ class NodeBlock extends HTMLSpanElement {
         ControllerPanel.force_redraw()
     }
 
-    _update() { 
+    on_update() { 
         this.label.innerText = this.node.title
     }
+}
+
+function get_node(node_or_node_id) {
+    if (node_or_node_id.id) return node_or_node_id
+    return app.graph._nodes_by_id[node_or_node_id]
+}
+
+function recursive_update(node) {
+    if (node.on_update) node.on_update()
+    node.childNodes.forEach( recursive_update )
+}
+
+function recursive_observe(node, observer) {
+    if (node.resizable) observer.observe(node.input_element)
+    node.childNodes.forEach((child) => {
+        recursive_observe(child, observer);           
+    })
 }
 
 export class ControllerPanel extends HTMLDivElement {
     instance = undefined
     constructor() {
         super()
-        if (ControllerPanel.instance) { ControllerPanel.instance.remove()}
+        if (ControllerPanel.instance) { ControllerPanel.instance.remove() }
         ControllerPanel.instance = this
         this.classList.add("controller")
         document.body.appendChild(this);
+        
         this.node_blocks = {}   // map from node.id to NodeBlock
         this.state = CGControllerNode.instance.properties
         this.main_color = '#322'
@@ -166,6 +186,13 @@ export class ControllerPanel extends HTMLDivElement {
         
         if (ControllerPanel.showing()) ControllerPanel.show()
         else ControllerPanel.hide()
+    }
+
+    static toggle() {
+        if (ControllerPanel.instance) {
+            if (ControllerPanel.showing()) ControllerPanel.hide()
+            else ControllerPanel.show()
+        }
     }
 
     static showing() { 
@@ -183,26 +210,32 @@ export class ControllerPanel extends HTMLDivElement {
         ControllerPanel.instance.state['showing'] = '0'
     }
 
-    last_redraw_request = undefined
+    //last_redraw_request = undefined
     static force_redraw() {
-        const time_now = new Date()
-        if (!ControllerPanel.last_redraw_request || (time_now-ControllerPanel.last_redraw_request)>100) {
-            ControllerPanel.last_redraw_request = time_now
+        //const time_now = new Date()
+        //if (!ControllerPanel.last_redraw_request || (time_now-ControllerPanel.last_redraw_request)>100) {
+        //    ControllerPanel.last_redraw_request = time_now
             const temp = create('span',null,ControllerPanel.instance.main_container)
             ControllerPanel.instance.restore_heights()
             setTimeout(()=>{temp.remove()}, 100)
-        }
+        //}
     }
 
     static update() {
-        function recursive_update(node) {
-            for (var i = 0; i < node.childNodes.length; i++) {
-              var child = node.childNodes[i];
-              recursive_update(child);
-              if (child._update) child._update()
-            }
-        }
         if (ControllerPanel.instance) recursive_update(ControllerPanel.instance)
+    }
+
+    static on_setup() {
+        const draw = LGraphCanvas.prototype.draw;
+        LGraphCanvas.prototype.draw = function() {
+            ControllerPanel.update()
+            draw.apply(this,arguments);
+        }
+    }
+
+    on_update() {
+        const qt = document.getElementsByClassName('comfy-menu-queue-size')
+        this.submit_button.disabled = ( qt && qt.length>0 && !(qt[0].innerText.includes(' 0')) )
     }
 
     include_node(node_or_node_id) { 
@@ -210,41 +243,30 @@ export class ControllerPanel extends HTMLDivElement {
         return (nd && (nd.color == this.main_color || nd.color == this.advn_color) && nd.mode == 0) 
     }
 
-    create_node_block_for_node(node_or_node_id) {
+    maybe_create_node_block_for_node(node_or_node_id) {
         const nd = get_node(node_or_node_id)
         if (this.include_node(nd)) {
             const node_block = new NodeBlock(nd)
-            if (node_block.valid_nodeblock) {
-                this.node_blocks[nd.id] = node_block
-                return node_block
-            }
+            if (node_block.valid_nodeblock) this.node_blocks[nd.id] = node_block
         }
-        return null
-    }
-
-    recursive_observe(node) {
-        node.childNodes.forEach((child) => {
-            this.recursive_observe(child);
-            if (child.resizable) this.resize_observer.observe(child.input_element)                
-        })
     }
 
     setup_resize_observer() {
         this.resize_observer = new ResizeObserver( (entries) => {this.save_heights(); ControllerPanel.force_redraw();} )
-        this.recursive_observe(this)
+        recursive_observe(this, this.resize_observer)
     }
 
     consider_adding_node(node_or_node_id) {
         const node_id = (node_or_node_id.id) ? node_or_node_id.id : node_or_node_id
-        if (this.new_node_id_list.includes(node_id)) return   // already got it
+        if (this.new_node_id_list.includes(node_id)) return   // already got it in the new list
         if (this.include_node(node_or_node_id)) {             // is it still valid?
             if (this.node_blocks[node_id]) {     
                 this.node_blocks[node_id].build()
             } else {
-                this.create_node_block_for_node(node_id) 
+                this.maybe_create_node_block_for_node(node_id) 
             }
             if (this.node_blocks[node_id]) {             // if it now exists, add it
-                this.node_blocks[node_id]._update()
+                this.node_blocks[node_id].on_update()
                 this.main_container.append(this.node_blocks[node_id])
                 this.new_node_id_list.push(node_id)
             }
