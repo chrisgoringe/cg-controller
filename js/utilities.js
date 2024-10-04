@@ -4,7 +4,10 @@ export function step_size(options) {
     return 1
 }
 
+var floatRegex = /^-?\d+(?:[.,]\d*?)?$/
+
 export function rounding(v, options) {
+    if (!floatRegex.test(`${v}`)) return v;
     var vv = parseFloat(v)
     if (isNaN(vv)) return v
     if (options?.round) {
