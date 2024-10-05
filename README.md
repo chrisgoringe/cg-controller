@@ -42,14 +42,19 @@ Options to replace numeric fields with slider inputs. Three choices
 
 A slider input is calibrated in 200 steps, so if the range of values divided by the precision (for floats) is greater than 200, a slider cannot be exact. `When possible` will use a slider anyway.
 
-Lots of INT and FLOAT widgets don't have a sesnsible max. For instance, `steps` typically allows values up to 2048, which makes a slider hard to use. You can override these values by adding `name=max` to the comma separated list, where `name` is the name of the input, and `max` is the maximum value you want the slider to take. The default is `guidance=10,steps=100` which should give you a sense of how to use this.
+It's quite common for a numeric value not to be shown as a slider if you use `When exact`. If you change to `When possible` you might find it becomes a slider, but isn't usable because of the range of values (for instance, a slider for steps that goes from 0 to 2048 isn't much use).
 
-Please suggest additional default values by raising an [issue](https://github.com/chrisgoringe/cg-controller/issues)!
+In the settings menu you will find three controls, `Override step size`, `Override min values` and `Override max values`. Each of these has the same format, which is a comma separated list of overrides, each of which is either `widget_name=value` (applies to all matching widgets) or `node_name:widget_name=value` (only applies if both node and widget names match).
+
+Using `Override max values` (and maybe `Override min values`) will allow you to make the sliders a lot more usable in `When possible` mode; using `Override step size` 
+can make sliders appear in `When exact` mode. 
+
+The definition used for `When exact` is `(max-min)/step <= 200`
 
 ## Anything else?
 
 - You can make nodes brown to designate them as advanced controls
-- If you change colors or widgets or names, use the 'Update Controller Panel' canvas menu (to be fixed  - issue #9)
+- If you change colors or widgets or names, use the 'Update Controller Panel' canvas menu (to be fixed  - issue #34)
 - To update the controller code (if you haven't added it via the manager)
 ```
 cd custom_nodes/cg-controller
