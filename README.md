@@ -67,6 +67,12 @@ Raise them as [issues](https://github.com/chrisgoringe/cg-controller/issues)
 
 ## Release history
 
+### v0.5 5/10/2024
+
+- Better controls for sliders (target by node, override min and step)
+- hide control_after_generate
+- submit to registry
+
 ### v0.4 4/10/2024
 
 - Added keyboard shortcuts
