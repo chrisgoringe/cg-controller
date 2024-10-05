@@ -1,50 +1,92 @@
 import { create } from "./elements.js"
 import { step_size } from "./utilities.js"
 import { rounding } from "./utilities.js"
-import { app } from "../../scripts/app.js";
+import { app } from "../../scripts/app.js"
 
-function find_max_override(name) {
-    var maxes = app.ui.settings.getSettingValue('Controller.sliders.max', "")
-    if (!maxes.includes(name)) return null
-    maxes = maxes.split(',')
-    for (var i=0; i<maxes.length; i++) {
-        const m = maxes[i].trim()
-        if (m.split('=')[0].trim()==name && m.split('=').length==2) {
-            return parseFloat(m.split('=')[1].trim())
-        } 
+export class SliderOverrides {
+    static instance = null
+
+    static parse() {
+        SliderOverrides.instance = new SliderOverrides()
     }
-    return null
+
+    constructor() {
+        this.overrides = { 
+            'min'  : this.parse_override_string(app.ui.settings.getSettingValue('Controller.sliders.min', "")),
+            'max'  : this.parse_override_string(app.ui.settings.getSettingValue('Controller.sliders.max', "")),
+            'step' : this.parse_override_string(app.ui.settings.getSettingValue('Controller.sliders.step', "")),
+        }
+    }
+
+    parse_override_string(strng) {
+        const entries = strng.split(',')
+        const parsed_entries = []
+        for (var i=0; i<entries.length; i++) {
+            try {
+                const entry = entries[i]
+                var a = null
+                var x = entry.split('=')[0].trim()
+                var y = entry.split('=')[1].trim()
+                if (x.includes(':')) {
+                    a = x.split(':')[0].trim()
+                    x = x.split(':')[1].trim()
+                }
+                parsed_entries.push( [a,x,y] )
+            } catch {
+                let a; // breakpoint bait
+            }
+        }
+        return parsed_entries
+    }
+
+    static get_value(parameter, node_name, widget_name, deflt) {
+        const override_list = SliderOverrides.instance.overrides[parameter]
+        var result = deflt
+        override_list.forEach(override => {
+            if ( (override[0] == null || override[0] == node_name) && (override[1] == widget_name) ) {
+                result = override[2]
+                return
+            }
+        })
+        return result
+    }
+
+    static get_slider_parameters(node, widget) {
+        const parameters = {
+            "type"  : "range", 
+            "value" : widget.value,
+            "min"   : SliderOverrides.get_value('min',  node.title, widget.name, widget.options.min),
+            "max"   : SliderOverrides.get_value('max',  node.title, widget.name, widget.options.max),
+            "step"  : SliderOverrides.get_value('step', node.title, widget.name, step_size(widget.options)),
+        }
+        if (parameters.min  == null || parameters.min  == undefined || 
+            parameters.max  == null || parameters.max  == undefined || 
+            parameters.step == null || parameters.step == undefined )  return null
+        return parameters
+    }
+
 }
 
 export class InputSlider extends HTMLSpanElement {
-    constructor(value, options, name) {
+    constructor(node, widget) {
         super()
         this.classList.add("controller_slider_span")
-        this.options = options
-        const parameters = {"type":"range", "value":value}
-        
-        var mx = find_max_override(name)
-        if (mx!=null)         parameters.max = mx
-        else if (options.max) parameters.max = options.max
-        if (options.min)      parameters.min = options.min
-
-        parameters.step = step_size(options)
-
-        this.display = create("span", "controller_slider_display", this, {"innerText":`${rounding(value, options)}`})
+        this.rounding_options = widget.options
+        const parameters = SliderOverrides.get_slider_parameters(node, widget)
+        this.display = create("span", "controller_slider_display", this, {"innerText":`${rounding(widget.value, this.rounding_options)}`})
         this.slider = create("input", "controller_slider", this, parameters )
         this.slider.addEventListener("input", (e)=>{
-            this.display.innerText = `${rounding(e.target.value, this.options)}`
+            this.display.innerText = `${rounding(e.target.value, this.rounding_options)}`
         })
     }
 
-    static can_be_slider(options, setting, name) {
-        if (setting == 0 || options?.min == undefined || options?.max == undefined) return false
-        if (setting == 2) return true;
-        var mx = find_max_override(name)
-        if (mx==null) mx = options.max
-        const range = (mx - options.min)
-        if (range/step_size(options) > 200) return false
-        return true
+    static can_be_slider(node, widget) {
+        const setting = app.ui.settings.getSettingValue('Controller.sliders', 1)
+        if (setting == 0) return false
+        const parameters = SliderOverrides.get_slider_parameters(node, widget)
+        if (parameters == null) return false
+        if (setting == 2) return true
+        return ( (parameters.max - parameters.min)/parameters.step <= 200 )
     }
 }
 

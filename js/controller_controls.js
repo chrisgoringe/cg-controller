@@ -42,9 +42,23 @@ function shortcut_keys() {
     app.ui.settings.addSetting({
         id: "Controller.sliders.max",
         name: "Override max values:",
-        tooltip: "Max values for sliders eg 'guidance=10,steps=50'",
+        tooltip: "Max values for sliders. Comma separated list of widget_name=value or node_name:widget_name=value. First match wins.",
         type: 'text',
-        defaultValue: 'guidance=10, steps=50'
+        defaultValue: 'guidance=10, steps=50, cfg=20'
+    });
+    app.ui.settings.addSetting({
+        id: "Controller.sliders.min",
+        name: "Override min values:",
+        tooltip: "Min values for sliders. Comma separated list of widget_name=value or node_name:widget_name=value. First match wins.",
+        type: 'text',
+        defaultValue: ''
+    });
+    app.ui.settings.addSetting({
+        id: "Controller.sliders.step",
+        name: "Override step size:",
+        tooltip: "Step size for sliders. Comma separated list of widget_name=value or node_name:widget_name=value. First match wins.",
+        type: 'text',
+        defaultValue: 'cfg=0.1'
     });
 
     app.ui.settings.addSetting({

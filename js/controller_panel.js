@@ -3,6 +3,7 @@ import { CGControllerNode } from "./controller_node.js"
 import { create } from "./elements.js";
 import { InputSlider } from "./input_slider.js";
 import { rounding } from "./utilities.js";
+import { SliderOverrides } from "./input_slider.js";
 
 class Entry extends HTMLDivElement {
     /*
@@ -19,8 +20,8 @@ class Entry extends HTMLDivElement {
         /* These all update the target on 'input' */
         if (target_widget.type=='text' || target_widget.type=='number' ) {
             if (target_widget.type=='number' && 
-                InputSlider.can_be_slider(target_widget.options, app.ui.settings.getSettingValue('Controller.sliders', 1), target_widget.name)) {
-                this.input_element = new InputSlider(target_widget.value, target_widget.options, target_widget.name)
+                InputSlider.can_be_slider(node, target_widget)) {
+                this.input_element = new InputSlider(node, target_widget)
                 this.appendChild(this.input_element)
             } else {
                 this.input_element = create('input', 'controller_input', this)  
@@ -228,7 +229,7 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     static update() {
-        if (ControllerPanel.instance) recursive_update(ControllerPanel.instance)
+        if (ControllerPanel.instance) recursive_update(ControllerPanel.instance) 
     }
 
     static on_setup() {
@@ -283,6 +284,7 @@ export class ControllerPanel extends HTMLDivElement {
 
     build() { 
         this.innerHTML = ""
+        SliderOverrides.parse()
 
         create('span', 'title_message', this, {'innerHTML':'Comfy Controller'})
         this.main_container = create('span','controller_main',this)
