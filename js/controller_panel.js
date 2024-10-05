@@ -2,8 +2,9 @@ import { app } from "../../scripts/app.js";
 import { CGControllerNode } from "./controller_node.js"
 import { create } from "./elements.js";
 import { InputSlider } from "./input_slider.js";
-import { rounding } from "./utilities.js";
+import { rounding, get_node } from "./utilities.js";
 import { SliderOverrides } from "./input_slider.js";
+import { GroupManager } from "./groups.js";
 
 class Entry extends HTMLDivElement {
     /*
@@ -160,11 +161,6 @@ class NodeBlock extends HTMLSpanElement {
     }
 }
 
-function get_node(node_or_node_id) {
-    if (node_or_node_id.id) return node_or_node_id
-    return app.graph._nodes_by_id[node_or_node_id]
-}
-
 function recursive_update(node) {
     if (node.on_update) node.on_update()
     node.childNodes.forEach( recursive_update )
@@ -267,6 +263,7 @@ export class ControllerPanel extends HTMLDivElement {
 
     consider_adding_node(node_or_node_id) {
         const node_id = (node_or_node_id.id) ? node_or_node_id.id : node_or_node_id
+        if (this.group_choice != "All groups" && !GroupManager.is_node_in(this.group_choice, node_id)) return
         if (this.new_node_id_list.includes(node_id)) return   // already got it in the new list
         if (this.include_node(node_or_node_id)) {             // is it still valid?
             if (this.node_blocks[node_id]) {     
@@ -284,9 +281,22 @@ export class ControllerPanel extends HTMLDivElement {
 
     build() { 
         this.innerHTML = ""
-        SliderOverrides.parse()
+        SliderOverrides.setup()
+        GroupManager.setup( this.main_color, this.advn_color )
 
-        create('span', 'title_message', this, {'innerHTML':'Comfy Controller'})
+        this.title_span = create('span', 'title_message', this)
+        create('span', 'title', this.title_span, {"innerText":"Comfy Controller"})
+
+        if (GroupManager.any_groups()) {
+            this.group_select = create("select", 'group_select', this.title_span) 
+            this.group_select.add(new Option("All groups", "All groups"))
+            GroupManager.list_group_names().forEach((nm) => this.group_select.add(new Option(nm,nm)))
+            if (this.state.group_choice) { this.group_select.value = this.state.group_choice }
+            this.group_select.addEventListener('input', (e)=>{ this.state.group_choice = e.target.value; this.build() })
+        }
+
+        this.group_choice = this.state.group_choice ? this.state.group_choice : "All groups"
+
         this.main_container = create('span','controller_main',this)
 
         this.new_node_id_list = []

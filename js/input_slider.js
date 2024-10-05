@@ -6,7 +6,7 @@ import { app } from "../../scripts/app.js"
 export class SliderOverrides {
     static instance = null
 
-    static parse() {
+    static setup() {
         SliderOverrides.instance = new SliderOverrides()
     }
 
