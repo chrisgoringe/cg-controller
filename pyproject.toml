@@ -1,0 +1,14 @@
+[project]
+name = "cg-controller"
+description = "A simple control panel that shows all widgets from red nodes only."
+version = "0.5"
+license = {file = "LICENSE"}
+
+[project.urls]
+Repository = "https://github.com/chrisgoringe/cg-controller"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = "chrisgoringe"
+DisplayName = "cg-controller"
+Icon = ""
