@@ -1,9 +1,10 @@
 import { app } from "../../scripts/app.js";
-import { CGControllerNode } from "./controller_node.js"
+//import { CGControllerNode } from "./controller_node.js"  // TODO42
 import { create } from "./elements.js";
 import { InputSlider } from "./input_slider.js";
-import { rounding } from "./utilities.js";
+import { rounding, get_node } from "./utilities.js";
 import { SliderOverrides } from "./input_slider.js";
+import { GroupManager } from "./groups.js";
 
 class Entry extends HTMLDivElement {
     /*
@@ -160,11 +161,6 @@ class NodeBlock extends HTMLSpanElement {
     }
 }
 
-function get_node(node_or_node_id) {
-    if (node_or_node_id.id) return node_or_node_id
-    return app.graph._nodes_by_id[node_or_node_id]
-}
-
 function recursive_update(node) {
     if (node.on_update) node.on_update()
     node.childNodes.forEach( recursive_update )
@@ -187,7 +183,9 @@ export class ControllerPanel extends HTMLDivElement {
         document.body.appendChild(this);
         
         this.node_blocks = {}   // map from node.id to NodeBlock
-        this.state = CGControllerNode.instance.properties
+        //this.state = CGControllerNode.instance.properties
+        if (!app.graph.extra.controller_panel) app.graph.extra.controller_panel = {}
+        this.state = app.graph.extra.controller_panel
         this.main_color = '#322'
         this.advn_color = '#332922'
         
@@ -282,11 +280,60 @@ export class ControllerPanel extends HTMLDivElement {
         }        
     }
 
+    set_node_visibility() {
+        Object.keys(this.node_blocks).forEach((node_id) => {
+            if (this.group_choice != "All groups" && !GroupManager.is_node_in(this.group_choice, node_id)) {
+                this.node_blocks[node_id].classList.add('hidden')
+            } else {
+                this.node_blocks[node_id].classList.remove('hidden')
+            }
+        })
+    }
+
+    position_for_new_menu() {
+        const new_menu = app.ui.settings.getSettingValue('Comfy.UseNewMenu', "Disabled")
+        const style_update = { "top":"2vh", "bottom":"", "left":"10px", "justify-content":"", "border":"thin solid white", "border-radius":"4px", "border-width":"thin" }
+        if (new_menu=="Top") {
+            const top_element = document.getElementsByClassName('comfyui-body-top')[0].getBoundingClientRect()
+            style_update["top"] = `${top_element.bottom}px`
+            const left_element = document.getElementsByClassName('comfyui-body-left')[0].getBoundingClientRect()
+            style_update["left"] = `${left_element.right}px`
+            style_update["border-color"]  = "#353535"
+            style_update["border-radius"] = "0px"
+            style_update["border-width"]  = "0 thick thick 0"
+        }
+        if (new_menu=="Bottom") {
+            const left_element = document.getElementsByClassName('comfyui-body-left')[0].getBoundingClientRect()
+            style_update["left"] = `${left_element.right}px`
+            const bottom_element = document.getElementsByClassName('comfyui-body-bottom')[0].getBoundingClientRect()
+            style_update["bottom"] = `${bottom_element.height}px`
+            style_update["top"] = ""
+            style_update["border-color"]  = "#353535"
+            style_update["border-radius"] = "0px"
+            style_update["border-width"]  = "thick thick 0 0"
+            style_update["justify-content"] = "flex-end"
+        }
+        Object.assign(this.style, style_update)
+    }
+
     build() { 
         this.innerHTML = ""
-        SliderOverrides.parse()
+        SliderOverrides.setup()
+        GroupManager.setup( this.main_color, this.advn_color )
 
-        create('span', 'title_message', this, {'innerHTML':'Comfy Controller'})
+        this.title_span = create('span', 'title_message', this)
+        create('span', 'title', this.title_span, {"innerText":"Comfy Controller"})
+
+        if (GroupManager.any_groups()) {
+            this.group_select = create("select", 'group_select', this.title_span) 
+            this.group_select.add(new Option("All groups", "All groups"))
+            GroupManager.list_group_names().forEach((nm) => this.group_select.add(new Option(nm,nm)))
+            if (this.state.group_choice) { this.group_select.value = this.state.group_choice }
+            this.group_select.addEventListener('input', (e)=>{ this.state.group_choice = e.target.value; this.build() })
+        }
+
+        this.group_choice = this.state.group_choice ? this.state.group_choice : "All groups"
+
         this.main_container = create('span','controller_main',this)
 
         this.new_node_id_list = []
@@ -296,8 +343,10 @@ export class ControllerPanel extends HTMLDivElement {
         app.graph._nodes.forEach( (n) => {this.consider_adding_node(n)} )
         this.state['node_order'] = this.new_node_id_list
 
+        this.set_node_visibility()
         this.setup_resize_observer()
         this.restore_heights()
+        setTimeout( this.position_for_new_menu.bind(this), 20 )
 
         if (this.state['node_order'].length == 0) {
             create('span', 'empty_message', this, {'innerText':'Nothing to control'})
@@ -305,6 +354,9 @@ export class ControllerPanel extends HTMLDivElement {
 
         this.submit_button = create("button","submit_button",this,{"innerText":"Submit"})
         this.submit_button.addEventListener('click', () => { document.getElementById('queue-button').click() } )
+        if (app.ui.settings.getSettingValue('Comfy.UseNewMenu', "Disabled")!="Disabled") {
+            this.submit_button.classList.add("hidden")
+        }
 
         // show or hide advanced nodes
         var anyAdvancedNodes = false
@@ -313,8 +365,8 @@ export class ControllerPanel extends HTMLDivElement {
             if (node_block.node.color == '#332922') {
                 anyAdvancedNodes = true
                 node_block.classList.add('advanced')
-                if (this.state?.advanced=='1') node_block.classList.remove('hidden')
-                else node_block.classList.add('hidden')
+                if (this.state?.advanced=='1') node_block.classList.remove('advanced_hidden')
+                else node_block.classList.add('advanced_hidden')
             }
         })
 

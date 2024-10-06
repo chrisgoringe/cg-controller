@@ -67,6 +67,11 @@ Raise them as [issues](https://github.com/chrisgoringe/cg-controller/issues)
 
 ## Release history
 
+### v0.6 6/10/2024
+
+- Added group selector
+- Fixed positioning etc with new menu system 
+
 ### v0.5 5/10/2024
 
 - Better controls for sliders (target by node, override min and step)

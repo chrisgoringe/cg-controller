@@ -2,16 +2,32 @@
 .controller {
     padding:5px;
     background: rgba(51, 34, 34, 0.782);
-    border: thin solid white;
-    border-radius: 4px;
     position: absolute;
+    /*
     top: 2vh;
     left: 10px;
+    border: thin solid white;
+    border-radius: 4px;
+    */
     z-index: 5;
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
     align-items: center;
+}
+
+.title_message {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.title {
+
+}
+
+.group_select {
+
 }
 
 .controller_main {
@@ -122,6 +138,10 @@ textarea.controller_input {
 }
 
 .hidden {
+    display:none;
+}
+
+.advanced_hidden {
     display:none;
 }
 
