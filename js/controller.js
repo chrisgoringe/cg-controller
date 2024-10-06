@@ -15,8 +15,8 @@ app.registerExtension({
         CGControllerNode.create()  // TODO42
         new ControllerPanel()
 
-        /* If the panel is showing (because we reloaded a workflow in which it was), hide the main menu */
-        if (ControllerPanel.showing()) {
+        /* If the panel is showing (because we reloaded a workflow in which it was), and in the old style, hide the main menu */
+        if (ControllerPanel.showing() && app.ui.settings.getSettingValue('Comfy.UseNewMenu', "Disabled")=="Disabled") {
             app.ui.menuContainer.style.display = "none";
             app.ui.menuHamburger.style.display = "flex";
         }
