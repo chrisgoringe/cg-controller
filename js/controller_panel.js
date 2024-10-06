@@ -290,6 +290,32 @@ export class ControllerPanel extends HTMLDivElement {
         })
     }
 
+    position_for_new_menu() {
+        const new_menu = app.ui.settings.getSettingValue('Comfy.UseNewMenu', "Disabled")
+        const style_update = { "top":"2vh", "bottom":"", "left":"10px", "justify-content":"", "border":"thin solid white", "border-radius":"4px", "border-width":"thin" }
+        if (new_menu=="Top") {
+            const top_element = document.getElementsByClassName('comfyui-body-top')[0].getBoundingClientRect()
+            style_update["top"] = `${top_element.bottom}px`
+            const left_element = document.getElementsByClassName('comfyui-body-left')[0].getBoundingClientRect()
+            style_update["left"] = `${left_element.right}px`
+            style_update["border-color"]  = "#353535"
+            style_update["border-radius"] = "0px"
+            style_update["border-width"]  = "0 thick thick 0"
+        }
+        if (new_menu=="Bottom") {
+            const left_element = document.getElementsByClassName('comfyui-body-left')[0].getBoundingClientRect()
+            style_update["left"] = `${left_element.right}px`
+            const bottom_element = document.getElementsByClassName('comfyui-body-bottom')[0].getBoundingClientRect()
+            style_update["bottom"] = `${bottom_element.height}px`
+            style_update["top"] = ""
+            style_update["border-color"]  = "#353535"
+            style_update["border-radius"] = "0px"
+            style_update["border-width"]  = "thick thick 0 0"
+            style_update["justify-content"] = "flex-end"
+        }
+        Object.assign(this.style, style_update)
+    }
+
     build() { 
         this.innerHTML = ""
         SliderOverrides.setup()
@@ -320,6 +346,7 @@ export class ControllerPanel extends HTMLDivElement {
         this.set_node_visibility()
         this.setup_resize_observer()
         this.restore_heights()
+        setTimeout( this.position_for_new_menu.bind(this), 20 )
 
         if (this.state['node_order'].length == 0) {
             create('span', 'empty_message', this, {'innerText':'Nothing to control'})
