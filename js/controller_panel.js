@@ -354,6 +354,9 @@ export class ControllerPanel extends HTMLDivElement {
 
         this.submit_button = create("button","submit_button",this,{"innerText":"Submit"})
         this.submit_button.addEventListener('click', () => { document.getElementById('queue-button').click() } )
+        if (app.ui.settings.getSettingValue('Comfy.UseNewMenu', "Disabled")!="Disabled") {
+            this.submit_button.classList.add("hidden")
+        }
 
         // show or hide advanced nodes
         var anyAdvancedNodes = false
