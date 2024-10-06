@@ -1,7 +1,7 @@
 import { app } from "../../scripts/app.js"
 import { api } from "../../scripts/api.js" 
 import { ControllerPanel } from "./controller_panel.js"
-import { CGControllerNode } from "./controller_node.js"
+import { CGControllerNode } from "./controller_node.js"   // TODO42
 import { create } from "./elements.js"
 import { add_controls } from "./controller_controls.js"
 
@@ -11,7 +11,8 @@ app.registerExtension({
     /* Called when the graph has been configured (page load, workflow load) */
     async afterConfigureGraph() {
         /* create a CGController node unless one has been loaded with the workflow, and then create the panel */
-        CGControllerNode.create()
+        /* This is now just for backward compatibility - we *remove* the ControllerNode and put the data in app.graph.extras */
+        CGControllerNode.create()  // TODO42
         new ControllerPanel()
 
         /* If the panel is showing (because we reloaded a workflow in which it was), hide the main menu */
@@ -28,7 +29,7 @@ app.registerExtension({
             {'rel':'stylesheet', 'type':'text/css', 'href':'extensions/cg-controller/controller.css' } )
 
         // Allow our elements to do any setup they want
-        CGControllerNode.on_setup()
+        //CGControllerNode.on_setup()  TODO42
         ControllerPanel.on_setup()
 
         // when the graph is cleared, hide the control panel
@@ -38,7 +39,7 @@ app.registerExtension({
         add_controls()
 
     },
-
+/* remove in TODO42 */
     registerCustomNodes() {
         LiteGraph.registerNodeType("CGControllerNode", CGControllerNode)
     }

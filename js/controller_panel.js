@@ -1,5 +1,5 @@
 import { app } from "../../scripts/app.js";
-import { CGControllerNode } from "./controller_node.js"
+//import { CGControllerNode } from "./controller_node.js"  // TODO42
 import { create } from "./elements.js";
 import { InputSlider } from "./input_slider.js";
 import { rounding, get_node } from "./utilities.js";
@@ -183,7 +183,9 @@ export class ControllerPanel extends HTMLDivElement {
         document.body.appendChild(this);
         
         this.node_blocks = {}   // map from node.id to NodeBlock
-        this.state = CGControllerNode.instance.properties
+        //this.state = CGControllerNode.instance.properties
+        if (!app.graph.extra.controller_panel) app.graph.extra.controller_panel = {}
+        this.state = app.graph.extra.controller_panel
         this.main_color = '#322'
         this.advn_color = '#332922'
         
