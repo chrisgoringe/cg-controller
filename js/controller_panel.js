@@ -263,7 +263,6 @@ export class ControllerPanel extends HTMLDivElement {
 
     consider_adding_node(node_or_node_id) {
         const node_id = (node_or_node_id.id) ? node_or_node_id.id : node_or_node_id
-        if (this.group_choice != "All groups" && !GroupManager.is_node_in(this.group_choice, node_id)) return
         if (this.new_node_id_list.includes(node_id)) return   // already got it in the new list
         if (this.include_node(node_or_node_id)) {             // is it still valid?
             if (this.node_blocks[node_id]) {     
@@ -277,6 +276,16 @@ export class ControllerPanel extends HTMLDivElement {
                 this.new_node_id_list.push(node_id)
             }
         }        
+    }
+
+    set_node_visibility() {
+        Object.keys(this.node_blocks).forEach((node_id) => {
+            if (this.group_choice != "All groups" && !GroupManager.is_node_in(this.group_choice, node_id)) {
+                this.node_blocks[node_id].classList.add('hidden')
+            } else {
+                this.node_blocks[node_id].classList.remove('hidden')
+            }
+        })
     }
 
     build() { 
@@ -306,6 +315,7 @@ export class ControllerPanel extends HTMLDivElement {
         app.graph._nodes.forEach( (n) => {this.consider_adding_node(n)} )
         this.state['node_order'] = this.new_node_id_list
 
+        this.set_node_visibility()
         this.setup_resize_observer()
         this.restore_heights()
 
@@ -323,8 +333,8 @@ export class ControllerPanel extends HTMLDivElement {
             if (node_block.node.color == '#332922') {
                 anyAdvancedNodes = true
                 node_block.classList.add('advanced')
-                if (this.state?.advanced=='1') node_block.classList.remove('hidden')
-                else node_block.classList.add('hidden')
+                if (this.state?.advanced=='1') node_block.classList.remove('advanced_hidden')
+                else node_block.classList.add('advanced_hidden')
             }
         })
 
