@@ -186,8 +186,6 @@ export class ControllerPanel extends HTMLDivElement {
         //this.state = CGControllerNode.instance.properties
         if (!app.graph.extra.controller_panel) app.graph.extra.controller_panel = {}
         this.state = app.graph.extra.controller_panel
-        this.main_color = '#322'
-        this.advn_color = '#332922'
         
         if (ControllerPanel.showing()) ControllerPanel.show()
         else ControllerPanel.hide()
@@ -281,16 +279,22 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     set_node_visibility() {
+        this.anyAdvancedNodes = false
         Object.keys(this.node_blocks).forEach((node_id) => {
-            if (this.group_choice != "All groups" && !GroupManager.is_node_in(this.group_choice, node_id)) {
-                this.node_blocks[node_id].classList.add('hidden')
-            } else {
-                this.node_blocks[node_id].classList.remove('hidden')
+            const node_block = this.node_blocks[node_id]
+            if (GroupManager.is_node_in(this.group_choice, node_id)) node_block.classList.remove('hidden')
+            else                                                     node_block.classList.add('hidden')
+ 
+            if (node_block.node.color == this.advn_color) {
+                this.anyAdvancedNodes = true
+                node_block.style.background = this.advn_bgcolor
+                if (this.state?.advanced=='1') node_block.classList.remove('advanced_hidden')
+                else                           node_block.classList.add('advanced_hidden')                
             }
         })
     }
 
-    position_for_new_menu() {
+    set_position() {
         const new_menu = app.ui.settings.getSettingValue('Comfy.UseNewMenu', "Disabled")
         const style_update = { "top":"2vh", "bottom":"", "left":"10px", "justify-content":"", "border":"thin solid white", "border-radius":"4px", "border-width":"thin" }
         if (new_menu=="Top") {
@@ -316,11 +320,24 @@ export class ControllerPanel extends HTMLDivElement {
         Object.assign(this.style, style_update)
     }
 
+    set_colors() {
+        const main_color_name = app.ui.settings.getSettingValue("Controller.color", "red")
+        const advn_color_name = app.ui.settings.getSettingValue("Controller.color.advanced", "brown")
+        this.main_color = LGraphCanvas.node_colors[main_color_name].color
+        this.advn_color = LGraphCanvas.node_colors[advn_color_name].color
+        this.advn_bgcolor = LGraphCanvas.node_colors[advn_color_name].bgcolor
+        this.style.background = LGraphCanvas.node_colors[main_color_name].bgcolor
+    }
+
     build() { 
         this.innerHTML = ""
         SliderOverrides.setup()
+        this.set_colors()
         GroupManager.setup( this.main_color, this.advn_color )
 
+        /* 
+        Create the top section
+        */
         this.title_span = create('span', 'title_message', this)
         create('span', 'title', this.title_span, {"innerText":"Comfy Controller"})
 
@@ -334,51 +351,44 @@ export class ControllerPanel extends HTMLDivElement {
 
         this.group_choice = this.state.group_choice ? this.state.group_choice : "All groups"
 
+        /*
+        Create the main container
+        */
         this.main_container = create('span','controller_main',this)
 
         this.new_node_id_list = []
-        // restore existing node_blocks (in order)
         this.state.node_order?.forEach( (n) => {this.consider_adding_node(n)} )
-        // now check all the nodes
         app.graph._nodes.forEach( (n) => {this.consider_adding_node(n)} )
         this.state['node_order'] = this.new_node_id_list
 
         this.set_node_visibility()
         this.setup_resize_observer()
         this.restore_heights()
-        setTimeout( this.position_for_new_menu.bind(this), 20 )
 
-        if (this.state['node_order'].length == 0) {
-            create('span', 'empty_message', this, {'innerText':'Nothing to control'})
-        }
-
+        /*
+        Create the bottom section
+        */
         this.submit_button = create("button","submit_button",this,{"innerText":"Submit"})
         this.submit_button.addEventListener('click', () => { document.getElementById('queue-button').click() } )
         if (app.ui.settings.getSettingValue('Comfy.UseNewMenu', "Disabled")!="Disabled") {
             this.submit_button.classList.add("hidden")
         }
 
-        // show or hide advanced nodes
-        var anyAdvancedNodes = false
-        this.state.node_order.forEach((node_id) => {
-            const node_block = this.node_blocks[node_id]
-            if (node_block.node.color == '#332922') {
-                anyAdvancedNodes = true
-                node_block.classList.add('advanced')
-                if (this.state?.advanced=='1') node_block.classList.remove('advanced_hidden')
-                else node_block.classList.add('advanced_hidden')
-            }
-        })
-
-        if (anyAdvancedNodes) {
+        if (this.anyAdvancedNodes) {
             const add_span = create('span', 'advanced advanced_controls', this.main_container)
             this.show_advanced = create("input", "advanced_checkbox", add_span, {"type":"checkbox", "checked":(this.state?.advanced=='1')})
             create('span', 'advanced_label', add_span, {"innerHTML":"Show advanced controls"})
+            add_span.style.background = this.advn_bgcolor
             this.show_advanced.addEventListener('input', function (e) {
                 this.state.advanced = e.target.checked ? '1':'0'
                 this.build()
             }.bind(this))
         }
+
+        /*
+        Finalise
+        */
+        setTimeout( this.set_position.bind(this), 20 )
     }
 
     save_heights() {

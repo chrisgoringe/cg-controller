@@ -22,6 +22,7 @@ export class GroupManager {
     }
 
     static is_node_in(group_name, node_id) {
+        if (group_name=="All groups") return true
         return (GroupManager.instance.groups[group_name] && GroupManager.instance.groups[group_name].has(parseInt(node_id)))
     }
 
