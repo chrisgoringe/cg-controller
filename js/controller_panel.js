@@ -6,21 +6,23 @@ import { rounding, get_node } from "./utilities.js";
 import { SliderOverrides } from "./input_slider.js";
 import { GroupManager } from "./groups.js";
 
-class UpdateRequestTracker {
+class UpdateController {
     static request_count = 0
     static prevent_until = null
     static make_request() {
-        UpdateRequestTracker.request_count += 1
-        setTimeout( UpdateRequestTracker._consider_request, 100 )
+        UpdateController.request_count += 1
+        setTimeout( UpdateController._consider_request, 100 )
     }
     static _consider_request() {
-        UpdateRequestTracker.request_count -= 1
-        if (UpdateRequestTracker.request_count == 0) {
-            if (UpdateRequestTracker.prevent_until && new Date() < UpdateRequestTracker.prevent_until) { return }
-            UpdateRequestTracker.prevent_until = null
-            setTimeout( UpdateRequestTracker._if_showing_show, 10    )
-            setTimeout( UpdateRequestTracker._if_showing_show, 1000  )
-            setTimeout( UpdateRequestTracker._if_showing_show, 10000 )
+        UpdateController.request_count -= 1
+        if (UpdateController.request_count == 0) {
+            if (UpdateController.prevent_until && new Date() < UpdateController.prevent_until) { return }
+            UpdateController.prevent_until = null
+            setTimeout( UpdateController._if_showing_show, 10    )
+            setTimeout( UpdateController._if_showing_show, 1000  )
+            setTimeout( UpdateController._if_showing_show, 2000  )
+            setTimeout( UpdateController._if_showing_show, 4000  )
+            setTimeout( UpdateController._if_showing_show, 10000 )
         }
     }
     static _if_showing_show() {
@@ -30,7 +32,7 @@ class UpdateRequestTracker {
     }
 
     static prevent_for(seconds) {
-        UpdateRequestTracker.prevent_until = new Date() + seconds
+        UpdateController.prevent_until = new Date() + seconds
     }
 }
 
@@ -317,7 +319,7 @@ export class ControllerPanel extends HTMLDivElement {
 
         const change = app.graph.change
         app.graph.change = function() {
-            UpdateRequestTracker.make_request()
+            UpdateController.make_request()
             change.apply(this, arguments)
         }
     }
@@ -352,7 +354,7 @@ export class ControllerPanel extends HTMLDivElement {
         if (this.new_node_id_list.includes(node_id)) return   // already got it in the new list
         if (this.include_node(node_or_node_id)) {             // is it still valid?
             if (this.node_blocks[node_id]) {     
-        //        this.node_blocks[node_id].build_nodeblock()
+                this.node_blocks[node_id].build_nodeblock()
             } else {
                 this.maybe_create_node_block_for_node(node_id) 
             }
@@ -437,7 +439,7 @@ export class ControllerPanel extends HTMLDivElement {
             GroupManager.list_group_names().forEach((nm) => this.group_select.add(new Option(nm,nm)))
             if (this.state.group_choice) { this.group_select.value = this.state.group_choice }
             this.group_select.addEventListener('input', (e)=>{ this.state.group_choice = e.target.value; ControllerPanel.show() })
-            this.group_select.addEventListener('click', (e) => UpdateRequestTracker.prevent_for(5) )
+            this.group_select.addEventListener('click', (e) => UpdateController.prevent_for(5) )
         }
 
         this.state.group_choice = GroupManager.valid_option(this.state.group_choice)
