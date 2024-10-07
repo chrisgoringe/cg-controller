@@ -7,16 +7,11 @@ function canvas_menu() {
     LGraphCanvas.prototype.getCanvasMenuOptions = function () {
         const options = original_getCanvasMenuOptions.apply(this, arguments);
         options.push(null);
+
         options.push({
-            content: ControllerPanel.showing() ? "Update Controller Panel" : "Show Controller Panel",
-            callback: () => ControllerPanel.show()
-        })
-        if (ControllerPanel.showing()) {
-            options.push({
-                content: "Hide Controller Panel",
-                callback: () => ControllerPanel.hide()
-            })                
-        }
+            content: ControllerPanel.showing() ? "Hide Controller Panel" : "Show Controller Panel",
+            callback: () => ControllerPanel.toggle()
+        })                
         return options
     }
 }

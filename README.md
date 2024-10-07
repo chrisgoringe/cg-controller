@@ -67,6 +67,14 @@ Raise them as [issues](https://github.com/chrisgoringe/cg-controller/issues)
 
 ## Release history
 
+### v0.7 7/10/2024
+
+- Image upload image updates
+- Drag and drop images onto image upload
+- Drag and drop to reorder nodes in the controller
+- Controller update automated 
+- Settings to choose color for control nodes and advanced control nodes
+
 ### v0.6 6/10/2024
 
 - Added group selector
