@@ -1,4 +1,5 @@
 import { app } from "../../scripts/app.js";
+import { ComfyWidgets } from "../../scripts/widgets.js";
 import { create } from "./elements.js";
 import { InputSlider } from "./input_slider.js";
 import { rounding, get_node } from "./utilities.js";
@@ -99,6 +100,10 @@ class Entry extends HTMLDivElement {
     }
 }
 
+function is_single_image(data) {
+    return (data && data.items && data.items.length==1 && data.items[0].type.includes("image"))
+}
+
 class NodeBlock extends HTMLSpanElement {
     /*
     NodeBlock represents a single node - zero or more Entry children, and zero or one images.
@@ -142,14 +147,32 @@ class NodeBlock extends HTMLSpanElement {
             }
             e.preventDefault(); 
         }
+        if (e.currentTarget?.is_image_node() && is_single_image(e.dataTransfer)) {
+            e.preventDefault(); 
+        }
     }
 
-    static drop_on_me(e) {
+    static async drop_on_me(e) {
         if (NodeBlock.dragged) {
             e.preventDefault(); 
         } else {
-            if (e.currentTarget.is_image_node()) {
-                let a;
+            if (e.currentTarget.is_image_node() && is_single_image(e.dataTransfer)) {
+                const node = e.currentTarget.node
+                e.preventDefault(); 
+
+                /*
+                When an IMAGEUPLOAD gets created, it adds an input node to the body. 
+                That'll be the last element added, so give it the files, 
+                tell it that it has changed and wait for it to do the upload,
+                then remove it from the node and the document.
+                */
+                ComfyWidgets.IMAGEUPLOAD(node, "image", node, app)
+                document.body.lastChild.files = e.dataTransfer.files
+                await document.body.lastChild.onchange()
+                node.widgets.pop()
+                document.body.lastChild.remove()
+
+                node.setSizeForImage()
             }
         }
     }
