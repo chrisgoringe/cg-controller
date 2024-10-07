@@ -1,7 +1,7 @@
 [project]
 name = "cg-controller"
 description = "A simple control panel that shows all widgets from red nodes only."
-version = "0.5"
+version = "0.7"
 license = {file = "LICENSE"}
 
 [project.urls]
