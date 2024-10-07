@@ -108,12 +108,13 @@ class NodeBlock extends HTMLSpanElement {
         if (this.is_image_node()) {
             this.image_panel = create("span", "controller_node_image no_image", this)
             this.node._imgs = this.node.imgs
-            if (!Object.hasOwn(this.node, "imgs")) {
+            try {
+                delete this.node.imgs
                 Object.defineProperty(this.node, "imgs", {
                     get : () => { return this.node._imgs },
                     set : (v) => { this.node._imgs = v; this.show_image(v) }
-                })
-            }
+                })               
+            } catch { }
             if (this.node._imgs) this.show_image(this.node._imgs)
             this.valid_nodeblock = true
         }
@@ -215,13 +216,9 @@ export class ControllerPanel extends HTMLDivElement {
 
     //last_redraw_request = undefined
     static force_redraw() {
-        //const time_now = new Date()
-        //if (!ControllerPanel.last_redraw_request || (time_now-ControllerPanel.last_redraw_request)>100) {
-        //    ControllerPanel.last_redraw_request = time_now
-            const temp = create('span',null,ControllerPanel.instance.main_container)
-            ControllerPanel.instance.restore_heights()
-            setTimeout(()=>{temp.remove()}, 100)
-        //}
+        const temp = create('span',null,ControllerPanel.instance.main_container)
+        ControllerPanel.instance.restore_heights()
+        setTimeout(()=>{temp.remove()}, 100)
     }
 
     static update() {
