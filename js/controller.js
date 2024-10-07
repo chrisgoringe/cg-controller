@@ -29,7 +29,6 @@ app.registerExtension({
             {'rel':'stylesheet', 'type':'text/css', 'href':'extensions/cg-controller/controller.css' } )
 
         // Allow our elements to do any setup they want
-        //CGControllerNode.on_setup()  TODO42
         ControllerPanel.on_setup()
 
         // when the graph is cleared, hide the control panel
