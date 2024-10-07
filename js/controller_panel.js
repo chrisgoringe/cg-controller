@@ -168,6 +168,7 @@ class NodeBlock extends HTMLSpanElement {
             if (e.currentTarget.is_image_node() && is_single_image(e.dataTransfer)) {
                 const node = e.currentTarget.node
                 e.preventDefault(); 
+                e.stopImmediatePropagation()
 
                 /*
                 When an IMAGEUPLOAD gets created, it adds an input node to the body. 
