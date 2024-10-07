@@ -3,7 +3,6 @@
     padding:5px;
     background: rgba(51, 34, 34, 0.782);
     position: absolute;
-    z-index: 5;
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
