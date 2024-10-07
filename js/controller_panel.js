@@ -5,6 +5,7 @@ import { InputSlider } from "./input_slider.js";
 import { rounding, get_node } from "./utilities.js";
 import { SliderOverrides } from "./input_slider.js";
 import { GroupManager } from "./groups.js";
+import { ColorLuminance } from "./utilities.js";
 
 class UpdateController {
     static request_count = 0
@@ -223,6 +224,7 @@ class NodeBlock extends HTMLSpanElement {
         }
 
         this.style.backgroundColor = this.node.bgcolor
+        this.label.style.backgroundColor = ColorLuminance(this.node.bgcolor, -0.333)
     }
 
     is_image_node() {
@@ -299,7 +301,6 @@ export class ControllerPanel extends HTMLDivElement {
         ControllerPanel.instance.state['showing'] = '0'
     }
 
-    //last_redraw_request = undefined
     static force_redraw() {
         const temp = create('span',null,ControllerPanel.instance.main_container)
         ControllerPanel.instance.restore_heights()
@@ -415,7 +416,6 @@ export class ControllerPanel extends HTMLDivElement {
         this.main_color = LGraphCanvas.node_colors[main_color_name].color
         this.advn_color = LGraphCanvas.node_colors[advn_color_name].color
         this.advn_bgcolor = LGraphCanvas.node_colors[advn_color_name].bgcolor
-        this.style.background = LGraphCanvas.node_colors[main_color_name].bgcolor
     }
 
     build_controllerPanel() { 

@@ -1,7 +1,6 @@
 
 .controller {
     padding:5px;
-    background: rgba(51, 34, 34, 0.782);
     position: absolute;
     display: flex;
     flex-direction: column;
@@ -39,19 +38,17 @@
 .controller_main_nodeblock {
     margin: 5px;
     position: relative;
-    border: thin dashed #ffffff3d;
-    padding: 2px 2px 0px 2px;
     width: var(--element_width);
     min-height: 40px;
 }
 
 .controller_main_nodeblock_label {
-    font-size: 75%;
+    font-size: 70%;
     display: block;
-    text-align: center;
+    text-align: left;
     width: 100%;
-    margin-bottom: 2px;
-    margin-top: -2px;
+    padding: 4px;
+    color: #b3b3b3;
 }
 
 .controller_nodeblock_image {
@@ -75,6 +72,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding:4px;
 }
 
 .controller_item_label {
@@ -87,8 +85,6 @@
 
 .controller_input {
     width:100%;
-    min-width:250px;
-    max-width:250px;
     margin-bottom: 2px;
 }
 
@@ -103,6 +99,7 @@ textarea.controller_input {
 
 .controller_slider {
     width: 200px;
+    margin: 0px;
 }
 
 .controller_slider_display {
@@ -132,7 +129,6 @@ textarea.controller_input {
     margin: 5px;
     padding: 2px;
     font-size: 75%;
-    border: thin dashed #ffffff3d;
     width: 340px;
 }
 
