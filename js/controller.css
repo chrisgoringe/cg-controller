@@ -31,13 +31,17 @@
     max-height: calc(96vh - 60px);
 }
 
+.being_dragged {
+    opacity: 0.5;
+}
+
 /* Node block */
 
 .controller_main_nodeblock {
     margin: 5px;
     position: relative;
     border: thin dashed #ffffff3d;
-    padding: 2px;
+    padding: 2px 2px 0px 2px;
     width: var(--element_width);
     min-height: 40px;
 }
@@ -64,19 +68,6 @@
     height: 10px;
     border: none;
     display:block;
-}
-
-.node_up {
-    position:absolute;
-    cursor:url('up.png') 8 8, grab;
-}
-
-.node_down {
-    bottom: 4px;
-    position: absolute;
-    height: 18px;
-    display: block;
-    cursor: url('down.png') 8 8, grab;
 }
 
 /* Entry (widget) */

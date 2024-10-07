@@ -108,12 +108,62 @@ class NodeBlock extends HTMLSpanElement {
         super()
         this.node = node
         this.classList.add("controller_main_nodeblock")
-        this.build()
+        this.draggable = "true"
+        this.addEventListener('dragstart', function (e) { NodeBlock.drag_me(e)      } )
+        this.addEventListener('dragover',  function (e) { NodeBlock.drag_over_me(e) } )
+        this.addEventListener('drop',      function (e) { NodeBlock.drop_on_me(e)   } )
+        this.addEventListener('dragend',   function (e) { NodeBlock.drag_end(e)     } )
+        this.build_nodeblock()
     }
 
-    build() {
+    dragged = null
+
+    static drag_me(e) {
+        NodeBlock.dragged = e.currentTarget
+        NodeBlock.dragged.classList.add("being_dragged")
+        ControllerPanel.instance.drag_happening = true
+    }
+
+    static drag_over_me(e) {
+        if (NodeBlock.dragged && e.currentTarget!=NodeBlock.dragged) { 
+            if (e.currentTarget != NodeBlock.last_swap) {
+                if (e.currentTarget.drag_id=='header') {
+                    NodeBlock.dragged.parentElement.insertBefore(NodeBlock.dragged, NodeBlock.dragged.parentElement.firstChild)
+                } else if (e.currentTarget.drag_id=='footer') {
+                    NodeBlock.dragged.parentElement.appendChild(NodeBlock.dragged)
+                } else {
+                    if (e.currentTarget.previousSibling == NodeBlock.dragged) {
+                        e.currentTarget.parentElement.insertBefore(e.currentTarget, NodeBlock.dragged)
+                    } else {
+                        e.currentTarget.parentElement.insertBefore(NodeBlock.dragged, e.currentTarget)
+                    }
+                }
+                NodeBlock.last_swap = e.currentTarget
+            }
+            e.preventDefault(); 
+        }
+    }
+
+    static drop_on_me(e) {
+        if (NodeBlock.dragged) {
+            e.preventDefault(); 
+        } else {
+            if (e.currentTarget.is_image_node()) {
+                let a;
+            }
+        }
+    }
+
+    static drag_end(e) {
+        ControllerPanel.instance.save_node_order()
+        NodeBlock.dragged.classList.remove("being_dragged")
+        NodeBlock.dragged = null
+        NodeBlock.last_swap = null
+        ControllerPanel.instance.drag_happening = false
+    }
+
+    build_nodeblock() {
         this.innerHTML = ""
-        const up_arrow = create("span", 'node_up', this, {'innerHTML':"&uarr;"})
         this.label = create("span", 'controller_main_nodeblock_label', this, {"innerText":this.node.title})
         this.valid_nodeblock = false
         this.node.widgets?.forEach(w => {
@@ -124,7 +174,7 @@ class NodeBlock extends HTMLSpanElement {
             } 
         })
         if (this.is_image_node()) {
-            this.image_panel = create("span", "controller_nodeblock_image_panel no_image", this)
+            this.image_panel = create("div", "controller_nodeblock_image_panel no_image", this)
             this.node._imgs = this.node.imgs
             try {
                 delete this.node.imgs
@@ -136,21 +186,6 @@ class NodeBlock extends HTMLSpanElement {
             if (this.node._imgs) this.show_image(this.node._imgs)
             this.valid_nodeblock = true
         }
-
-        const down_arrow = create("span", 'node_down', this, {'innerHTML':"&darr;"})
-
-        up_arrow.addEventListener('click',(e)=> {
-            if (this.previousSibling && this.previousSibling.valid_nodeblock) {
-                this.parentElement.insertBefore(this, this.previousSibling)
-                this.parentElement.parentElement.save_node_order()
-            }
-        })
-        down_arrow.addEventListener('click',(e)=> {
-            if (this.nextSibling && this.nextSibling.valid_nodeblock) {
-                this.parentElement.insertBefore(this.nextSibling, this)
-                this.parentElement.parentElement.save_node_order()
-            }
-        })
 
         this.style.backgroundColor = this.node.bgcolor
     }
@@ -215,7 +250,11 @@ export class ControllerPanel extends HTMLDivElement {
 
     static show() {
         console.log("In ControllerPanel.show")
-        ControllerPanel.instance.build()
+        if (ControllerPanel.instance.drag_happening) {
+            console.log("Drag! Not rebuilding!")
+            return
+        }
+        ControllerPanel.instance.build_controllerPanel()
         ControllerPanel.instance.classList.remove('hidden')
         ControllerPanel.instance.state['showing'] = '1'
     }
@@ -280,7 +319,7 @@ export class ControllerPanel extends HTMLDivElement {
         if (this.new_node_id_list.includes(node_id)) return   // already got it in the new list
         if (this.include_node(node_or_node_id)) {             // is it still valid?
             if (this.node_blocks[node_id]) {     
-                this.node_blocks[node_id].build()
+        //        this.node_blocks[node_id].build_nodeblock()
             } else {
                 this.maybe_create_node_block_for_node(node_id) 
             }
@@ -344,7 +383,7 @@ export class ControllerPanel extends HTMLDivElement {
         this.style.background = LGraphCanvas.node_colors[main_color_name].bgcolor
     }
 
-    build() { 
+    build_controllerPanel() { 
         this.innerHTML = ""
         this.new_menu_position = app.ui.settings.getSettingValue('Comfy.UseNewMenu', "Disabled")
         SliderOverrides.setup()
@@ -356,12 +395,14 @@ export class ControllerPanel extends HTMLDivElement {
         */
         this.header_span = create('span', 'controller_header_span', this)
         create('span', 'controller_header_title', this.header_span, {"innerText":"Comfy Controller"})
+        this.header_span.addEventListener('dragover', function (e) { NodeBlock.drag_over_me(e) } )
+        this.header_span.drag_id = "header"
 
         if (GroupManager.any_groups()) {
             this.group_select = create("select", 'controller_header_select', this.header_span) 
             GroupManager.list_group_names().forEach((nm) => this.group_select.add(new Option(nm,nm)))
             if (this.state.group_choice) { this.group_select.value = this.state.group_choice }
-            this.group_select.addEventListener('input', (e)=>{ this.state.group_choice = e.target.value; this.build() })
+            this.group_select.addEventListener('input', (e)=>{ this.state.group_choice = e.target.value; ControllerPanel.show() })
         }
 
         this.state.group_choice = GroupManager.valid_option(this.state.group_choice)
@@ -384,6 +425,8 @@ export class ControllerPanel extends HTMLDivElement {
         Create the bottom section
         */
         this.footer = create("span","controller_footer",this)
+        this.footer.addEventListener('dragover', function (e) { NodeBlock.drag_over_me(e) } )
+        this.footer.drag_id = "footer"
 
         if (this.showAdvancedCheckbox) {
             const add_div = create('div', 'advanced_controls', this.footer)
@@ -392,7 +435,7 @@ export class ControllerPanel extends HTMLDivElement {
             add_div.style.background = this.advn_bgcolor
             this.show_advanced.addEventListener('input', function (e) {
                 this.state.advanced = e.target.checked ? '1':'0'
-                this.build()
+                ControllerPanel.show()
             }.bind(this))
         }
 
