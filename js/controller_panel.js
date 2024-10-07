@@ -1,10 +1,29 @@
 import { app } from "../../scripts/app.js";
-//import { CGControllerNode } from "./controller_node.js"  // TODO42
+import { ComfyWidgets } from "../../scripts/widgets.js";
 import { create } from "./elements.js";
 import { InputSlider } from "./input_slider.js";
 import { rounding, get_node } from "./utilities.js";
 import { SliderOverrides } from "./input_slider.js";
 import { GroupManager } from "./groups.js";
+
+class UpdateRequestTracker {
+    static request_count = 0
+    static make_request() {
+        UpdateRequestTracker.request_count += 1
+        setTimeout( UpdateRequestTracker._consider_request, 100 )
+    }
+    static _consider_request() {
+        UpdateRequestTracker.request_count -= 1
+        if (UpdateRequestTracker.request_count == 0) {
+            setTimeout( UpdateRequestTracker._if_showing_show, 10    )
+            setTimeout( UpdateRequestTracker._if_showing_show, 1000  )
+            setTimeout( UpdateRequestTracker._if_showing_show, 10000 )
+        }
+    }
+    static _if_showing_show() {
+        if (ControllerPanel.showing()) ControllerPanel.show()
+    }
+}
 
 class Entry extends HTMLDivElement {
     /*
@@ -69,16 +88,20 @@ class Entry extends HTMLDivElement {
 
         if (this.input_element) {
             this.target_widget = target_widget
-            this.on_update()
+            this.display_value()
             this.valid_entry = true
         } 
     }
 
-    on_update() {
+    display_value() {
         if (document.activeElement == this.input_element) return
         if (this.input_element.value == this.target_widget.value) return
         this.input_element.value = rounding(this.target_widget.value, this.target_widget.options)
     }
+}
+
+function is_single_image(data) {
+    return (data && data.items && data.items.length==1 && data.items[0].type.includes("image"))
 }
 
 class NodeBlock extends HTMLSpanElement {
@@ -89,14 +112,82 @@ class NodeBlock extends HTMLSpanElement {
     constructor(node) { 
         super()
         this.node = node
-        this.classList.add("controller_node")
-        this.build()
+        this.classList.add("controller_main_nodeblock")
+        this.draggable = "true"
+        this.addEventListener('dragstart', function (e) { NodeBlock.drag_me(e)      } )
+        this.addEventListener('dragover',  function (e) { NodeBlock.drag_over_me(e) } )
+        this.addEventListener('drop',      function (e) { NodeBlock.drop_on_me(e)   } )
+        this.addEventListener('dragend',   function (e) { NodeBlock.drag_end(e)     } )
+        this.build_nodeblock()
     }
 
-    build() {
+    dragged = null
+
+    static drag_me(e) {
+        NodeBlock.dragged = e.currentTarget
+        NodeBlock.dragged.classList.add("being_dragged")
+        ControllerPanel.instance.drag_happening = true
+    }
+
+    static drag_over_me(e) {
+        if (NodeBlock.dragged && e.currentTarget!=NodeBlock.dragged) { 
+            if (e.currentTarget != NodeBlock.last_swap) {
+                if (e.currentTarget.drag_id=='header') {
+                    NodeBlock.dragged.parentElement.insertBefore(NodeBlock.dragged, NodeBlock.dragged.parentElement.firstChild)
+                } else if (e.currentTarget.drag_id=='footer') {
+                    NodeBlock.dragged.parentElement.appendChild(NodeBlock.dragged)
+                } else {
+                    if (e.currentTarget.previousSibling == NodeBlock.dragged) {
+                        e.currentTarget.parentElement.insertBefore(e.currentTarget, NodeBlock.dragged)
+                    } else {
+                        e.currentTarget.parentElement.insertBefore(NodeBlock.dragged, e.currentTarget)
+                    }
+                }
+                NodeBlock.last_swap = e.currentTarget
+            }
+            e.preventDefault(); 
+        }
+        if (e.currentTarget?.is_image_node && e.currentTarget.is_image_node() && is_single_image(e.dataTransfer)) {
+            e.preventDefault(); 
+        }
+    }
+
+    static async drop_on_me(e) {
+        if (NodeBlock.dragged) {
+            e.preventDefault(); 
+        } else {
+            if (e.currentTarget.is_image_node() && is_single_image(e.dataTransfer)) {
+                const node = e.currentTarget.node
+                e.preventDefault(); 
+
+                /*
+                When an IMAGEUPLOAD gets created, it adds an input node to the body. 
+                That'll be the last element added, so give it the files, 
+                tell it that it has changed and wait for it to do the upload,
+                then remove it from the node and the document.
+                */
+                ComfyWidgets.IMAGEUPLOAD(node, "image", node, app)
+                document.body.lastChild.files = e.dataTransfer.files
+                await document.body.lastChild.onchange()
+                node.widgets.pop()
+                document.body.lastChild.remove()
+
+                node.setSizeForImage()
+            }
+        }
+    }
+
+    static drag_end(e) {
+        ControllerPanel.instance.save_node_order()
+        NodeBlock.dragged.classList.remove("being_dragged")
+        NodeBlock.dragged = null
+        NodeBlock.last_swap = null
+        ControllerPanel.instance.drag_happening = false
+    }
+
+    build_nodeblock() {
         this.innerHTML = ""
-        const up_arrow = create("span", 'node_up', this, {'innerHTML':"&uarr;"})
-        this.label = create("span", 'controller_node_label', this, {"innerText":this.node.title})
+        this.label = create("span", 'controller_main_nodeblock_label', this, {"innerText":this.node.title})
         this.valid_nodeblock = false
         this.node.widgets?.forEach(w => {
             const e = new Entry(this.node, w)
@@ -106,32 +197,20 @@ class NodeBlock extends HTMLSpanElement {
             } 
         })
         if (this.is_image_node()) {
-            this.image_panel = create("span", "controller_node_image no_image", this)
+            this.image_panel = create("div", "controller_nodeblock_image_panel no_image", this)
             this.node._imgs = this.node.imgs
-            if (!Object.hasOwn(this.node, "imgs")) {
+            try {
+                delete this.node.imgs
                 Object.defineProperty(this.node, "imgs", {
                     get : () => { return this.node._imgs },
                     set : (v) => { this.node._imgs = v; this.show_image(v) }
-                })
-            }
+                })               
+            } catch { }
             if (this.node._imgs) this.show_image(this.node._imgs)
             this.valid_nodeblock = true
         }
 
-        const down_arrow = create("span", 'node_down', this, {'innerHTML':"&darr;"})
-
-        up_arrow.addEventListener('click',(e)=> {
-            if (this.previousSibling && this.previousSibling.valid_nodeblock) {
-                this.parentElement.insertBefore(this, this.previousSibling)
-                this.parentElement.parentElement.save_node_order()
-            }
-        })
-        down_arrow.addEventListener('click',(e)=> {
-            if (this.nextSibling && this.nextSibling.valid_nodeblock) {
-                this.parentElement.insertBefore(this.nextSibling, this)
-                this.parentElement.parentElement.save_node_order()
-            }
-        })
+        this.style.backgroundColor = this.node.bgcolor
     }
 
     is_image_node() {
@@ -147,8 +226,7 @@ class NodeBlock extends HTMLSpanElement {
         if (this.image_panel.firstChild) this.image_panel.firstChild.remove()
         if (v.length>0) {
             this.image_panel.classList.remove('no_image')
-            create('img', 'controller_node_image', this.image_panel, {'src':v[0].src})
-            //this.image_panel.src = v[0].src
+            create('img', 'controller_nodeblock_image', this.image_panel, {'src':v[0].src})
         } else {
             this.image_panel.classList.add('no_image')
         }    
@@ -156,14 +234,6 @@ class NodeBlock extends HTMLSpanElement {
         ControllerPanel.force_redraw()
     }
 
-    on_update() { 
-        this.label.innerText = this.node.title
-    }
-}
-
-function recursive_update(node) {
-    if (node.on_update) node.on_update()
-    node.childNodes.forEach( recursive_update )
 }
 
 function recursive_observe(node, observer) {
@@ -183,11 +253,8 @@ export class ControllerPanel extends HTMLDivElement {
         document.body.appendChild(this);
         
         this.node_blocks = {}   // map from node.id to NodeBlock
-        //this.state = CGControllerNode.instance.properties
         if (!app.graph.extra.controller_panel) app.graph.extra.controller_panel = {}
         this.state = app.graph.extra.controller_panel
-        this.main_color = '#322'
-        this.advn_color = '#332922'
         
         if (ControllerPanel.showing()) ControllerPanel.show()
         else ControllerPanel.hide()
@@ -205,7 +272,12 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     static show() {
-        ControllerPanel.instance.build()
+        console.log("In ControllerPanel.show")
+        if (ControllerPanel.instance.drag_happening) {
+            console.log("Drag! Not rebuilding!")
+            return
+        }
+        ControllerPanel.instance.build_controllerPanel()
         ControllerPanel.instance.classList.remove('hidden')
         ControllerPanel.instance.state['showing'] = '1'
     }
@@ -217,17 +289,13 @@ export class ControllerPanel extends HTMLDivElement {
 
     //last_redraw_request = undefined
     static force_redraw() {
-        //const time_now = new Date()
-        //if (!ControllerPanel.last_redraw_request || (time_now-ControllerPanel.last_redraw_request)>100) {
-        //    ControllerPanel.last_redraw_request = time_now
-            const temp = create('span',null,ControllerPanel.instance.main_container)
-            ControllerPanel.instance.restore_heights()
-            setTimeout(()=>{temp.remove()}, 100)
-        //}
+        const temp = create('span',null,ControllerPanel.instance.main_container)
+        ControllerPanel.instance.restore_heights()
+        setTimeout(()=>{temp.remove()}, 100)
     }
 
     static update() {
-        if (ControllerPanel.instance) recursive_update(ControllerPanel.instance) 
+        if (ControllerPanel.instance) ControllerPanel.instance.on_update()
     }
 
     static on_setup() {
@@ -235,6 +303,12 @@ export class ControllerPanel extends HTMLDivElement {
         LGraphCanvas.prototype.draw = function() {
             ControllerPanel.update()
             draw.apply(this,arguments);
+        }
+
+        const change = app.graph.change
+        app.graph.change = function() {
+            UpdateRequestTracker.make_request()
+            change.apply(this, arguments)
         }
     }
 
@@ -268,12 +342,12 @@ export class ControllerPanel extends HTMLDivElement {
         if (this.new_node_id_list.includes(node_id)) return   // already got it in the new list
         if (this.include_node(node_or_node_id)) {             // is it still valid?
             if (this.node_blocks[node_id]) {     
-                this.node_blocks[node_id].build()
+        //        this.node_blocks[node_id].build_nodeblock()
             } else {
                 this.maybe_create_node_block_for_node(node_id) 
             }
             if (this.node_blocks[node_id]) {             // if it now exists, add it
-                this.node_blocks[node_id].on_update()
+                //this.node_blocks[node_id].on_update()
                 this.main_container.append(this.node_blocks[node_id])
                 this.new_node_id_list.push(node_id)
             }
@@ -281,104 +355,123 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     set_node_visibility() {
+        this.showAdvancedCheckbox = false
         Object.keys(this.node_blocks).forEach((node_id) => {
-            if (this.group_choice != "All groups" && !GroupManager.is_node_in(this.group_choice, node_id)) {
-                this.node_blocks[node_id].classList.add('hidden')
+            const node_block = this.node_blocks[node_id]
+            if (GroupManager.is_node_in(this.state.group_choice, node_id)) {
+                if (node_block.node.color == this.advn_color) {
+                    this.showAdvancedCheckbox = true
+                    if (this.state?.advanced=='1') node_block.classList.remove('hidden')
+                    else node_block.classList.add('hidden')
+                } else {
+                    node_block.classList.remove('hidden')
+                } 
             } else {
-                this.node_blocks[node_id].classList.remove('hidden')
+                node_block.classList.add('hidden')
             }
         })
     }
 
-    position_for_new_menu() {
-        const new_menu = app.ui.settings.getSettingValue('Comfy.UseNewMenu', "Disabled")
-        const style_update = { "top":"2vh", "bottom":"", "left":"10px", "justify-content":"", "border":"thin solid white", "border-radius":"4px", "border-width":"thin" }
-        if (new_menu=="Top") {
+    set_position() {
+        const style = { "top":"2vh", "bottom":"", "left":"10px", "justify-content":"", "border":"thin solid white", "border-radius":"4px", "border-width":"thin" }
+        if (this.new_menu_position=="Top") {
             const top_element = document.getElementsByClassName('comfyui-body-top')[0].getBoundingClientRect()
-            style_update["top"] = `${top_element.bottom}px`
+            style["top"] = `${top_element.bottom}px`
             const left_element = document.getElementsByClassName('comfyui-body-left')[0].getBoundingClientRect()
-            style_update["left"] = `${left_element.right}px`
-            style_update["border-color"]  = "#353535"
-            style_update["border-radius"] = "0px"
-            style_update["border-width"]  = "0 thick thick 0"
+            style["left"] = `${left_element.right}px`
+            style["border-color"]  = "#353535"
+            style["border-radius"] = "0px"
+            style["border-width"]  = "0 thick thick 0"
         }
-        if (new_menu=="Bottom") {
+        if (this.new_menu_position=="Bottom") {
             const left_element = document.getElementsByClassName('comfyui-body-left')[0].getBoundingClientRect()
-            style_update["left"] = `${left_element.right}px`
+            style["left"] = `${left_element.right}px`
             const bottom_element = document.getElementsByClassName('comfyui-body-bottom')[0].getBoundingClientRect()
-            style_update["bottom"] = `${bottom_element.height}px`
-            style_update["top"] = ""
-            style_update["border-color"]  = "#353535"
-            style_update["border-radius"] = "0px"
-            style_update["border-width"]  = "thick thick 0 0"
-            style_update["justify-content"] = "flex-end"
+            style["bottom"] = `${bottom_element.height}px`
+            style["top"] = ""
+            style["border-color"]  = "#353535"
+            style["border-radius"] = "0px"
+            style["border-width"]  = "thick thick 0 0"
+            style["justify-content"] = "flex-end"
         }
-        Object.assign(this.style, style_update)
+        Object.assign(this.style, style)
     }
 
-    build() { 
+    set_colors() {
+        const main_color_name = app.ui.settings.getSettingValue("Controller.color", "red")
+        const advn_color_name = app.ui.settings.getSettingValue("Controller.color.advanced", "brown")
+        this.main_color = LGraphCanvas.node_colors[main_color_name].color
+        this.advn_color = LGraphCanvas.node_colors[advn_color_name].color
+        this.advn_bgcolor = LGraphCanvas.node_colors[advn_color_name].bgcolor
+        this.style.background = LGraphCanvas.node_colors[main_color_name].bgcolor
+    }
+
+    build_controllerPanel() { 
         this.innerHTML = ""
+        this.style.zIndex = app.graph.nodes.length + 1
+        this.new_menu_position = app.ui.settings.getSettingValue('Comfy.UseNewMenu', "Disabled")
         SliderOverrides.setup()
+        this.set_colors()
         GroupManager.setup( this.main_color, this.advn_color )
 
-        this.title_span = create('span', 'title_message', this)
-        create('span', 'title', this.title_span, {"innerText":"Comfy Controller"})
+        /* 
+        Create the top section
+        */
+        this.header_span = create('span', 'controller_header_span', this)
+        create('span', 'controller_header_title', this.header_span, {"innerText":"Comfy Controller"})
+        this.header_span.addEventListener('dragover', function (e) { NodeBlock.drag_over_me(e) } )
+        this.header_span.drag_id = "header"
 
         if (GroupManager.any_groups()) {
-            this.group_select = create("select", 'group_select', this.title_span) 
-            this.group_select.add(new Option("All groups", "All groups"))
+            this.group_select = create("select", 'controller_header_select', this.header_span) 
             GroupManager.list_group_names().forEach((nm) => this.group_select.add(new Option(nm,nm)))
             if (this.state.group_choice) { this.group_select.value = this.state.group_choice }
-            this.group_select.addEventListener('input', (e)=>{ this.state.group_choice = e.target.value; this.build() })
+            this.group_select.addEventListener('input', (e)=>{ this.state.group_choice = e.target.value; ControllerPanel.show() })
         }
 
-        this.group_choice = this.state.group_choice ? this.state.group_choice : "All groups"
+        this.state.group_choice = GroupManager.valid_option(this.state.group_choice)
 
+        /*
+        Create the main container
+        */
         this.main_container = create('span','controller_main',this)
 
         this.new_node_id_list = []
-        // restore existing node_blocks (in order)
         this.state.node_order?.forEach( (n) => {this.consider_adding_node(n)} )
-        // now check all the nodes
         app.graph._nodes.forEach( (n) => {this.consider_adding_node(n)} )
         this.state['node_order'] = this.new_node_id_list
 
         this.set_node_visibility()
         this.setup_resize_observer()
         this.restore_heights()
-        setTimeout( this.position_for_new_menu.bind(this), 20 )
 
-        if (this.state['node_order'].length == 0) {
-            create('span', 'empty_message', this, {'innerText':'Nothing to control'})
-        }
+        /*
+        Create the bottom section
+        */
+        this.footer = create("span","controller_footer",this)
+        this.footer.addEventListener('dragover', function (e) { NodeBlock.drag_over_me(e) } )
+        this.footer.drag_id = "footer"
 
-        this.submit_button = create("button","submit_button",this,{"innerText":"Submit"})
-        this.submit_button.addEventListener('click', () => { document.getElementById('queue-button').click() } )
-        if (app.ui.settings.getSettingValue('Comfy.UseNewMenu', "Disabled")!="Disabled") {
-            this.submit_button.classList.add("hidden")
-        }
-
-        // show or hide advanced nodes
-        var anyAdvancedNodes = false
-        this.state.node_order.forEach((node_id) => {
-            const node_block = this.node_blocks[node_id]
-            if (node_block.node.color == '#332922') {
-                anyAdvancedNodes = true
-                node_block.classList.add('advanced')
-                if (this.state?.advanced=='1') node_block.classList.remove('advanced_hidden')
-                else node_block.classList.add('advanced_hidden')
-            }
-        })
-
-        if (anyAdvancedNodes) {
-            const add_span = create('span', 'advanced advanced_controls', this.main_container)
-            this.show_advanced = create("input", "advanced_checkbox", add_span, {"type":"checkbox", "checked":(this.state?.advanced=='1')})
-            create('span', 'advanced_label', add_span, {"innerHTML":"Show advanced controls"})
+        if (this.showAdvancedCheckbox) {
+            const add_div = create('div', 'advanced_controls', this.footer)
+            this.show_advanced = create("input", "advanced_checkbox", add_div, {"type":"checkbox", "checked":(this.state?.advanced=='1')})
+            create('span', 'advanced_label', add_div, {"innerText":"Show advanced controls"})
+            add_div.style.background = this.advn_bgcolor
             this.show_advanced.addEventListener('input', function (e) {
                 this.state.advanced = e.target.checked ? '1':'0'
-                this.build()
+                ControllerPanel.show()
             }.bind(this))
         }
+
+        if (this.new_menu_position=="Disabled") {
+            this.submit_button = create("button","submit_button",this.footer,{"innerText":"Submit"})
+            this.submit_button.addEventListener('click', () => { document.getElementById('queue-button').click() } )
+        }
+
+        /*
+        Finalise
+        */
+        setTimeout( this.set_position.bind(this), 20 )
     }
 
     save_heights() {

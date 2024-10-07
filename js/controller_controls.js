@@ -7,22 +7,33 @@ function canvas_menu() {
     LGraphCanvas.prototype.getCanvasMenuOptions = function () {
         const options = original_getCanvasMenuOptions.apply(this, arguments);
         options.push(null);
+
         options.push({
-            content: ControllerPanel.showing() ? "Update Controller Panel" : "Show Controller Panel",
-            callback: () => ControllerPanel.show()
-        })
-        if (ControllerPanel.showing()) {
-            options.push({
-                content: "Hide Controller Panel",
-                callback: () => ControllerPanel.hide()
-            })                
-        }
+            content: ControllerPanel.showing() ? "Hide Controller Panel" : "Show Controller Panel",
+            callback: () => ControllerPanel.toggle()
+        })                
         return options
     }
 }
 
-function shortcut_keys() {
-    // shortcut keys
+function settings_menu() {
+    const colors = []
+    Object.keys(LGraphCanvas.node_colors).forEach((color) => { colors.push( {value:color, text:color} )  })
+    app.ui.settings.addSetting({
+        id: "Controller.color",
+        name: "Color for control nodes:",
+        type: "combo",
+        options: colors,
+        defaultValue: "#322",
+    });
+    app.ui.settings.addSetting({
+        id: "Controller.color.advanced",
+        name: "Color for advanced control nodes:",
+        type: "combo",
+        options: colors,
+        defaultValue: "#332922",
+    });
+
     app.ui.settings.addSetting({
         id: "Controller.keyboard",
         name: "Toggle controller visibility:",
@@ -84,5 +95,5 @@ function shortcut_keys() {
 
 export function add_controls() {
     canvas_menu()
-    shortcut_keys()
+    settings_menu()
 }
