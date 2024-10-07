@@ -24,7 +24,9 @@ class UpdateRequestTracker {
         }
     }
     static _if_showing_show() {
-        if (ControllerPanel.showing()) ControllerPanel.show()
+        if (! ControllerPanel.instance.contains( document.activeElement ) ) {
+            if (ControllerPanel.showing()) ControllerPanel.show()
+        }
     }
 
     static prevent_for(seconds) {
