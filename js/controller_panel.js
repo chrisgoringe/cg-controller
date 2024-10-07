@@ -8,6 +8,7 @@ import { GroupManager } from "./groups.js";
 
 class UpdateRequestTracker {
     static request_count = 0
+    static prevent_until = null
     static make_request() {
         UpdateRequestTracker.request_count += 1
         setTimeout( UpdateRequestTracker._consider_request, 100 )
@@ -15,6 +16,8 @@ class UpdateRequestTracker {
     static _consider_request() {
         UpdateRequestTracker.request_count -= 1
         if (UpdateRequestTracker.request_count == 0) {
+            if (UpdateRequestTracker.prevent_until && new Date() < UpdateRequestTracker.prevent_until) { return }
+            UpdateRequestTracker.prevent_until = null
             setTimeout( UpdateRequestTracker._if_showing_show, 10    )
             setTimeout( UpdateRequestTracker._if_showing_show, 1000  )
             setTimeout( UpdateRequestTracker._if_showing_show, 10000 )
@@ -22,6 +25,10 @@ class UpdateRequestTracker {
     }
     static _if_showing_show() {
         if (ControllerPanel.showing()) ControllerPanel.show()
+    }
+
+    static prevent_for(seconds) {
+        UpdateRequestTracker.prevent_until = new Date() + seconds
     }
 }
 
@@ -427,6 +434,7 @@ export class ControllerPanel extends HTMLDivElement {
             GroupManager.list_group_names().forEach((nm) => this.group_select.add(new Option(nm,nm)))
             if (this.state.group_choice) { this.group_select.value = this.state.group_choice }
             this.group_select.addEventListener('input', (e)=>{ this.state.group_choice = e.target.value; ControllerPanel.show() })
+            this.group_select.addEventListener('click', (e) => UpdateRequestTracker.prevent_for(5) )
         }
 
         this.state.group_choice = GroupManager.valid_option(this.state.group_choice)
