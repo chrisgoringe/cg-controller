@@ -70,11 +70,11 @@ export class SliderOverrides {
 export class InputSlider extends HTMLSpanElement {
     constructor(node, widget) {
         super()
-        this.classList.add("controller_slider_span")
+        this.classList.add("slider_outer")
         this.rounding_options = widget.options
         const parameters = SliderOverrides.get_slider_parameters(node, widget)
-        this.display = create("span", "controller_slider_display", this, {"innerText":`${rounding(widget.value, this.rounding_options)}`})
-        this.slider = create("input", "controller_slider", this, parameters )
+        this.display = create("span", "slider_text", this, {"innerText":`${rounding(widget.value, this.rounding_options)}`})
+        this.slider = create("input", "slider_slider", this, parameters )
         this.slider.addEventListener("input", (e)=>{
             this.display.innerText = `${rounding(e.target.value, this.rounding_options)}`
         })
