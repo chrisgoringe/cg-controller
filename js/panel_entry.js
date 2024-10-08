@@ -1,6 +1,6 @@
 import { app } from "../../scripts/app.js";
 import { create } from "./elements.js";
-import { InputSlider } from "./input_slider.js";
+import { FancySlider } from "./input_slider.js";
 import { rounding } from "./utilities.js";
 
 export class Entry extends HTMLDivElement {
@@ -17,9 +17,8 @@ export class Entry extends HTMLDivElement {
 
         /* These all update the target on 'input' */
         if (target_widget.type=='text' || target_widget.type=='number' ) {
-            if (target_widget.type=='number' && 
-                InputSlider.can_be_slider(node, target_widget)) {
-                this.input_element = new InputSlider(node, target_widget)
+            if (target_widget.type=='number') {
+                this.input_element = new FancySlider(node, target_widget)
                 this.appendChild(this.input_element)
             } else {
                 this.input_element = create('input', 'input', this)  

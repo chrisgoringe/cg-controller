@@ -125,6 +125,37 @@ textarea.input {
     width: 46px;
 }
 
+/* Fancy slider */
+
+.fancy_slider {
+    width: 100%;
+}
+
+.fancy_slider_graphic {
+    position: absolute;
+    display: block;
+    height: 20px;
+    z-index: 30000;
+    width: 248px;
+}
+
+.fancy_slider_drag_graphic {
+
+}
+
+.fancy_slide_graphic_filled {
+    display:block;
+    background: #ffffff;
+    height: 100%;
+}
+
+.fancy_slider_text {
+    position: relative;
+    width: 100%;
+    z-index: 30001;
+    background: #3b3b3bbd;
+}
+
 
 /* Footer */
 
