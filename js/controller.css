@@ -54,6 +54,7 @@
 .nodeblock_draghandle {
     padding-right: 4px;
     font-size:110%;
+    cursor:grab;
 }
 
 .nodeblock_title {

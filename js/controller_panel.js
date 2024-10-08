@@ -232,16 +232,13 @@ export class ControllerPanel extends HTMLDivElement {
 
         this.main_container.drag_id = "footer"
         this.main_container.addEventListener("dragover", (e) => {
-            if (e.target==this.main_container) {
-                if (!this.last_dragover) {
-                    this.last_dragover = { "timeStamp":e.timeStamp, "x":e.x, "y":e.y }
-                } else {
-                    if (Math.abs(e.x-this.last_dragover.x) > 2 || Math.abs(e.y-this.last_dragover.y) > 2) {
-                        this.last_dragover = null
-                    } else {
-                        if ((e.timeStamp - this.last_dragover.timeStamp) > 250) {
-                            NodeBlock.drag_over_me(e)
-                        }
+            if (NodeBlock.dragged) {
+                e.preventDefault()
+                if (e.target==this.main_container) {
+                    if (!this.last_dragover) { this.last_dragover = { "timeStamp":e.timeStamp, "x":e.x, "y":e.y } }
+                    else {
+                        if (Math.abs(e.x-this.last_dragover.x) > 2 || Math.abs(e.y-this.last_dragover.y) > 2) { this.last_dragover = null }
+                        else if ((e.timeStamp - this.last_dragover.timeStamp) > 250) NodeBlock.drag_over_me(e)
                     }
                 }
             }

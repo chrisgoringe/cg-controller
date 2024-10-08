@@ -25,6 +25,7 @@ export class NodeBlock extends HTMLSpanElement {
         this.addEventListener('dragover',  function (e) { NodeBlock.drag_over_me(e) } )
         this.addEventListener('drop',      function (e) { NodeBlock.drop_on_me(e)   } )
         this.addEventListener('dragend',   function (e) { NodeBlock.drag_end(e)     } )
+        this.addEventListener('dragenter', function (e) { e.preventDefault()        } )
     }
 
     add_handle_drag_handlers(draghandle) {
@@ -42,8 +43,9 @@ export class NodeBlock extends HTMLSpanElement {
 
     static drag_over_me(e) {
         if (NodeBlock.dragged) {
-            e.dataTransfer.effectAllowed = "move";
+        //    e.dataTransfer.effectAllowed = "all";
             e.dataTransfer.dropEffect = "move"
+            e.preventDefault(); 
         }
         if (NodeBlock.dragged && e.currentTarget!=NodeBlock.dragged) { 
             if (e.currentTarget != NodeBlock.last_swap) {
@@ -60,9 +62,8 @@ export class NodeBlock extends HTMLSpanElement {
                 }
                 NodeBlock.last_swap = e.currentTarget
             }
-            e.preventDefault(); 
         }
-        if (e.currentTarget?.is_image_node && e.currentTarget.is_image_node() && is_single_image(e.dataTransfer)) {
+        if (!NodeBlock.dragged && e.currentTarget?.is_image_node && e.currentTarget.is_image_node() && is_single_image(e.dataTransfer)) {
             e.dataTransfer.effectAllowed = "move";
             e.dataTransfer.dropEffect = "move"
             e.preventDefault(); 
