@@ -29,6 +29,14 @@ export class ControllerPanel extends HTMLDivElement {
 
         this.addEventListener('dragstart', (e) => { ControllerPanel.drag_happening = true })
         this.addEventListener('dragend',   (e) => { this.save_node_order(); ControllerPanel.drag_happening = false } )
+        this.addEventListener('dragover',  (e) => {
+            if (NodeBlock.dragged) {
+                e.dataTransfer.effectAllowed = "move";
+                e.dataTransfer.dropEffect = "move"
+            }
+        })
+
+
     }
 
     static toggle() {
@@ -56,7 +64,6 @@ export class ControllerPanel extends HTMLDivElement {
 
     static force_redraw() {
         const temp = create('span',null,ControllerPanel.instance.main_container)
-        ControllerPanel.instance.restore_heights()
         setTimeout(()=>{temp.remove()}, 100)
     }
 
@@ -222,6 +229,23 @@ export class ControllerPanel extends HTMLDivElement {
         this.set_node_visibility()
         this.setup_resize_observer()
         this.restore_heights()
+
+        this.main_container.drag_id = "footer"
+        this.main_container.addEventListener("dragover", (e) => {
+            if (e.target==this.main_container) {
+                if (!this.last_dragover) {
+                    this.last_dragover = { "timeStamp":e.timeStamp, "x":e.x, "y":e.y }
+                } else {
+                    if (Math.abs(e.x-this.last_dragover.x) > 2 || Math.abs(e.y-this.last_dragover.y) > 2) {
+                        this.last_dragover = null
+                    } else {
+                        if ((e.timeStamp - this.last_dragover.timeStamp) > 250) {
+                            NodeBlock.drag_over_me(e)
+                        }
+                    }
+                }
+            }
+        })
 
         /*
         Create the bottom section

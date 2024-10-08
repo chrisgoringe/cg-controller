@@ -7,7 +7,7 @@
     flex-wrap: nowrap;
     align-items: center;
     --element_width: 340px;
-    background: #1c1c1c;
+    background: #1c1c1cee;
 }
 
 /* Header */
@@ -93,13 +93,14 @@
 }
 
 .input {
-    width:100%;
-    margin-bottom: 2px;
+    width: 100%;
+    font-size: 70%;
 }
 
 textarea.input {
     height: 72px;
     resize: vertical;
+    max-height: 80vh;
 }
 
 .slider_outer {
@@ -138,6 +139,13 @@ textarea.input {
     margin: 5px;
     padding: 2px;
     font-size: 75%;
+    display: flex;
+    justify-content: center;
+}
+
+.advanced_label {
+    position: relative;
+    top: 4px;
 }
 
 .submit_button {

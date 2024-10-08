@@ -41,6 +41,10 @@ export class NodeBlock extends HTMLSpanElement {
     }
 
     static drag_over_me(e) {
+        if (NodeBlock.dragged) {
+            e.dataTransfer.effectAllowed = "move";
+            e.dataTransfer.dropEffect = "move"
+        }
         if (NodeBlock.dragged && e.currentTarget!=NodeBlock.dragged) { 
             if (e.currentTarget != NodeBlock.last_swap) {
                 if (e.currentTarget.drag_id=='header') {
@@ -59,6 +63,8 @@ export class NodeBlock extends HTMLSpanElement {
             e.preventDefault(); 
         }
         if (e.currentTarget?.is_image_node && e.currentTarget.is_image_node() && is_single_image(e.dataTransfer)) {
+            e.dataTransfer.effectAllowed = "move";
+            e.dataTransfer.dropEffect = "move"
             e.preventDefault(); 
         }
     }
