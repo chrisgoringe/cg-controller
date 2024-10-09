@@ -4,6 +4,7 @@ import { ComfyWidgets } from "../../scripts/widgets.js";
 import { darken } from "./utilities.js";
 import { Entry } from "./panel_entry.js"
 import { create } from "./elements.js";
+import { make_resizable } from "./resize_manager.js";
 
 function is_single_image(data) { return (data && data.items && data.items.length==1 && data.items[0].type.includes("image")) }
 
@@ -114,27 +115,59 @@ export class NodeBlock extends HTMLSpanElement {
             const e = new Entry(this.node, w)
             if (e.valid_entry) {
                 this.appendChild(e)
+                this[w.name] = e
                 this.valid_nodeblock = true
             } 
         })
+
         if (this.is_image_node()) {
-            this.image_panel = create("div", "nodeblock_image_panel nodeblock_image_empty", this)
-            this.node._imgs = this.node.imgs
-            try {
-                delete this.node.imgs
-                Object.defineProperty(this.node, "imgs", {
-                    get : () => { return this.node._imgs },
-                    set : (v) => { this.node._imgs = v; this.show_image(v) }
-                })               
-            } catch { }
+            if (this.image_panel) {
+                this.appendChild(this.image_panel)
+            } else {
+                this.image_panel = create("div", "nodeblock_image_panel nodeblock_image_empty", this)
+                this.node._imgs = this.node.imgs
+                try {
+                    delete this.node.imgs
+                    Object.defineProperty(this.node, "imgs", {
+                        get : () => { return this.node._imgs },
+                        set : (v) => { this.node._imgs = v; this.show_image(v) }
+                    })               
+                } catch { }
+                this.image_image = create('img', 'nodeblock_image', this.image_panel)
+                this.image_image.addEventListener('load', this.rescale_image.bind(this))
+                
+                make_resizable( this.image_panel, this.node.id, ["image_panel"] )
+                new ResizeObserver(this.rescale_image.bind(this)).observe(this.image_panel)
+            }
             if (this.node._imgs) this.show_image(this.node._imgs)
             this.valid_nodeblock = true
         }
 
         this.style.backgroundColor = this.node.bgcolor
         this.title_bar.style.backgroundColor = darken(this.node.bgcolor)
+    }
 
-        
+    rescale_image() {
+        if (this.rescaling) return
+        this.rescaling = true
+        if (this.image_image) {
+            const box = this.image_panel.getBoundingClientRect()
+            if (box.width) {
+                const im_h = this.image_image?.naturalHeight
+                const im_w = this.image_image?.naturalWidth
+                if (im_h && im_w) {
+                    const scaled_height_fraction = (im_h * box.width) / (im_w * box.height)
+                    if (scaled_height_fraction<=1) {
+                        this.image_image.style.height = `${100*scaled_height_fraction}%`
+                        this.image_image.style.width = `100%`
+                    } else {
+                        this.image_image.style.height = `100%`
+                        this.image_image.style.width = `${100/scaled_height_fraction}%`
+                    }
+                }
+            } 
+        }
+        this.rescaling = false
     }
 
     is_image_node() {
@@ -147,17 +180,14 @@ export class NodeBlock extends HTMLSpanElement {
     }
 
     show_image(v) {
-        if (this.image_panel.firstChild) this.image_panel.firstChild.remove()
         if (v.length>0) {
             this.image_panel.classList.remove('nodeblock_image_empty')
-            create('img', 'nodeblock_image', this.image_panel, {'src':v[0].src})
+            if (this.image_image.src != v[0].src) this.image_image.src = v[0].src
         } else {
             this.image_panel.classList.add('nodeblock_image_empty')
         }    
-        // some browsers the flex doesn't update when the image is changed!
-        if (this.redraw_force_callback) this.redraw_force_callback()
     }
 
 }
 
-customElements.define('cp-span',   NodeBlock,       {extends: 'span'})
+customElements.define('cp-span', NodeBlock, {extends: 'span'})

@@ -2,6 +2,7 @@ import { app } from "../../scripts/app.js";
 import { create } from "./elements.js";
 import { FancySlider } from "./input_slider.js";
 import { rounding } from "./utilities.js";
+import { make_resizable } from "./resize_manager.js";
 
 export class Entry extends HTMLDivElement {
     /*
@@ -25,7 +26,7 @@ export class Entry extends HTMLDivElement {
             }
         } else if (target_widget.type=="customtext") {
             this.input_element = create("textarea", 'input', this)
-            this.resizable = true  
+            make_resizable( this.input_element, node.id, [target_widget.name, "input_element"] )
         } else if (target_widget.type=="combo") {
             if ( target_widget.name=='control_after_generate' && !app.ui.settings.getSettingValue("Controller.extras.control_after_generate", false) ) {
                 return

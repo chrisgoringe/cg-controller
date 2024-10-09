@@ -62,18 +62,24 @@
 }
 
 .nodeblock_image {
-    width:100%;
+
 }
 
 .nodeblock_image_panel {
-    width:100%;
+    width: 100%;
+    resize: vertical;
+    overflow: hidden;
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: column;
+    align-items: center;
 }
 
 .nodeblock_image_empty {
     width: 100%;
     height: 10px;
     border: none;
-    display:block;
+    display:none;
 }
 
 /* Entry (widget) */

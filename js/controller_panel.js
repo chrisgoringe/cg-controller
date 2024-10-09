@@ -7,8 +7,7 @@ import { GroupManager } from "./groups.js";
 
 import { UpdateController } from "./update_controller.js";
 import { NodeBlock } from "./nodeblock.js";
-
-
+import { get_resizable_heights, observe_resizables, restore_heights } from "./resize_manager.js";
 
 export class ControllerPanel extends HTMLDivElement {
     instance = undefined
@@ -114,13 +113,9 @@ export class ControllerPanel extends HTMLDivElement {
         }
     }
 
-    setup_resize_observer() {
-        this.resize_observer = new ResizeObserver( (entries) => {this.save_heights(); ControllerPanel.force_redraw();} )
-        function recursive_observe(node) {
-            if (node.resizable) this.resize_observer.observe(node.input_element)
-            node.childNodes.forEach((child) => { recursive_observe.apply(this, [child]) })
-        }
-        recursive_observe.apply(this,[this])
+    on_height_change() {
+        this.state.heights = get_resizable_heights(this); 
+        ControllerPanel.force_redraw();
     }
 
     consider_adding_node(node_or_node_id) {
@@ -227,8 +222,8 @@ export class ControllerPanel extends HTMLDivElement {
         this.state['node_order'] = this.new_node_id_list
 
         this.set_node_visibility()
-        this.setup_resize_observer()
-        this.restore_heights()
+        observe_resizables( this, this.on_height_change.bind(this) )
+        restore_heights( this.node_blocks, this.state.heights )
 
         this.main_container.drag_id = "footer"
         this.main_container.addEventListener("dragover", (e) => {
@@ -271,30 +266,6 @@ export class ControllerPanel extends HTMLDivElement {
         Finalise
         */
         setTimeout( this.set_position.bind(this), 20 )
-    }
-
-    save_heights() {
-        this.state.heights = []
-        this.main_container.childNodes.forEach((child)=>{
-            child.childNodes.forEach((grandchild) => {
-                if (grandchild.resizable) {
-                    this.state.heights.push( [child.node.id, grandchild.target_widget.name, grandchild.input_element.style.height] )
-                }
-            })
-        })  
-    }
-
-    restore_heights() {
-        this.state?.heights?.forEach((id_name_height) => {
-            if (this.node_blocks[id_name_height[0]]) {
-                const nb = this.node_blocks[id_name_height[0]]
-                nb.childNodes.forEach((grandchild) => {
-                    if (grandchild?.target_widget?.name==id_name_height[1]) {
-                        grandchild.input_element.style.height = id_name_height[2]
-                    }
-                })
-            }
-        })
     }
 
     save_node_order() {
