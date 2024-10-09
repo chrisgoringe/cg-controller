@@ -67,6 +67,13 @@ Raise them as [issues](https://github.com/chrisgoringe/cg-controller/issues)
 
 ## Release history
 
+### v0.8 9/10/2024
+
+- Allow image nodes to be rescaled down
+- Drag handle for rearranging
+- Visual improvements
+- Much nicer sliders
+
 ### v0.7 7/10/2024
 
 - Image upload image updates
