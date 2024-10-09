@@ -109,10 +109,12 @@ export class FancySlider extends HTMLSpanElement {
         e.stopPropagation()
         switch (e.type) {
             case 'dragstart':
+                this.textinput.setSelectionRange(0,0)
                 e.dataTransfer.clearData()
-                e.dataTransfer.setData("text/plain", e.target.id)
                 e.dataTransfer.setDragImage(FancySlider.drag_graphic,0,0)
                 e.dataTransfer.effectAllowed = "move";
+                e.dataTransfer.dropEffect = "move";
+                this.classList.add("text_input_dragging")
                 FancySlider.being_dragged = this
                 break   
             case 'drag':
@@ -121,14 +123,19 @@ export class FancySlider extends HTMLSpanElement {
                     const f = Math.max(0,Math.min(1,( e.x - box.x ) / box.width))
                     const new_value = this.parameters.min + f * (this.parameters.max - this.parameters.min)
                     this.change_value(new_value)
+                    
                 }
                 if (FancySlider.being_dragged) e.preventDefault()
                 break
             case 'dragover':
-                if (FancySlider.being_dragged) e.preventDefault()
+                if (FancySlider.being_dragged) {
+                    e.preventDefault()
+                    e.dataTransfer.dropEffect = "move"
+                }
                 break
             case 'dragend':
                 FancySlider.being_dragged = null
+                this.classList.remove("text_input_dragging")
         }
     }
 

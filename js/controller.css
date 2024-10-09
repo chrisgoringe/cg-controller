@@ -162,6 +162,10 @@ textarea.input {
     background: #3b3b3bbd;
 }
 
+.text_input_dragging {
+    cursor: none;
+}
+
 
 /* Footer */
 
