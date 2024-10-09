@@ -25,3 +25,20 @@ export function get_node(node_or_node_id) {
     if (node_or_node_id.id) return node_or_node_id
     return app.graph._nodes_by_id[node_or_node_id]
 }
+
+export function darken(hex) {
+	hex = hex.replace("#", '');
+    const lum = 0.666;
+    const rgb = (hex.length == 3) ?
+        [ parseInt(hex.substr(0,1), 16)*17*lum, parseInt(hex.substr(1,1), 16)*17*lum, parseInt(hex.substr(2,1), 16)*17*lum ] :
+        [ parseInt(hex.substr(0,2), 16)*lum, parseInt(hex.substr(2,2), 16)*lum, parseInt(hex.substr(4,2), 16)*lum ]
+        
+	var result = "#"
+    rgb.forEach((v) => {
+        const hex = Math.round(v).toString(16)
+        if (hex.length==1) result += "0" 
+        result += hex
+    })
+
+	return result;
+}

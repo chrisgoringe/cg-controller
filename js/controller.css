@@ -1,33 +1,33 @@
 
 .controller {
     padding:5px;
-    background: rgba(51, 34, 34, 0.782);
     position: absolute;
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
     align-items: center;
     --element_width: 340px;
+    background: #1c1c1cee;
 }
 
 /* Header */
 
-.controller_header_span {
+.header {
     display: flex;
     width: var(--element_width);
     justify-content: space-between;
 }
 
-.controller_header_title { }
+.header_title { }
 
-.controller_header_select { }
+.header_select { }
 
 .controller_main {
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
     align-items: center;
-    max-height: calc(96vh - 60px);
+    max-height: calc(96vh - 70px);
 }
 
 .being_dragged {
@@ -36,48 +36,62 @@
 
 /* Node block */
 
-.controller_main_nodeblock {
+.nodeblock {
     margin: 5px;
     position: relative;
-    border: thin dashed #ffffff3d;
-    padding: 2px 2px 0px 2px;
     width: var(--element_width);
     min-height: 40px;
 }
 
-.controller_main_nodeblock_label {
-    font-size: 75%;
+.nodeblock_titlebar {
+    font-size: 70%;
     display: block;
-    text-align: center;
     width: 100%;
-    margin-bottom: 2px;
-    margin-top: -2px;
+    padding: 3px;
+    color: #b3b3b3;
 }
 
-.controller_nodeblock_image {
-    width:100%;
+.nodeblock_draghandle {
+    padding-right: 4px;
+    font-size:110%;
+    cursor:grab;
 }
 
-.controller_nodeblock_image_panel {
-    width:100%;
+.nodeblock_title {
+    text-align: left;
 }
 
-.no_image {
+.nodeblock_image {
+
+}
+
+.nodeblock_image_panel {
+    width: 100%;
+    resize: vertical;
+    overflow: hidden;
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: column;
+    align-items: center;
+}
+
+.nodeblock_image_empty {
     width: 100%;
     height: 10px;
     border: none;
-    display:block;
+    display:none;
 }
 
 /* Entry (widget) */
 
-.controller_entry {
+.entry {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding:4px;
 }
 
-.controller_item_label {
+.entry_label {
     font-size: 65%;
     max-width: 80px;
     min-width: 80px;
@@ -85,27 +99,27 @@
     margin-right: 4px;
 }
 
-.controller_input {
-    width:100%;
-    min-width:250px;
-    max-width:250px;
-    margin-bottom: 2px;
+.input {
+    width: 100%;
+    font-size: 70%;
 }
 
-textarea.controller_input {
+textarea.input {
     height: 72px;
     resize: vertical;
+    max-height: 80vh;
 }
 
-.controller_slider_span {
+.slider_outer {
     width: 100%;
 }
 
-.controller_slider {
+.slider_slider {
     width: 200px;
+    margin: 0px;
 }
 
-.controller_slider_display {
+.slider_text {
     font-size: 80%;
     border: thin inset;
     background-color: #514141;
@@ -115,6 +129,37 @@ textarea.controller_input {
     display: inline-block;
     text-align: right;
     width: 46px;
+}
+
+/* Fancy slider */
+
+.fancy_slider {
+    width: 100%;
+}
+
+.fancy_slider_graphic {
+    position: absolute;
+    display: block;
+    height: 20px;
+    z-index: 30000;
+    width: 248px;
+}
+
+.fancy_slider_drag_graphic {
+
+}
+
+.fancy_slide_graphic_filled {
+    display:block;
+    background: #ffffff;
+    height: 100%;
+}
+
+.fancy_slider_text {
+    position: relative;
+    width: 100%;
+    z-index: 30001;
+    background: #3b3b3bbd;
 }
 
 
@@ -132,8 +177,13 @@ textarea.controller_input {
     margin: 5px;
     padding: 2px;
     font-size: 75%;
-    border: thin dashed #ffffff3d;
-    width: 340px;
+    display: flex;
+    justify-content: center;
+}
+
+.advanced_label {
+    position: relative;
+    top: 4px;
 }
 
 .submit_button {

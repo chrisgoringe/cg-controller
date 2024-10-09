@@ -48,7 +48,7 @@ export class SliderOverrides {
                 return
             }
         })
-        return result
+        return parseFloat(result)
     }
 
     static get_slider_parameters(node, widget) {
@@ -59,35 +59,100 @@ export class SliderOverrides {
             "max"   : SliderOverrides.get_value('max',  node.title, widget.name, widget.options.max),
             "step"  : SliderOverrides.get_value('step', node.title, widget.name, step_size(widget.options)),
         }
-        if (parameters.min  == null || parameters.min  == undefined || 
-            parameters.max  == null || parameters.max  == undefined || 
-            parameters.step == null || parameters.step == undefined )  return null
+        if (isNaN(parameters.min) || isNaN(parameters.max) || isNaN(parameters.step) )  return null
         return parameters
     }
 
 }
 
-export class InputSlider extends HTMLSpanElement {
+export class FancySlider extends HTMLSpanElement {
+
+    static drag_graphic = create('span', 'fancy_slider_drag_graphic', document.body)
+    static being_dragged = null
+
     constructor(node, widget) {
         super()
-        this.classList.add("controller_slider_span")
-        this.rounding_options = widget.options
-        const parameters = SliderOverrides.get_slider_parameters(node, widget)
-        this.display = create("span", "controller_slider_display", this, {"innerText":`${rounding(widget.value, this.rounding_options)}`})
-        this.slider = create("input", "controller_slider", this, parameters )
-        this.slider.addEventListener("input", (e)=>{
-            this.display.innerText = `${rounding(e.target.value, this.rounding_options)}`
-        })
+        this.classList.add("fancy_slider")
+        this.parameters = SliderOverrides.get_slider_parameters(node, widget)  // min, max, step
+        this.rounding_options = { "round":this.parameters.step , "precision":widget.options.precision } 
+
+        this.value     = this.parameters.value
+        this.last_good = this.value
+
+        this.graphic      = create('span', 'fancy_slider_graphic', this)
+        this.graphic_fill = create('span', 'fancy_slide_graphic_filled', this.graphic)
+        this.textinput    = create('input', 'fancy_slider_text', this, {"draggable":true})
+
+        this.textinput.addEventListener('dragstart', (e)=>{this.handle_drag(e)})
+        this.textinput.addEventListener('drag',      (e)=>{this.handle_drag(e)})
+        this.textinput.addEventListener('dragend',   (e)=>{this.handle_drag(e)})
+        this.textinput.addEventListener('dragover',  (e)=>{this.handle_drag(e)})
+
+        this.textinput.addEventListener('change', (e) => {this.change_value(this.textinput.value)})
+
+        this.render()
     }
 
-    static can_be_slider(node, widget) {
-        const setting = app.ui.settings.getSettingValue('Controller.sliders', 1)
-        if (setting == 0) return false
-        const parameters = SliderOverrides.get_slider_parameters(node, widget)
-        if (parameters == null) return false
-        if (setting == 2) return true
-        return ( (parameters.max - parameters.min)/parameters.step <= 200 )
+    round_and_clip(v) {
+        return rounding( Math.max(this.parameters.min, Math.min(this.parameters.max, v)), this.rounding_options )
+    }
+
+    change_value(new_value) {
+        new_value = parseFloat(new_value)
+        if (isNaN(new_value)) new_value = this.last_good
+        this.value     = this.round_and_clip( new_value )
+        this.last_good = this.value  
+        this.render()
+    }
+
+    handle_drag(e) {
+        e.stopPropagation()
+        switch (e.type) {
+            case 'dragstart':
+                e.dataTransfer.clearData()
+                e.dataTransfer.setData("text/plain", e.target.id)
+                e.dataTransfer.setDragImage(FancySlider.drag_graphic,0,0)
+                e.dataTransfer.effectAllowed = "move";
+                FancySlider.being_dragged = this
+                break   
+            case 'drag':
+                if (FancySlider.being_dragged==this && e.x!=0) {  // e.x = 0 for a single event if you drop outside the slider?
+                    const box = this.getBoundingClientRect()
+                    const f = Math.max(0,Math.min(1,( e.x - box.x ) / box.width))
+                    const new_value = this.parameters.min + f * (this.parameters.max - this.parameters.min)
+                    this.change_value(new_value)
+                }
+                if (FancySlider.being_dragged) e.preventDefault()
+                break
+            case 'dragover':
+                if (FancySlider.being_dragged) e.preventDefault()
+                break
+            case 'dragend':
+                FancySlider.being_dragged = null
+        }
+    }
+
+    render() {
+        if (this.rendering) return
+        this.rendering = true
+        try {
+            const f = (this.value - this.parameters.min) / (this.parameters.max - this.parameters.min)
+            this.graphic_fill.style.width = `${100*f}%`
+            this.textinput.value = this.format_for_display(this.value)
+        } finally {
+            this.rendering = false
+        }
+        const e = new Event('input')
+        this.dispatchEvent(e)
+    }
+
+    format_for_display(v)  { 
+        if (this.rounding_options.precision) {
+            return v.toFixed(this.rounding_options.precision)
+        } else {
+            return v
+        }
     }
 }
 
-customElements.define('cp-slider', InputSlider, {extends: 'span'})
+customElements.define('cp-fslider', FancySlider, {extends: 'span'})

@@ -81,7 +81,7 @@ function settings_menu() {
     })
 
     window.addEventListener('keypress', (e) => {
-        if (e.target.tagName=="CANVAS") {
+        if (e.target.tagName=="CANVAS" || e.target.tagName=="BODY") {
             const keysetting = app.ui.settings.getSettingValue('Controller.keyboard', 0) 
             if (keysetting==e.key) {
                 ControllerPanel.toggle()
