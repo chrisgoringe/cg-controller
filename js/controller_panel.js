@@ -83,13 +83,21 @@ export class ControllerPanel extends HTMLDivElement {
             UpdateController.instance.make_request()
             change.apply(this, arguments)
         }
+
+        ControllerPanel.mouseDown = 0;
+        document.body.addEventListener('mousedown', ()=>{ControllerPanel.mouseDown = 1;})
+        document.body.addEventListener('mouseup', ()=>{ControllerPanel.mouseDown = 0;})
     }
 
     static refresh_unless_active() {
         if (! ControllerPanel.instance.contains( document.activeElement ) && 
-            ! ControllerPanel.drag_happening && 
+            ! ControllerPanel.drag_happening && !ControllerPanel.mouseDown &&
               ControllerPanel.showing())    {
                                                 ControllerPanel.show()
+                                            } else {
+                                                if (ControllerPanel.mouseDown){
+                                                    let a;
+                                                }
                                             }
     }
 
@@ -114,8 +122,12 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     on_height_change() {
+        if (this.updating_heights) return
+        console.log("on_height_change")
+        this.updating_heights = true
         this.state.heights = get_resizable_heights(this); 
         ControllerPanel.force_redraw();
+        setTimeout( ()=>{this.updating_heights=false}, 100 )
     }
 
     consider_adding_node(node_or_node_id) {
