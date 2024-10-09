@@ -67,7 +67,7 @@ export class SliderOverrides {
 
 export class FancySlider extends HTMLSpanElement {
 
-    static drag_graphic = create('span', 'fancy_slider_drag_graphic', document.body)
+    static drag_graphic = create('span', 'fancy_slider_drag_graphic', document.body, {"innerHTML":"&harr;"})
     static being_dragged = null
 
     constructor(node, widget) {
@@ -87,6 +87,7 @@ export class FancySlider extends HTMLSpanElement {
         this.textinput.addEventListener('drag',      (e)=>{this.handle_drag(e)})
         this.textinput.addEventListener('dragend',   (e)=>{this.handle_drag(e)})
         this.textinput.addEventListener('dragover',  (e)=>{this.handle_drag(e)})
+              document.addEventListener('dragover',  (e)=>{this.handle_drag(e)})
 
         this.textinput.addEventListener('change', (e) => {this.change_value(this.textinput.value)})
 
@@ -111,7 +112,7 @@ export class FancySlider extends HTMLSpanElement {
             case 'dragstart':
                 this.textinput.setSelectionRange(0,0)
                 e.dataTransfer.clearData()
-                e.dataTransfer.setDragImage(FancySlider.drag_graphic,0,0)
+                e.dataTransfer.setDragImage(FancySlider.drag_graphic,8,10)
                 e.dataTransfer.effectAllowed = "move";
                 e.dataTransfer.dropEffect = "move";
                 this.classList.add("text_input_dragging")
