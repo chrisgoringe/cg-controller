@@ -8,10 +8,11 @@ import { GroupManager } from "./groups.js";
 import { UpdateController } from "./update_controller.js";
 import { NodeBlock } from "./nodeblock.js";
 import { get_resizable_heights, observe_resizables, restore_heights } from "./resize_manager.js";
+import { Debug } from "./debug.js";
 
 export class ControllerPanel extends HTMLDivElement {
     instance = undefined
-    static drag_happening = false
+
     constructor() {
         super()
         if (ControllerPanel.instance) { ControllerPanel.instance.remove() }
@@ -23,25 +24,23 @@ export class ControllerPanel extends HTMLDivElement {
         if (!app.graph.extra.controller_panel) app.graph.extra.controller_panel = {}
         this.state = app.graph.extra.controller_panel
         
-        if (ControllerPanel.showing()) ControllerPanel.show()
+        if (ControllerPanel.showing()) ControllerPanel.redraw()
         else ControllerPanel.hide()
 
-        this.addEventListener('dragstart', (e) => { ControllerPanel.drag_happening = true })
-        this.addEventListener('dragend',   (e) => { this.save_node_order(); ControllerPanel.drag_happening = false } )
+        this.addEventListener('dragstart', (e) => { this.classList.add('unrefreshable'); this.reason = 'drag happening' })
+        this.addEventListener('dragend',   (e) => { this.save_node_order(); this.classList.remove('unrefreshable') } )
         this.addEventListener('dragover',  (e) => {
             if (NodeBlock.dragged) {
                 e.dataTransfer.effectAllowed = "move";
                 e.dataTransfer.dropEffect = "move"
             }
         })
-
-
     }
 
     static toggle() {
         if (ControllerPanel.instance) {
             if (ControllerPanel.showing()) ControllerPanel.hide()
-            else ControllerPanel.show()
+            else ControllerPanel.redraw()
         }
     }
 
@@ -49,8 +48,8 @@ export class ControllerPanel extends HTMLDivElement {
         return (ControllerPanel.instance?.state?.showing == '1')
     }
 
-    static show() {
-        console.log("In ControllerPanel.show")
+    static redraw() {
+        Debug.trivia("In ControllerPanel.show", Debug.EXTENDED)
         ControllerPanel.instance.build_controllerPanel()
         ControllerPanel.instance.classList.remove('hidden')
         ControllerPanel.instance.state['showing'] = '1'
@@ -77,10 +76,10 @@ export class ControllerPanel extends HTMLDivElement {
             draw.apply(this,arguments);
         }
 
-        UpdateController.setup(ControllerPanel.refresh_unless_active, 100, [10, 1000, 4000])
+        UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh)
         const change = app.graph.change
         app.graph.change = function() {
-            UpdateController.instance.make_request()
+            UpdateController.make_request()
             change.apply(this, arguments)
         }
 
@@ -89,16 +88,22 @@ export class ControllerPanel extends HTMLDivElement {
         document.body.addEventListener('mouseup', ()=>{ControllerPanel.mouseDown = 0;})
     }
 
-    static refresh_unless_active() {
-        if (! ControllerPanel.instance.contains( document.activeElement ) && 
-            ! ControllerPanel.drag_happening && !ControllerPanel.mouseDown &&
-              ControllerPanel.showing())    {
-                                                ControllerPanel.show()
-                                            } else {
-                                                if (ControllerPanel.mouseDown){
-                                                    let a;
-                                                }
-                                            }
+    static can_refresh() {
+        const unrefreshables = ControllerPanel.instance.getElementsByClassName('unrefreshable')
+        if (ControllerPanel.instance.contains( document.activeElement )) {
+            Debug.extended(`Not refreshing because contain active element ${document.activeElement}`)
+        } else if (ControllerPanel.instance.classList.contains('unrefreshable')) {
+            Debug.extended(`Not refreshing because ControlPanel is marked as unrefreshable because ${ControllerPanel.instance.reason}`)          
+        } else if (unrefreshables.length == 1) {
+            Debug.extended(`Not refreshing because contains unrefreshable element because ${unrefreshables[0].reason}`)
+        } else if (unrefreshables.length > 1) {
+            Debug.extended(`Not refreshing because contains ${unrefreshables.length} unrefreshable elements`)
+        } else if (!ControllerPanel.showing()) {
+            Debug.extended(`Not refreshing because not visible`)
+        } else {
+            return true
+        }
+        return false
     }
 
     on_update() {
@@ -123,7 +128,7 @@ export class ControllerPanel extends HTMLDivElement {
 
     on_height_change() {
         if (this.updating_heights) return
-        console.log("on_height_change")
+        Debug.trivia("on_height_change")
         this.updating_heights = true
         this.state.heights = get_resizable_heights(this); 
         ControllerPanel.force_redraw();
@@ -200,6 +205,16 @@ export class ControllerPanel extends HTMLDivElement {
 
     build_controllerPanel() { 
         this.innerHTML = ""
+        this.classList.add('unrefreshable')
+        this.reason = 'already refreshing'
+        try {
+            this._build_controllerPanel()
+        } finally {
+            this.classList.remove('unrefreshable')
+        }
+    }
+
+    _build_controllerPanel() {
         try {
             this.style.zIndex = app.graph.nodes.length + 1
         } catch {
@@ -222,7 +237,7 @@ export class ControllerPanel extends HTMLDivElement {
             this.group_select = create("select", 'header_select', this.header_span) 
             GroupManager.list_group_names().forEach((nm) => this.group_select.add(new Option(nm,nm)))
             if (this.state.group_choice) { this.group_select.value = this.state.group_choice }
-            this.group_select.addEventListener('input', (e)=>{ this.state.group_choice = e.target.value; ControllerPanel.show() })
+            this.group_select.addEventListener('input', (e)=>{ this.state.group_choice = e.target.value; ControllerPanel.redraw() })
         }
 
         this.state.group_choice = GroupManager.valid_option(this.state.group_choice)
@@ -269,7 +284,7 @@ export class ControllerPanel extends HTMLDivElement {
             add_div.style.background = this.advn_bgcolor
             this.show_advanced.addEventListener('input', function (e) {
                 this.state.advanced = e.target.checked ? '1':'0'
-                ControllerPanel.show()
+                ControllerPanel.redraw()
             }.bind(this))
         }
 
@@ -290,8 +305,7 @@ export class ControllerPanel extends HTMLDivElement {
         this.state['node_order'] = node_id_list
     }
 
-
 }
 
-customElements.define('cp-div',    ControllerPanel, {extends: 'div'})
+customElements.define('cp-div',  ControllerPanel, {extends: 'div'})
 

@@ -27,6 +27,8 @@ app.registerExtension({
         // Add the css call to the document
         create('link', null, document.getElementsByTagName('HEAD')[0], 
             {'rel':'stylesheet', 'type':'text/css', 'href':'extensions/cg-controller/controller.css' } )
+        create('link', null, document.getElementsByTagName('HEAD')[0], 
+            {'rel':'stylesheet', 'type':'text/css', 'href':'extensions/cg-controller/slider.css' } )
 
         // Allow our elements to do any setup they want
         ControllerPanel.on_setup()

@@ -98,7 +98,7 @@ export class NodeBlock extends HTMLSpanElement {
     }
 
     static drag_end(e) {
-        NodeBlock.dragged.classList.remove("being_dragged")
+        if (NodeBlock.dragged) NodeBlock.dragged.classList.remove("being_dragged")
         NodeBlock.dragged = null
         NodeBlock.last_swap = null
     }
@@ -108,7 +108,7 @@ export class NodeBlock extends HTMLSpanElement {
         this.title_bar = create("span", 'nodeblock_titlebar', this)
         this.draghandle = create("span", 'nodeblock_draghandle', this.title_bar, { "innerHTML":"&equiv;"})
         this.add_handle_drag_handlers(this.draghandle)
-        this.title_text = create("span", 'nodeblock_title', this.title_bar, {"innerText":this.node.title})
+        this.title_text = create("span", 'nodeblock_title', this.title_bar, {"innerText":this.node.title, 'draggable':false})
 
         this.valid_nodeblock = false
         this.node.widgets?.forEach(w => {
