@@ -200,7 +200,11 @@ export class ControllerPanel extends HTMLDivElement {
 
     build_controllerPanel() { 
         this.innerHTML = ""
-        this.style.zIndex = app.graph.nodes.length + 1
+        try {
+            this.style.zIndex = app.graph.nodes.length + 1
+        } catch {
+            this.style.zIndex = 1000000
+        }
         this.new_menu_position = app.ui.settings.getSettingValue('Comfy.UseNewMenu', "Disabled")
         SliderOverrides.setup()
         this.set_colors()
