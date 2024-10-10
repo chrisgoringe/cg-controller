@@ -7,6 +7,9 @@ export class GroupManager {
     constructor() {
         this.groups = {}
         app.graph._groups.forEach((group) => {
+            if (!group.graph) {
+                group.graph = app.graph
+            }
             group.recomputeInsideNodes()
             group._nodes.forEach((node) => {
                 if (NodeInclusionManager.node_includable(node)) {
