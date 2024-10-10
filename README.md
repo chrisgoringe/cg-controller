@@ -1,14 +1,6 @@
 # Controller
 
-The controller is a floating panel which reproduces widget inputs from all the red nodes in your workflow. That's pretty much it.
-
-So you can use Comfy with it looking like this:
-
-![basic](images/basic.png)
-
-When the workflow really looks like this:
-
-![ugly](images/ugly.png)
+The controller is a floating panel which reproduces widget inputs from selected nodes. That's pretty much it.
 
 ## How to use
 
@@ -17,7 +9,7 @@ When the workflow really looks like this:
 cd custom_nodes
 git clone https://github.com/chrisgoringe/cg-controller
 ```
-- Set the nodes in your workflow you want to see the widgets from to be red
+- Right click a node and use the Controller Panel menu to set a node to be included, excluded, or included as an advanced control
 - Right-click the canvas and select 'Show Controller Panel'
 
 ## Options
@@ -34,15 +26,7 @@ You can choose one of four keyboard shortcuts to make the controller appear or d
 
 ### Sliders
 
-Options to replace numeric fields with slider inputs. Three choices
-
-- `No`
-- `When exact`
-- `When possible`
-
-A slider input is calibrated in 200 steps, so if the range of values divided by the precision (for floats) is greater than 200, a slider cannot be exact. `When possible` will use a slider anyway.
-
-It's quite common for a numeric value not to be shown as a slider if you use `When exact`. If you change to `When possible` you might find it becomes a slider, but isn't usable because of the range of values (for instance, a slider for steps that goes from 0 to 2048 isn't much use).
+*This is going away soon, so don't get into it!*
 
 In the settings menu you will find three controls, `Override step size`, `Override min values` and `Override max values`. Each of these has the same format, which is a comma separated list of overrides, each of which is either `widget_name=value` (applies to all matching widgets) or `node_name:widget_name=value` (only applies if both node and widget names match).
 
@@ -51,10 +35,8 @@ can make sliders appear in `When exact` mode.
 
 The definition used for `When exact` is `(max-min)/step <= 200`
 
-## Anything else?
+## Updating
 
-- You can make nodes brown to designate them as advanced controls
-- If you change colors or widgets or names, use the 'Update Controller Panel' canvas menu (to be fixed  - issue #34)
 - To update the controller code (if you haven't added it via the manager)
 ```
 cd custom_nodes/cg-controller
@@ -66,6 +48,11 @@ git pull
 Raise them as [issues](https://github.com/chrisgoringe/cg-controller/issues)
 
 ## Release history
+
+### v0.9
+
+- Removed colour based controls and replaced with right click menu
+- Lots of aesthetics
 
 ### v0.8 9/10/2024
 

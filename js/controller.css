@@ -150,6 +150,7 @@ textarea.input {
     font-size: 75%;
     display: flex;
     justify-content: center;
+    background-color: #C0808060;
 }
 
 .advanced_label {
@@ -168,9 +169,5 @@ textarea.input {
 /* Global */
 
 .hidden {
-    display:none;
-}
-
-.advanced_hidden {
     display:none;
 }

@@ -10,6 +10,8 @@ import { NodeBlock } from "./nodeblock.js";
 import { get_resizable_heights, observe_resizables, restore_heights } from "./resize_manager.js";
 import { Debug } from "./debug.js";
 
+import { NodeInclusionManager } from "./node_inclusion.js";
+
 export class ControllerPanel extends HTMLDivElement {
     instance = undefined
 
@@ -83,9 +85,7 @@ export class ControllerPanel extends HTMLDivElement {
             change.apply(this, arguments)
         }
 
-        ControllerPanel.mouseDown = 0;
-        document.body.addEventListener('mousedown', ()=>{ControllerPanel.mouseDown = 1;})
-        document.body.addEventListener('mouseup', ()=>{ControllerPanel.mouseDown = 0;})
+        NodeInclusionManager.node_change_callback = UpdateController.make_request
     }
 
     static can_refresh() {
@@ -113,14 +113,9 @@ export class ControllerPanel extends HTMLDivElement {
         }
     }
 
-    include_node(node_or_node_id) { 
-        const nd = get_node(node_or_node_id)
-        return (nd && (nd.color == this.main_color || nd.color == this.advn_color) && nd.mode == 0) 
-    }
-
     maybe_create_node_block_for_node(node_or_node_id) {
         const nd = get_node(node_or_node_id)
-        if (this.include_node(nd)) {
+        if (NodeInclusionManager.include_node(nd)) {
             const node_block = new NodeBlock(nd, this.force_redraw)
             if (node_block.valid_nodeblock) this.node_blocks[nd.id] = node_block
         }
@@ -138,7 +133,7 @@ export class ControllerPanel extends HTMLDivElement {
     consider_adding_node(node_or_node_id) {
         const node_id = (node_or_node_id.id) ? node_or_node_id.id : node_or_node_id
         if (this.new_node_id_list.includes(node_id)) return   // already got it in the new list
-        if (this.include_node(node_or_node_id)) {             // is it still valid?
+        if (NodeInclusionManager.include_node(node_or_node_id)) {             // is it still valid?
             if (this.node_blocks[node_id]) {     
                 this.node_blocks[node_id].build_nodeblock()
             } else {
@@ -157,7 +152,7 @@ export class ControllerPanel extends HTMLDivElement {
         Object.keys(this.node_blocks).forEach((node_id) => {
             const node_block = this.node_blocks[node_id]
             if (GroupManager.is_node_in(this.state.group_choice, node_id)) {
-                if (node_block.node.color == this.advn_color) {
+                if (NodeInclusionManager.advanced_only(node_block.node)) {
                     this.showAdvancedCheckbox = true
                     if (this.state?.advanced=='1') node_block.classList.remove('hidden')
                     else node_block.classList.add('hidden')
@@ -195,14 +190,6 @@ export class ControllerPanel extends HTMLDivElement {
         Object.assign(this.style, style)
     }
 
-    set_colors() {
-        const main_color_name = app.ui.settings.getSettingValue("Controller.color", "red")
-        const advn_color_name = app.ui.settings.getSettingValue("Controller.color.advanced", "brown")
-        this.main_color = LGraphCanvas.node_colors[main_color_name].color
-        this.advn_color = LGraphCanvas.node_colors[advn_color_name].color
-        this.advn_bgcolor = LGraphCanvas.node_colors[advn_color_name].bgcolor
-    }
-
     build_controllerPanel() { 
         this.innerHTML = ""
         this.classList.add('unrefreshable')
@@ -222,8 +209,7 @@ export class ControllerPanel extends HTMLDivElement {
         }
         this.new_menu_position = app.ui.settings.getSettingValue('Comfy.UseNewMenu', "Disabled")
         SliderOverrides.setup()
-        this.set_colors()
-        GroupManager.setup( this.main_color, this.advn_color )
+        GroupManager.setup(  )
 
         /* 
         Create the top section
@@ -281,7 +267,6 @@ export class ControllerPanel extends HTMLDivElement {
             const add_div = create('div', 'advanced_controls', this.footer)
             this.show_advanced = create("input", "advanced_checkbox", add_div, {"type":"checkbox", "checked":(this.state?.advanced=='1')})
             create('span', 'advanced_label', add_div, {"innerText":"Show advanced controls"})
-            add_div.style.background = this.advn_bgcolor
             this.show_advanced.addEventListener('input', function (e) {
                 this.state.advanced = e.target.checked ? '1':'0'
                 ControllerPanel.redraw()
