@@ -17,23 +17,6 @@ function canvas_menu() {
 }
 
 function settings_menu() {
-    const colors = []
-    Object.keys(LGraphCanvas.node_colors).forEach((color) => { colors.push( {value:color, text:color} )  })
-    app.ui.settings.addSetting({
-        id: "Controller.color",
-        name: "Color for control nodes:",
-        type: "combo",
-        options: colors,
-        defaultValue: "#322",
-    });
-    app.ui.settings.addSetting({
-        id: "Controller.color.advanced",
-        name: "Color for advanced control nodes:",
-        type: "combo",
-        options: colors,
-        defaultValue: "#332922",
-    });
-
     app.ui.settings.addSetting({
         id: "Controller.keyboard",
         name: "Toggle controller visibility:",
@@ -43,13 +26,6 @@ function settings_menu() {
         defaultValue: "C",
     });
 
-    app.ui.settings.addSetting({
-        id: "Controller.sliders",
-        name: "Use sliders for numbers:",
-        type: "combo",
-        options: [ {value:0, text:"No"}, {value:1, text:"When exact"}, {value:2, text:"When possible"} ],
-        defaultValue: 1,
-    });
     app.ui.settings.addSetting({
         id: "Controller.sliders.max",
         name: "Override max values:",

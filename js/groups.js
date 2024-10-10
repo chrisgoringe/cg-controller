@@ -1,14 +1,15 @@
 import { app } from "../../scripts/app.js"
+import { NodeInclusionManager } from "./node_inclusion.js"
 
 export class GroupManager {
     static instance = null
     static show_all = "All"
-    constructor(c1,c2) {
+    constructor() {
         this.groups = {}
         app.graph._groups.forEach((group) => {
             group.recomputeInsideNodes()
             group._nodes.forEach((node) => {
-                if (node.color==c1 || node.color==c2) {
+                if (NodeInclusionManager.node_includable(node)) {
                     if (!this.groups[group.title]) this.groups[group.title] = new Set()
                     this.groups[group.title].add(node.id)
                 }
@@ -16,7 +17,7 @@ export class GroupManager {
         })
     }
 
-    static setup( c1, c2 ) { GroupManager.instance = new GroupManager(c1,c2) }
+    static setup() { GroupManager.instance = new GroupManager() }
 
     static list_group_names() {
         const names = [GroupManager.show_all]

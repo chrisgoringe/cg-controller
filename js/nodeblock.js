@@ -98,7 +98,7 @@ export class NodeBlock extends HTMLSpanElement {
     }
 
     static drag_end(e) {
-        NodeBlock.dragged.classList.remove("being_dragged")
+        if (NodeBlock.dragged) NodeBlock.dragged.classList.remove("being_dragged")
         NodeBlock.dragged = null
         NodeBlock.last_swap = null
     }
@@ -108,7 +108,7 @@ export class NodeBlock extends HTMLSpanElement {
         this.title_bar = create("span", 'nodeblock_titlebar', this)
         this.draghandle = create("span", 'nodeblock_draghandle', this.title_bar, { "innerHTML":"&equiv;"})
         this.add_handle_drag_handlers(this.draghandle)
-        this.title_text = create("span", 'nodeblock_title', this.title_bar, {"innerText":this.node.title})
+        this.title_text = create("span", 'nodeblock_title', this.title_bar, {"innerText":this.node.title, 'draggable':false})
 
         this.valid_nodeblock = false
         this.node.widgets?.forEach(w => {
@@ -143,8 +143,12 @@ export class NodeBlock extends HTMLSpanElement {
             this.valid_nodeblock = true
         }
 
-        this.style.backgroundColor = this.node.bgcolor
-        this.title_bar.style.backgroundColor = darken(this.node.bgcolor)
+        const bgc = this.node.bgcolor ? this.node.bgcolor : "#353535"
+        this.style.backgroundColor = bgc
+        this.title_bar.style.backgroundColor = darken(bgc)
+
+        //}, 50 )
+        
     }
 
     rescale_image() {
@@ -158,7 +162,9 @@ export class NodeBlock extends HTMLSpanElement {
                 if (im_h && im_w) {
                     const scaled_height_fraction = (im_h * box.width) / (im_w * box.height)
                     if (scaled_height_fraction<=1) {
-                        this.image_image.style.height = `${100*scaled_height_fraction}%`
+                        this.image_panel.style.height = `${(im_h * box.width) / (im_w)}px`
+                        this.image_panel.style.maxHeight = `${(im_h * box.width) / (im_w)}px`
+                        this.image_image.style.height = `100%`
                         this.image_image.style.width = `100%`
                     } else {
                         this.image_image.style.height = `100%`
@@ -182,7 +188,10 @@ export class NodeBlock extends HTMLSpanElement {
     show_image(v) {
         if (v.length>0) {
             this.image_panel.classList.remove('nodeblock_image_empty')
-            if (this.image_image.src != v[0].src) this.image_image.src = v[0].src
+            if (this.image_image.src != v[0].src) {
+                this.image_image.src = v[0].src
+                this.image_panel.style.maxHeight = ''
+            }
         } else {
             this.image_panel.classList.add('nodeblock_image_empty')
         }    

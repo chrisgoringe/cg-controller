@@ -1,29 +1,35 @@
-
+import { Debug } from "./debug.js"
 
 export class UpdateController {
-    static instance
+    static callback      = ()=>{}
+    static permission    = ()=>{return false}
+    static request_wait  = 100
+    static periodic_wait = 1000
+    static request_stack = 0
+    static request_stack_limit = 10
 
-    constructor( callback, grace_window, delays ) {
-        this.callback      = callback
-        this.grace_window  = grace_window ? grace_window : 100
-        this.delays        = delays ? delays : [10, 1000, 5000]
-        this.request_count = 0
+    static setup(callback, permission) {
+        UpdateController.callback   = callback
+        UpdateController.permission = permission
     }
 
-    static setup(callback, grace_window, delays) {
-        UpdateController.instance = new UpdateController(callback, grace_window, delays)
-    }
-
-    make_request() {
-        this.request_count += 1
-        setTimeout( this._consider_request.bind(this), this.grace_window )
-    }
-
-    _consider_request() {
-        this.request_count -= 1
-        if (this.request_count == 0) {
-            this.delays.forEach((delay) => { setTimeout( this.callback, delay )});
+    static make_request() {
+        if (UpdateController.permission()) {
+            UpdateController.callback()
+        } else {
+            if (UpdateController.request_stack > UpdateController.request_stack_limit) {
+                Debug.important(`deferred request stack full`)
+                return 
+            }
+            UpdateController.request_stack += 1
+            Debug.extended(`deferred request stack size now ${UpdateController.request_stack}`)
+            setTimeout( UpdateController.deferred_request, UpdateController.request_wait)
         }
+    }
+
+    static deferred_request() {
+        UpdateController.request_stack -= 1
+        UpdateController.make_request()
     }
 
 }

@@ -1,4 +1,4 @@
-
+import { Debug } from "./debug.js"
 export function make_resizable( element, node_id, name_list ) {
     element.parentNode.resizable = {
         "element"   : element,
@@ -19,7 +19,7 @@ export function observe_resizables( root, change_callback ) {
             const sz = `${resize.borderBoxSize[0].inlineSize} ${resize.borderBoxSize[0].blockSize}`
             if (PersistSize.sizes[resize.target.resize_id] == sz) return
             PersistSize.sizes[resize.target.resize_id] = sz
-            console.log(`${resize.target.resize_id}  ${sz}`)
+            Debug.trivia(`${resize.target.resize_id}  ${sz}`)
             change_callback()
         })
     } )

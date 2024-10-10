@@ -11,7 +11,7 @@ export class Entry extends HTMLDivElement {
     constructor(node, target_widget) {
         super()
         this.classList.add('entry')
-        create('span','entry_label', this, {'innerText':target_widget.name} )  
+        create('span','entry_label', this, {'innerText':target_widget.name, 'draggable':false} )  
         this.valid_entry = false
 
         this.input_element = undefined

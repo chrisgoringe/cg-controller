@@ -4,6 +4,8 @@ import { ControllerPanel } from "./controller_panel.js"
 import { CGControllerNode } from "./controller_node.js"   // TODO42
 import { create } from "./elements.js"
 import { add_controls } from "./controller_controls.js"
+import { add_control_panel_options, NodeInclusionManager,  } from "./node_inclusion.js"
+import { UpdateController } from "./update_controller.js"
 
 app.registerExtension({
 	name: "cg.controller",
@@ -27,6 +29,8 @@ app.registerExtension({
         // Add the css call to the document
         create('link', null, document.getElementsByTagName('HEAD')[0], 
             {'rel':'stylesheet', 'type':'text/css', 'href':'extensions/cg-controller/controller.css' } )
+        create('link', null, document.getElementsByTagName('HEAD')[0], 
+            {'rel':'stylesheet', 'type':'text/css', 'href':'extensions/cg-controller/slider.css' } )
 
         // Allow our elements to do any setup they want
         ControllerPanel.on_setup()
@@ -38,6 +42,36 @@ app.registerExtension({
         add_controls()
 
     },
+
+    async nodeCreated(node) {
+        const original_onDrawTitleBar = node.onDrawTitleBar;
+        node.onDrawTitleBar = function(ctx, title_height, node_size) {
+            original_onDrawTitleBar?.apply(this, arguments);
+            NodeInclusionManager.visual(ctx, node, title_height, node_size)
+        }
+    },
+
+    async beforeRegisterNodeDef(nodeType, nodeData, app) {
+        const getExtraMenuOptions = nodeType.prototype.getExtraMenuOptions;
+        nodeType.prototype.getExtraMenuOptions = function(_, options) {
+            getExtraMenuOptions?.apply(this, arguments);
+            add_control_panel_options(options)
+        }
+
+        // request an update if an input is added or removed 
+        const onInputRemoved = nodeType.prototype.onInputRemoved
+        nodeType.prototype.onInputRemoved = function () {
+            onInputRemoved?.apply(this,arguments)
+            UpdateController.make_request()
+        }
+        const onInputAdded = nodeType.prototype.onInputAdded
+        nodeType.prototype.onInputAdded = function () {
+            onInputAdded?.apply(this,arguments)
+            UpdateController.make_request()
+        }
+
+    },
+
 /* remove in TODO42 */
     registerCustomNodes() {
         LiteGraph.registerNodeType("CGControllerNode", CGControllerNode)

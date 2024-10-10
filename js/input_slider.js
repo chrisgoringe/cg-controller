@@ -67,8 +67,7 @@ export class SliderOverrides {
 
 export class FancySlider extends HTMLSpanElement {
 
-    static drag_graphic = create('span', 'fancy_slider_drag_graphic', document.body)
-    static being_dragged = null
+    static in_textedit = null
 
     constructor(node, widget) {
         super()
@@ -79,71 +78,93 @@ export class FancySlider extends HTMLSpanElement {
         this.value     = this.parameters.value
         this.last_good = this.value
 
-        this.graphic      = create('span', 'fancy_slider_graphic', this)
-        this.graphic_fill = create('span', 'fancy_slide_graphic_filled', this.graphic)
-        this.textinput    = create('input', 'fancy_slider_text', this, {"draggable":true})
+        this.graphic       = create('span', 'fs_graphic', this)
+        this.graphic_fill  = create('span', 'fs_graphic_fill', this.graphic)
+        this.graphic_text  = create('span', 'fs_graphic_text', this.graphic)
+        this.text_edit     = create('input','fs_text_edit', this)
 
-        this.textinput.addEventListener('dragstart', (e)=>{this.handle_drag(e)})
-        this.textinput.addEventListener('drag',      (e)=>{this.handle_drag(e)})
-        this.textinput.addEventListener('dragend',   (e)=>{this.handle_drag(e)})
-        this.textinput.addEventListener('dragover',  (e)=>{this.handle_drag(e)})
+        this.displaying = "graphic"
 
-        this.textinput.addEventListener('change', (e) => {this.change_value(this.textinput.value)})
+        this.addEventListener('mousedown', (e) => this._mousedown(e))
+        this.addEventListener('mousemove', (e) => this._mousemove(e))
+        this.addEventListener('mouseleave',(e) => this.enddragging())
+        this.addEventListener('mouseup',   (e) => this.enddragging())
+        this.addEventListener('change',    (e) => this._change(e))
+        this.addEventListener('focusin',   (e) => this._focus(e))
 
-        this.render()
+        this.redraw()
+    }
+
+    enddragging() {
+        this.mouse_down_on_me_at = null; 
+        this.dragging = false
+        this.classList.remove('unrefreshable')
+        this.classList.remove('can_drag')
+    }
+
+    switch_to_textedit() {
+        if (FancySlider.in_textedit) FancySlider.in_textedit.switch_to_graphicaledit()
+        this.classList.add('unrefreshable')
+        this.reason = "slider in text edit mode"
+        FancySlider.in_textedit = this
+        this.displaying = "text"
+        this.enddragging()
+        this.redraw()
+        setTimeout(()=>{this.please_focus()},100)
+    }
+
+    please_focus() {
+        this.text_edit.focus()
+    }
+
+    switch_to_graphicaledit() {
+        if (FancySlider.in_textedit == this) FancySlider.in_textedit = null
+        this.displaying = "graphic"
+        this.redraw_with_value(this.text_edit.value)
+    }
+
+    _focus(e) {
+        this.text_edit.select()
+    }
+
+    _change(e) {
+        e.stopPropagation()
+        this.switch_to_graphicaledit()
+        this.classList.remove('unrefreshable')
+    }
+
+    _mousedown(e) { 
+        if (this.displaying=="graphic") {
+            if (e.detail==2) {
+                this.switch_to_textedit()
+            } else {
+                this.classList.add('can_drag')
+                this.mouse_down_on_me_at = e.x;
+                e.stopPropagation()
+            }
+        }
+    }
+
+    _mousemove(e) { 
+        if (this.mouse_down_on_me_at) {
+            if (!this.dragging && (Math.abs(e.x-this.mouse_down_on_me_at)>6 || Math.abs(e.movementX)>4)) {
+                this.dragging = true 
+                this.classList.add('unrefreshable')
+                this.reason = "slider being dragged"
+            }
+            if (this.dragging) {
+                const box = this.getBoundingClientRect()
+                const f = Math.max(0,Math.min(1,( e.x - box.x ) / box.width))
+                const new_value = this.parameters.min + f * (this.parameters.max - this.parameters.min)
+                this.redraw_with_value(new_value)
+                e.preventDefault()
+                e.stopPropagation() 
+            }
+        }
     }
 
     round_and_clip(v) {
         return rounding( Math.max(this.parameters.min, Math.min(this.parameters.max, v)), this.rounding_options )
-    }
-
-    change_value(new_value) {
-        new_value = parseFloat(new_value)
-        if (isNaN(new_value)) new_value = this.last_good
-        this.value     = this.round_and_clip( new_value )
-        this.last_good = this.value  
-        this.render()
-    }
-
-    handle_drag(e) {
-        e.stopPropagation()
-        switch (e.type) {
-            case 'dragstart':
-                e.dataTransfer.clearData()
-                e.dataTransfer.setData("text/plain", e.target.id)
-                e.dataTransfer.setDragImage(FancySlider.drag_graphic,0,0)
-                e.dataTransfer.effectAllowed = "move";
-                FancySlider.being_dragged = this
-                break   
-            case 'drag':
-                if (FancySlider.being_dragged==this && e.x!=0) {  // e.x = 0 for a single event if you drop outside the slider?
-                    const box = this.getBoundingClientRect()
-                    const f = Math.max(0,Math.min(1,( e.x - box.x ) / box.width))
-                    const new_value = this.parameters.min + f * (this.parameters.max - this.parameters.min)
-                    this.change_value(new_value)
-                }
-                if (FancySlider.being_dragged) e.preventDefault()
-                break
-            case 'dragover':
-                if (FancySlider.being_dragged) e.preventDefault()
-                break
-            case 'dragend':
-                FancySlider.being_dragged = null
-        }
-    }
-
-    render() {
-        if (this.rendering) return
-        this.rendering = true
-        try {
-            const f = (this.value - this.parameters.min) / (this.parameters.max - this.parameters.min)
-            this.graphic_fill.style.width = `${100*f}%`
-            this.textinput.value = this.format_for_display(this.value)
-        } finally {
-            this.rendering = false
-        }
-        const e = new Event('input')
-        this.dispatchEvent(e)
     }
 
     format_for_display(v)  { 
@@ -153,6 +174,40 @@ export class FancySlider extends HTMLSpanElement {
             return v
         }
     }
+
+    redraw() {
+        this.redraw_with_value(null)
+    }
+
+    redraw_with_value(new_value) {
+        if (new_value != null) {
+            new_value = parseFloat(new_value)
+            if (isNaN(new_value)) new_value = this.last_good
+            this.value     = this.round_and_clip( new_value )
+            this.last_good = this.value  
+        }
+
+        if (this.rendering) return
+        this.rendering = true
+        try {
+            if (this.displaying=="graphic") {
+                this.graphic.classList.remove("hidden")
+                this.text_edit.classList.add("hidden")
+                const f = (this.value - this.parameters.min) / (this.parameters.max - this.parameters.min)
+                this.graphic_fill.style.width = `${100*f}%`
+                this.graphic_text.innerHTML   = this.format_for_display(this.value)
+            } else {
+                this.graphic.classList.add("hidden")
+                this.text_edit.classList.remove("hidden")
+                this.text_edit.value = this.format_for_display(this.value)        
+            }
+        } finally {
+            this.rendering = false
+            const e = new Event('input')
+            this.dispatchEvent(e)
+        }
+    }
+
 }
 
 customElements.define('cp-fslider', FancySlider, {extends: 'span'})
