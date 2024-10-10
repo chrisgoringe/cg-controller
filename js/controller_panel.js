@@ -240,7 +240,7 @@ export class ControllerPanel extends HTMLDivElement {
 
         this.set_node_visibility()
         observe_resizables( this, this.on_height_change.bind(this) )
-        restore_heights( this.node_blocks, this.state.heights )
+        if (this.state.heights) restore_heights( this.node_blocks, this.state.heights )
 
         this.main_container.drag_id = "footer"
         this.main_container.addEventListener("dragover", (e) => {
