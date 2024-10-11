@@ -65,6 +65,11 @@ app.registerExtension({
             onInputAdded?.apply(this,arguments)
             UpdateController.node_change(this.id)
         }
+        const onModeChange = nodeType.prototype.onModeChange
+        nodeType.prototype.onModeChange = function () {
+            onModeChange?.apply(this,arguments)
+            UpdateController.node_change(this.id)
+        }
 
     },
 
