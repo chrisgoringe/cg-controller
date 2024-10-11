@@ -1,9 +1,13 @@
 
 export class Debug {
-    static LEVEL = 2
+    static LEVEL = 3
+    static last_message = null
 
     static _log(message, level) {
-        if (level <= Debug.LEVEL) console.log(message)
+        if (level <= Debug.LEVEL && message!=Debug.last_message) {
+            Debug.last_message = message
+            console.log(message)
+        }
     }
 
     static essential(message) { Debug._log(message, 0) }

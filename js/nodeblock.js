@@ -13,13 +13,12 @@ export class NodeBlock extends HTMLSpanElement {
     NodeBlock represents a single node - zero or more Entry children, and zero or one images.
     If neither Entry nor images, it is not 'valid' (ie should not be included)
     */
-    constructor(node, redraw_force_callback) { 
+    constructor(node) { 
         super()
         this.node = node
         this.classList.add("nodeblock")
         this.build_nodeblock()
         this.add_block_drag_handlers()
-        this.redraw_force_callback = redraw_force_callback
     }
 
     add_block_drag_handlers() {
@@ -143,12 +142,15 @@ export class NodeBlock extends HTMLSpanElement {
             this.valid_nodeblock = true
         }
 
-        const bgc = this.node.bgcolor ? this.node.bgcolor : "#353535"
-        this.style.backgroundColor = bgc
-        this.title_bar.style.backgroundColor = darken(bgc)
+        this.style.backgroundColor = this.node.bgcolor ? this.node.bgcolor : LiteGraph.NODE_DEFAULT_BGCOLOR
+        if (this.node.bgcolor) {
+            this.style.backgroundColor = this.node.bgcolor
+            this.title_bar.style.backgroundColor = darken(this.node.bgcolor)
+        } else {
+            this.style.backgroundColor = LiteGraph.NODE_DEFAULT_BGCOLOR
+            this.title_bar.classList.add("titlebar_nocolor")
+        }
 
-        //}, 50 )
-        
     }
 
     rescale_image() {
