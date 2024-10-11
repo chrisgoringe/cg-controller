@@ -36,6 +36,7 @@ export class ControllerPanel extends HTMLDivElement {
                 e.dataTransfer.dropEffect = "move"
             }
         })
+        this.updating_heights = 0
     }
 
     static toggle() {
@@ -46,13 +47,12 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     static showing() { 
-        try {
-            return (settings.showing)
-        } catch { return false; }
+        try { return (settings.showing) }
+        catch { return false; }// graph not loaded, so settings unavailable, so don't show
     }
 
     static redraw() {
-        Debug.trivia("In ControllerPanel.show")
+        Debug.trivia("In ControllerPanel.redraw")
         ControllerPanel.instance.build_controllerPanel()
         ControllerPanel.instance.classList.remove('hidden')
         settings.showing = true
@@ -63,11 +63,6 @@ export class ControllerPanel extends HTMLDivElement {
         try { settings.showing = false } catch { Debug.trivia("settings exception in hide") }
     }
 
-    static force_redraw() {
-        const temp = create('span',null,ControllerPanel.instance.main_container)
-        setTimeout(()=>{temp.remove()}, 100)
-    }
-
     static graph_cleared() {
         settings.initialise()
         UpdateController.make_request()
@@ -75,6 +70,7 @@ export class ControllerPanel extends HTMLDivElement {
 
     static on_setup() {
         settings.load()
+        setTimeout(settings.initialise.bind(settings), 1000)
 
         const draw = LGraphCanvas.prototype.draw;
         LGraphCanvas.prototype.draw = function() {
@@ -93,27 +89,30 @@ export class ControllerPanel extends HTMLDivElement {
         api.addEventListener('graphCleared', ControllerPanel.graph_cleared) 
     }
 
-    static can_refresh() {
+    static can_refresh() {  // returns -1 to say "no, and don't try again", 0 to mean "go ahead!", or n to mean "wait n seconds then ask again"
         try {
+            if (!ControllerPanel.showing()) return -1
+            if (ControllerPanel.instance.classList.contains('unrefreshable')) return -1
+            if (ControllerPanel.instance.updating_heights > 0) return -1
+
+            //if (ControllerPanel.instance.contains( document.activeElement )) {
+            //    Debug.trivia(`Not refreshing because contain active element ${document.activeElement}`)
+            //    return 1 // wait one second
+            //} 
+            
             const unrefreshables = ControllerPanel.instance.getElementsByClassName('unrefreshable')
-            if (ControllerPanel.instance.contains( document.activeElement )) {
-                Debug.trivia(`Not refreshing because contain active element ${document.activeElement}`)
-            } else if (ControllerPanel.instance.classList.contains('unrefreshable')) {
-                Debug.extended(`Not refreshing because ControlPanel is marked as unrefreshable because ${ControllerPanel.instance.reason}`)          
-            } else if (unrefreshables.length == 1) {
+            if (unrefreshables.length >= 1) {
                 Debug.extended(`Not refreshing because contains unrefreshable element because ${unrefreshables[0].reason}`)
-            } else if (unrefreshables.length > 1) {
-                Debug.extended(`Not refreshing because contains ${unrefreshables.length} unrefreshable elements`)
-            } else if (!ControllerPanel.showing()) {
-                Debug.trivia(`Not refreshing because not visible`)
-            } else {
-                return true
-            }
+                return 1
+            } 
+
         } catch (e) {
             Debug.important(`Not refreshing because:`)
             console.error(e)
+            return 10
         }
-        return false
+
+        return 0
     }
 
     on_update() {
@@ -126,18 +125,25 @@ export class ControllerPanel extends HTMLDivElement {
     maybe_create_node_block_for_node(node_or_node_id) {
         const nd = get_node(node_or_node_id)
         if (NodeInclusionManager.include_node(nd)) {
-            const node_block = new NodeBlock(nd, this.force_redraw)
+            const node_block = new NodeBlock(nd)
             if (node_block.valid_nodeblock) this.node_blocks[nd.id] = node_block
         }
     }
 
     on_height_change() {
-        if (this.updating_heights) return
-        Debug.trivia("on_height_change")
-        this.updating_heights = true
-        settings.heights = get_resizable_heights(this)
-        ControllerPanel.force_redraw();
-        setTimeout( ()=>{this.updating_heights=false}, 100 )
+        /*
+        this.updating_heights tracks how many times we've been told in the last XXX ms.
+        When that count gets to zero, we have at least paused, so save and update.
+        */
+        this.updating_heights += 1 
+        setTimeout( ()=>{
+            this.updating_heights -= 1
+            Debug.trivia(`updating_heights stack ${this.updating_heights}`)
+            if (this.updating_heights==0) {
+                settings.heights = get_resizable_heights(this)
+                UpdateController.make_request(0.1, "on_height_change")
+            }
+        }, 250 )
     }
 
     consider_adding_node(node_or_node_id) {

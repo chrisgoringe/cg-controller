@@ -53,8 +53,13 @@
     font-size: 70%;
     display: block;
     width: 100%;
-    padding: 3px;
+    padding: 3px 3px 3px 3px;
     color: #b3b3b3;
+}
+
+.titlebar_nocolor {
+    border-bottom: 2px solid #2a2a2a;
+    padding-bottom: 1px;
 }
 
 .nodeblock_draghandle {
@@ -109,35 +114,18 @@
 
 .input {
     width: 100%;
-    font-size: 70%;
+    font-size: 75%;
+    background-color: #222222;
+    border: none;
+    height: 20px;
 }
 
 textarea.input {
     height: 72px;
     resize: vertical;
     max-height: 80vh;
+    font-size: 85%;
 }
-/*
-.slider_outer {
-    width: 100%;
-}
-
-.slider_slider {
-    width: 200px;
-    margin: 0px;
-}
-
-.slider_text {
-    font-size: 80%;
-    border: thin inset;
-    background-color: #514141;
-    padding: 1px;
-    position: relative;
-    bottom: 3px;
-    display: inline-block;
-    text-align: right;
-    width: 46px;
-}*/
 
 
 /* Footer */

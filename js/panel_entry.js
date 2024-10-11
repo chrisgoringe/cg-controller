@@ -3,6 +3,7 @@ import { create } from "./elements.js";
 import { FancySlider } from "./input_slider.js";
 import { rounding } from "./utilities.js";
 import { make_resizable } from "./resize_manager.js";
+import { UpdateController } from "./update_controller.js";
 
 export class Entry extends HTMLDivElement {
     /*
@@ -11,7 +12,7 @@ export class Entry extends HTMLDivElement {
     constructor(node, target_widget) {
         super()
         this.classList.add('entry')
-        create('span','entry_label', this, {'innerText':target_widget.name, 'draggable':false} )  
+        this.entry_label = create('span','entry_label', this, {'innerText':target_widget.name, 'draggable':false} )  
         this.valid_entry = false
 
         this.input_element = undefined
@@ -60,8 +61,19 @@ export class Entry extends HTMLDivElement {
         }
 
         if (target_widget.type=="button") {
-            this.input_element = create("button", 'input', this, {"innerText":target_widget.label})
-            this.input_element.addEventListener('click', (e)=>this.target_widget.callback())
+            if (!target_widget.disabled) {
+                var label = target_widget.label
+                if (!label) {
+                    label = target_widget.name
+                    this.entry_label.innerText = ""
+                }
+                this.input_element = create("button", 'input', this, {"innerText":label})
+                this.input_element.addEventListener('click', (e)=>{
+                    this.target_widget.callback(); 
+                    app.graph.setDirtyCanvas(true,true); 
+                    UpdateController.make_request()}
+                )
+            }
         }
 
         if (this.input_element) {

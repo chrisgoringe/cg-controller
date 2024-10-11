@@ -1,6 +1,6 @@
 
 export class Debug {
-    static LEVEL = 2
+    static LEVEL = 3
     static last_message = null
 
     static _log(message, level) {
