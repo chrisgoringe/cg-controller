@@ -258,7 +258,13 @@ export class ControllerPanel extends HTMLDivElement {
             this.group_select.addEventListener('input', (e)=>{ settings.group_choice = e.target.value; ControllerPanel.redraw() })
         }
 
-        const gc = GroupManager.valid_option(settings.group_choice)
+        var gc = ""
+        try {
+            gc = GroupManager.valid_option(settings.group_choice)
+        } catch {
+            setTimeout(settings.initialise.bind(settings), 1000)
+        }
+        
         if (gc != settings.group_choice) settings.group_choice = gc
 
         /*
