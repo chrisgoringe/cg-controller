@@ -36,7 +36,7 @@ app.registerExtension({
         ControllerPanel.on_setup()
 
         // when the graph is cleared, hide the control panel
-        api.addEventListener('graphCleared', ControllerPanel.hide) 
+        //api.addEventListener('graphCleared', ControllerPanel.hide) 
 
         // add to the canvas menu, and keyboard shortcuts
         add_controls()
@@ -62,12 +62,12 @@ app.registerExtension({
         const onInputRemoved = nodeType.prototype.onInputRemoved
         nodeType.prototype.onInputRemoved = function () {
             onInputRemoved?.apply(this,arguments)
-            UpdateController.make_request()
+            UpdateController.node_change(this.id)
         }
         const onInputAdded = nodeType.prototype.onInputAdded
         nodeType.prototype.onInputAdded = function () {
             onInputAdded?.apply(this,arguments)
-            UpdateController.make_request()
+            UpdateController.node_change(this.id)
         }
 
     },

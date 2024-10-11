@@ -11,10 +11,10 @@ import { get_resizable_heights, observe_resizables, restore_heights } from "./re
 import { Debug } from "./debug.js";
 
 import { NodeInclusionManager } from "./node_inclusion.js";
+import { settings } from "./settings.js";
 
 export class ControllerPanel extends HTMLDivElement {
-    instance = undefined
-
+    static instance = undefined
     constructor() {
         super()
         if (ControllerPanel.instance) { ControllerPanel.instance.remove() }
@@ -23,8 +23,6 @@ export class ControllerPanel extends HTMLDivElement {
         document.body.appendChild(this);
         
         this.node_blocks = {}   // map from node.id to NodeBlock
-        if (!app.graph.extra.controller_panel) app.graph.extra.controller_panel = {}
-        this.state = app.graph.extra.controller_panel
         
         if (ControllerPanel.showing()) ControllerPanel.redraw()
         else ControllerPanel.hide()
@@ -47,19 +45,21 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     static showing() { 
-        return (ControllerPanel.instance?.state?.showing == '1')
+        try {
+            return (settings.showing)
+        } catch { return false; }
     }
 
     static redraw() {
-        Debug.trivia("In ControllerPanel.show", Debug.EXTENDED)
+        Debug.trivia("In ControllerPanel.show")
         ControllerPanel.instance.build_controllerPanel()
         ControllerPanel.instance.classList.remove('hidden')
-        ControllerPanel.instance.state['showing'] = '1'
+        settings.showing = true
     }
 
     static hide() {
         ControllerPanel.instance.classList.add('hidden')
-        ControllerPanel.instance.state['showing'] = '0'
+        try { settings.showing = false } catch { Debug.trivia("settings exception in hide") }
     }
 
     static force_redraw() {
@@ -67,21 +67,19 @@ export class ControllerPanel extends HTMLDivElement {
         setTimeout(()=>{temp.remove()}, 100)
     }
 
-    static update() {
-        if (ControllerPanel.instance) ControllerPanel.instance.on_update()
-    }
-
     static on_setup() {
+        settings.load()
+
         const draw = LGraphCanvas.prototype.draw;
         LGraphCanvas.prototype.draw = function() {
-            ControllerPanel.update()
+            if (ControllerPanel.instance) ControllerPanel.instance.on_update()
             draw.apply(this,arguments);
         }
 
-        UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh)
+        UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh, (node_id)=>ControllerPanel.instance?.node_blocks[node_id])
         const change = app.graph.change
         app.graph.change = function() {
-            UpdateController.make_request()
+            // UpdateController.make_request()   TODO rethink this
             change.apply(this, arguments)
         }
 
@@ -89,19 +87,24 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     static can_refresh() {
-        const unrefreshables = ControllerPanel.instance.getElementsByClassName('unrefreshable')
-        if (ControllerPanel.instance.contains( document.activeElement )) {
-            Debug.extended(`Not refreshing because contain active element ${document.activeElement}`)
-        } else if (ControllerPanel.instance.classList.contains('unrefreshable')) {
-            Debug.extended(`Not refreshing because ControlPanel is marked as unrefreshable because ${ControllerPanel.instance.reason}`)          
-        } else if (unrefreshables.length == 1) {
-            Debug.extended(`Not refreshing because contains unrefreshable element because ${unrefreshables[0].reason}`)
-        } else if (unrefreshables.length > 1) {
-            Debug.extended(`Not refreshing because contains ${unrefreshables.length} unrefreshable elements`)
-        } else if (!ControllerPanel.showing()) {
-            Debug.extended(`Not refreshing because not visible`)
-        } else {
-            return true
+        try {
+            const unrefreshables = ControllerPanel.instance.getElementsByClassName('unrefreshable')
+            if (ControllerPanel.instance.contains( document.activeElement )) {
+                Debug.trivia(`Not refreshing because contain active element ${document.activeElement}`)
+            } else if (ControllerPanel.instance.classList.contains('unrefreshable')) {
+                Debug.extended(`Not refreshing because ControlPanel is marked as unrefreshable because ${ControllerPanel.instance.reason}`)          
+            } else if (unrefreshables.length == 1) {
+                Debug.extended(`Not refreshing because contains unrefreshable element because ${unrefreshables[0].reason}`)
+            } else if (unrefreshables.length > 1) {
+                Debug.extended(`Not refreshing because contains ${unrefreshables.length} unrefreshable elements`)
+            } else if (!ControllerPanel.showing()) {
+                Debug.trivia(`Not refreshing because not visible`)
+            } else {
+                return true
+            }
+        } catch (e) {
+            Debug.important(`Not refreshing because:`)
+            console.error(e)
         }
         return false
     }
@@ -125,7 +128,7 @@ export class ControllerPanel extends HTMLDivElement {
         if (this.updating_heights) return
         Debug.trivia("on_height_change")
         this.updating_heights = true
-        this.state.heights = get_resizable_heights(this); 
+        settings.heights = get_resizable_heights(this)
         ControllerPanel.force_redraw();
         setTimeout( ()=>{this.updating_heights=false}, 100 )
     }
@@ -147,22 +150,38 @@ export class ControllerPanel extends HTMLDivElement {
         }        
     }
 
-    set_node_visibility() {
-        this.showAdvancedCheckbox = false
+    remove_absent_nodes() {
         Object.keys(this.node_blocks).forEach((node_id) => {
-            const node_block = this.node_blocks[node_id]
-            if (GroupManager.is_node_in(this.state.group_choice, node_id)) {
-                if (NodeInclusionManager.advanced_only(node_block.node)) {
-                    this.showAdvancedCheckbox = true
-                    if (this.state?.advanced=='1') node_block.classList.remove('hidden')
-                    else node_block.classList.add('hidden')
-                } else {
-                    node_block.classList.remove('hidden')
-                } 
-            } else {
-                node_block.classList.add('hidden')
+            if (!app.graph._nodes_by_id[node_id]) {
+                delete this.node_blocks[node_id]
             }
         })
+    }
+
+    set_node_visibility() {
+        this.showAdvancedCheckbox = false
+        var count_included = 0
+        var count_visible  = 0
+        Object.keys(this.node_blocks).forEach((node_id) => {
+            const node_block = this.node_blocks[node_id]
+            if (NodeInclusionManager.include_node(node_block.node)) {
+                if (GroupManager.is_node_in(settings.group_choice, node_id)) {
+                    count_included += 1
+                    if (NodeInclusionManager.advanced_only(node_block.node)) {
+                        this.showAdvancedCheckbox = true
+                        if (settings.advanced) {
+                            node_block.classList.remove('hidden')
+                            count_visible += 1
+                        } else node_block.classList.add('hidden')
+                    } else {
+                        node_block.classList.remove('hidden')
+                    } 
+                } else {
+                    node_block.classList.add('hidden')
+                }
+            }
+        })
+        return { "nodes":count_included, "visible_nodes":count_visible }
     }
 
     set_position() {
@@ -207,7 +226,7 @@ export class ControllerPanel extends HTMLDivElement {
         } catch {
             this.style.zIndex = 1000000
         }
-        this.new_menu_position = app.ui.settings.getSettingValue('Comfy.UseNewMenu', "Disabled")
+        this.new_menu_position = settings.getSettingValue('Comfy.UseNewMenu', "Disabled")
         SliderOverrides.setup()
         GroupManager.setup(  )
 
@@ -215,18 +234,19 @@ export class ControllerPanel extends HTMLDivElement {
         Create the top section
         */
         this.header_span = create('span', 'header', this)
-        create('span', 'header_title', this.header_span, {"innerText":"Comfy Controller"})
+        create('span', 'header_title', this.header_span, {"innerText":"Controller"})
         this.header_span.addEventListener('dragover', function (e) { NodeBlock.drag_over_me(e) } )
         this.header_span.drag_id = "header"
 
         if (GroupManager.any_groups()) {
             this.group_select = create("select", 'header_select', this.header_span) 
             GroupManager.list_group_names().forEach((nm) => this.group_select.add(new Option(nm,nm)))
-            if (this.state.group_choice) { this.group_select.value = this.state.group_choice }
-            this.group_select.addEventListener('input', (e)=>{ this.state.group_choice = e.target.value; ControllerPanel.redraw() })
+            this.group_select.value = settings.group_choice
+            this.group_select.addEventListener('input', (e)=>{ settings.group_choice = e.target.value; ControllerPanel.redraw() })
         }
 
-        this.state.group_choice = GroupManager.valid_option(this.state.group_choice)
+        const gc = GroupManager.valid_option(settings.group_choice)
+        if (gc != settings.group_choice) settings.group_choice = gc
 
         /*
         Create the main container
@@ -234,27 +254,37 @@ export class ControllerPanel extends HTMLDivElement {
         this.main_container = create('span','controller_main',this)
 
         this.new_node_id_list = []
-        this.state.node_order?.forEach( (n) => {this.consider_adding_node(n)} )
+        this.remove_absent_nodes()
+        settings.node_order.forEach( (n) => {this.consider_adding_node(n)} )
         app.graph._nodes.forEach( (n) => {this.consider_adding_node(n)} )
-        this.state['node_order'] = this.new_node_id_list
+        if (this.new_node_id_list.length>0) settings.node_order = this.new_node_id_list
 
-        this.set_node_visibility()
+        const node_count = this.set_node_visibility()
         observe_resizables( this, this.on_height_change.bind(this) )
-        if (this.state.heights) restore_heights( this.node_blocks, this.state.heights )
+        if (settings.heights) restore_heights( this.node_blocks, settings.heights )
 
-        this.main_container.drag_id = "footer"
-        this.main_container.addEventListener("dragover", (e) => {
-            if (NodeBlock.dragged) {
-                e.preventDefault()
-                if (e.target==this.main_container) {
-                    if (!this.last_dragover) { this.last_dragover = { "timeStamp":e.timeStamp, "x":e.x, "y":e.y } }
-                    else {
-                        if (Math.abs(e.x-this.last_dragover.x) > 2 || Math.abs(e.y-this.last_dragover.y) > 2) { this.last_dragover = null }
-                        else if ((e.timeStamp - this.last_dragover.timeStamp) > 250) NodeBlock.drag_over_me(e)
+        if (node_count.visible_nodes > 0) {
+            this.main_container.drag_id = "footer"
+            this.main_container.addEventListener("dragover", (e) => {
+                if (NodeBlock.dragged) {
+                    e.preventDefault()
+                    if (e.target==this.main_container) {
+                        if (!this.last_dragover) { this.last_dragover = { "timeStamp":e.timeStamp, "x":e.x, "y":e.y } }
+                        else {
+                            if (Math.abs(e.x-this.last_dragover.x) > 2 || Math.abs(e.y-this.last_dragover.y) > 2) { this.last_dragover = null }
+                            else if ((e.timeStamp - this.last_dragover.timeStamp) > 250) NodeBlock.drag_over_me(e)
+                        }
                     }
                 }
-            }
-        })
+            })
+        } else if (node_count.nodes == 0) {
+            var keystroke = settings.getSettingValue("Controller.keyboard","C")
+            if (keystroke.toUpperCase() == keystroke) keystroke = "Shift-" + keystroke
+            const EMPTY_MESSAGE = 
+                "<p>Add nodes to the controller by right-clicking the node<br/>and using the Controller Panel submenu</p>" + 
+                `<p>Toggle controller visibility with ${keystroke}</p>`
+            create('span', 'empty_message', this.main_container, {"innerHTML":EMPTY_MESSAGE})
+        }
 
         /*
         Create the bottom section
@@ -265,10 +295,10 @@ export class ControllerPanel extends HTMLDivElement {
 
         if (this.showAdvancedCheckbox) {
             const add_div = create('div', 'advanced_controls', this.footer)
-            this.show_advanced = create("input", "advanced_checkbox", add_div, {"type":"checkbox", "checked":(this.state?.advanced=='1')})
+            this.show_advanced = create("input", "advanced_checkbox", add_div, {"type":"checkbox", "checked":settings.advanced})
             create('span', 'advanced_label', add_div, {"innerText":"Show advanced controls"})
             this.show_advanced.addEventListener('input', function (e) {
-                this.state.advanced = e.target.checked ? '1':'0'
+                settings.advanced = e.target.checked
                 ControllerPanel.redraw()
             }.bind(this))
         }
@@ -287,7 +317,7 @@ export class ControllerPanel extends HTMLDivElement {
     save_node_order() {
         const node_id_list = []
         this.main_container.childNodes.forEach((child)=>{if (child?.node?.id) node_id_list.push(child.node.id)})
-        this.state['node_order'] = node_id_list
+        settings.node_order = node_id_list
     }
 
 }

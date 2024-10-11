@@ -3,13 +3,19 @@ import { Debug } from "./debug.js"
 export class UpdateController {
     static callback      = ()=>{}
     static permission    = ()=>{return false}
+    static interst_in    = (node_id)=>{return false}
     static request_wait  = 1500
     static request_stack = 0
     static request_stack_limit = 10
 
-    static setup(callback, permission) {
+    static setup(callback, permission, interest_in) {
         UpdateController.callback   = callback
         UpdateController.permission = permission
+        UpdateController.interst_in = interest_in
+    }
+
+    static node_change(node_id) {
+        if (this.interst_in(node_id)) UpdateController.make_request()
     }
 
     static make_request() {

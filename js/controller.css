@@ -34,6 +34,12 @@
     opacity: 0.5;
 }
 
+.empty_message {
+    font-size: 70%;
+    text-align: center;
+    max-width: var(--element_width);
+}
+
 /* Node block */
 
 .nodeblock {
@@ -111,7 +117,7 @@ textarea.input {
     resize: vertical;
     max-height: 80vh;
 }
-
+/*
 .slider_outer {
     width: 100%;
 }
@@ -131,7 +137,7 @@ textarea.input {
     display: inline-block;
     text-align: right;
     width: 46px;
-}
+}*/
 
 
 /* Footer */
