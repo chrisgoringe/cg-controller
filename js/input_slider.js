@@ -91,6 +91,7 @@ export class FancySlider extends HTMLSpanElement {
         this.addEventListener('mouseup',   (e) => this.enddragging())
         this.addEventListener('change',    (e) => this._change(e))
         this.addEventListener('focusin',   (e) => this._focus(e))
+        this.addEventListener('focusout',  (e) => this._focusout(e))
 
         this.redraw()
     }
@@ -125,6 +126,10 @@ export class FancySlider extends HTMLSpanElement {
 
     _focus(e) {
         this.text_edit.select()
+    }
+
+    _focusout(e) {
+        if (this.displaying = "text") this.switch_to_graphicaledit()
     }
 
     _change(e) {
