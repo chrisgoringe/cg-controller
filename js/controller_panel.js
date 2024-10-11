@@ -1,4 +1,5 @@
 import { app } from "../../scripts/app.js";
+import { api } from "../../scripts/api.js" 
 
 import { create } from "./elements.js";
 import { get_node } from "./utilities.js";
@@ -67,6 +68,11 @@ export class ControllerPanel extends HTMLDivElement {
         setTimeout(()=>{temp.remove()}, 100)
     }
 
+    static graph_cleared() {
+        settings.initialise()
+        UpdateController.make_request()
+    }
+
     static on_setup() {
         settings.load()
 
@@ -84,6 +90,7 @@ export class ControllerPanel extends HTMLDivElement {
         }
 
         NodeInclusionManager.node_change_callback = UpdateController.make_request
+        api.addEventListener('graphCleared', ControllerPanel.graph_cleared) 
     }
 
     static can_refresh() {

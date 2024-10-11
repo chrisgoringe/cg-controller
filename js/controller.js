@@ -35,9 +35,6 @@ app.registerExtension({
         // Allow our elements to do any setup they want
         ControllerPanel.on_setup()
 
-        // when the graph is cleared, hide the control panel
-        //api.addEventListener('graphCleared', ControllerPanel.hide) 
-
         // add to the canvas menu, and keyboard shortcuts
         add_controls()
 
