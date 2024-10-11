@@ -14,7 +14,6 @@
     position: absolute;
     left: 0;
     top: 0;
-    width: 100%;
     height: var(--full-height);
     width: var(--full-width);
     background: rgb(80 80 80);
@@ -41,6 +40,16 @@
     text-align: center;
     font-size: small;
     pointer-events: none;
+}
+
+.fs_mouse_pad {
+    position: absolute;
+    left: -10px;
+    top: -5px;
+    height: calc(var(--full-height) + 10px);
+    width: calc(var(--full-width) + 20px);
+    background: rgba(80, 80, 80, 0);
+    pointer-events: all;
 }
 
 .fs_text_edit {

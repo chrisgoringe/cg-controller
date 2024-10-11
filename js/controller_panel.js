@@ -34,7 +34,11 @@ export class ControllerPanel extends HTMLDivElement {
             if (NodeBlock.dragged) {
                 e.dataTransfer.effectAllowed = "move";
                 e.dataTransfer.dropEffect = "move"
+            } else {
+                e.dataTransfer.effectAllowed = "none" 
+                e.dataTransfer.dropEffect = "none"
             }
+            e.preventDefault();
         })
         this.updating_heights = 0
     }
