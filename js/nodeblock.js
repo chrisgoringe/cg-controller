@@ -117,7 +117,7 @@ export class NodeBlock extends HTMLSpanElement {
         this.valid_nodeblock = false
         this.node.widgets?.forEach(w => {
             const e = new Entry(this.node, w)
-            if (e.valid_entry) {
+            if (e.valid()) {
                 this.appendChild(e)
                 this[w.name] = e
                 this.valid_nodeblock = true

@@ -4,6 +4,15 @@ import { FancySlider } from "./input_slider.js";
 import { rounding } from "./utilities.js";
 import { make_resizable } from "./resize_manager.js";
 import { UpdateController } from "./update_controller.js";
+import { Debug } from "./debug.js";
+
+function typecheck_number(v) {
+    const vv = parseFloat(v)
+    if (isNaN(vv)) return null
+    return vv
+}
+
+function typecheck_other(v) { return v }
 
 export class Entry extends HTMLDivElement {
     /*
@@ -11,79 +20,99 @@ export class Entry extends HTMLDivElement {
     */
     constructor(node, target_widget) {
         super()
+        if (target_widget.disabled) return
+        if (target_widget.name=='control_after_generate' && !app.ui.settings.getSettingValue("Controller.extras.control_after_generate", false)) return
+
         this.classList.add('entry')
         this.entry_label = create('span','entry_label', this, {'innerText':target_widget.name, 'draggable':false} )  
-        this.valid_entry = false
+        this.target_widget = target_widget
+        this.input_element = null
 
-        this.input_element = undefined
-
-        /* These all update the target on 'input' */
-        if (target_widget.type=='text' || target_widget.type=='number' ) {
-            if (target_widget.type=='number') {
-                this.input_element = new FancySlider(node, target_widget)
-                this.appendChild(this.input_element)
-            } else {
-                this.input_element = create('input', 'input', this)  
-            }
-        } else if (target_widget.type=="customtext") {
-            this.input_element = create("textarea", 'input', this)
-            make_resizable( this.input_element, node.id, [target_widget.name, "input_element"] )
-        } else if (target_widget.type=="combo") {
-            if ( target_widget.name=='control_after_generate' && !app.ui.settings.getSettingValue("Controller.extras.control_after_generate", false) ) {
-                return
-            }
-            this.input_element = create("select", 'input', this) 
-            target_widget.options.values.forEach((o) => this.input_element.add(new Option(o,o)))
-        }  
-
-        if (target_widget.type=='number') {
-            this.typecheck = (v) => {
-                const vv = parseFloat(v)
-                if (isNaN(vv)) return null
-                return vv
-            }
-        } else {
-            this.typecheck = (v) => {return v}
-        }
-        
-        if (this.input_element) {
-            this.input_element.addEventListener('input', (e) => {
-                const v = this.typecheck(e.target.value)
-                if (v != null) {
-                    target_widget.value = v
-                    target_widget.callback?.(v)
-                    app.graph.setDirtyCanvas(true,true)
-                }
-            } )
-            this.input_element.addEventListener('keydown', (e) => {
-                if (e.key=="Enter") document.activeElement.blur();
-            })
-        }
-
-        if (target_widget.type=="button") {
-            if (!target_widget.disabled) {
+        switch (target_widget.type) {
+            case 'text':
+                this.input_element = create('input', 'input', this) 
+                break
+            case 'customtext':
+                this.input_element = create("textarea", 'input', this)
+                make_resizable( this.input_element, node.id, [target_widget.name, "input_element"] )
+                break
+            case 'number':
+                this.input_element = new FancySlider(node, target_widget, this)
+                break
+            case 'combo':
+                this.input_element = create("select", 'input', this) 
+                target_widget.options.values.forEach((o) => this.input_element.add(new Option(o,o)))
+                break
+            case 'button':
                 var label = target_widget.label
                 if (!label) {
                     label = target_widget.name
                     this.entry_label.innerText = ""
                 }
                 this.input_element = create("button", 'input', this, {"innerText":label})
-                this.input_element.addEventListener('click', (e)=>{
-                    this.target_widget.callback(); 
-                    app.graph.setDirtyCanvas(true,true); 
-                    UpdateController.make_request()}
-                )
-            }
+                break
+            default:
+                return
+        }  
+        
+        if (!this.input_element) return
+  
+        switch (target_widget.type) {
+            case 'button':
+                this.input_element.addEventListener('click', this.button_click_callback.bind(this)) 
+                break
+            default:
+                this.input_element.addEventListener('input', this.input_callback.bind(this))
+                this.input_element.addEventListener('keydown', this.keydown_callback.bind(this))
         }
 
-        if (this.input_element) {
-            this.target_widget = target_widget
-            this.display_value()
-            this.valid_entry = true
-        } 
+        this.typecheck = (target_widget.type=='number') ? typecheck_number : typecheck_other
+        this.original_target_widget_callback = target_widget.callback
+        target_widget.callback = this.widget_callback_callback.bind(this)
+
+        this.render()
     }
 
-    display_value() {
+    valid() { return (this.input_element != null) }
+
+    input_callback(e) {
+        const v = this.typecheck(e.target.value)
+        if (v != null) {
+            target_widget.value = v
+            target_widget.callback?.(v)
+            app.graph.setDirtyCanvas(true,true)
+        }
+    }
+
+    keydown_callback(e) {
+        if (e.key=="Enter") document.activeElement.blur();
+    }
+
+    button_click_callback(e) {
+        this.target_widget.callback(); 
+        app.graph.setDirtyCanvas(true,true); 
+        UpdateController.make_request()
+    }
+
+    widget_callback_callback (v) {
+        if (this.firing_widget_callback) return                
+        this.firing_widget_callback = true
+        this._widget_calling_callback(v)
+        this.firing_widget_callback = false
+    } 
+
+    _widget_calling_callback(v) {
+        if (this.target_widget.type=="button") {
+            this.original_target_widget_callback?.(v)
+            UpdateController.make_request()
+        } else {
+            if (this.input_element.value == v) return
+            this.input_element.value = v
+            this.original_target_widget_callback?.(v)
+        }
+    }
+
+    render() {
         if (document.activeElement == this.input_element) return
         if (this.input_element.value == this.target_widget.value) return
         this.input_element.value = rounding(this.target_widget.value, this.target_widget.options)

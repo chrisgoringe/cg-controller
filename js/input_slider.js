@@ -102,8 +102,10 @@ export class FancySlider extends HTMLSpanElement {
         this.dragging = false
         this.classList.remove('unrefreshable')
         this.classList.remove('can_drag')
-        e.preventDefault()
-        e.stopPropagation()
+        if (e) {
+            e.preventDefault()
+            e.stopPropagation()
+        }
     }
 
     switch_to_textedit() {
