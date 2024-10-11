@@ -1,7 +1,7 @@
 import { app } from "../../scripts/app.js"
 import { api } from "../../scripts/api.js" 
 import { ControllerPanel } from "./controller_panel.js"
-import { CGControllerNode } from "./controller_node.js"   // TODO42
+import { CGControllerNode } from "./controller_node.js"   
 import { create } from "./elements.js"
 import { add_controls } from "./controller_controls.js"
 import { add_control_panel_options, NodeInclusionManager,  } from "./node_inclusion.js"
@@ -12,9 +12,8 @@ app.registerExtension({
 
     /* Called when the graph has been configured (page load, workflow load) */
     async afterConfigureGraph() {
-        /* create a CGController node unless one has been loaded with the workflow, and then create the panel */
         /* This is now just for backward compatibility - we *remove* the ControllerNode and put the data in app.graph.extras */
-        CGControllerNode.create()  // TODO42
+        CGControllerNode.remove()  
         new ControllerPanel()
 
         /* If the panel is showing (because we reloaded a workflow in which it was), and in the old style, hide the main menu */
@@ -69,7 +68,6 @@ app.registerExtension({
 
     },
 
-/* remove in TODO42 */
     registerCustomNodes() {
         LiteGraph.registerNodeType("CGControllerNode", CGControllerNode)
     }
