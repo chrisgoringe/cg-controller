@@ -8,6 +8,7 @@ export class UpdateController {
     static interest_in   = (node_id)=>{return false}
     static request_stack = 0
     static request_stack_limit = 10
+    static pause_stack = 0
 
     static setup(callback, permission, interest_in) {
         UpdateController.callback    = callback
@@ -31,12 +32,15 @@ export class UpdateController {
         if (this.interest_in(node_id)) UpdateController.make_request(`node ${node_id} changed`)
     }
 
+    static push_pause() { UpdateController.pause_stack += 1 }
+    static pop_pause() { UpdateController.pause_stack -= 1 }
+
     static make_request(label, after_ms, noretry) {
         if (after_ms) {
             if (label) Debug.extended(`${label} made request`)
             setTimeout(UpdateController.make_request, after_ms, label, null, noretry)
         } else {
-            const wait_time = UpdateController.permission()
+            const wait_time = UpdateController.pause_stack>0 ? Timings.PAUSE_STACK_WAIT : UpdateController.permission()
             if (label) Debug.extended(`${label} got asked to wait ${wait_time}`)
             if (wait_time == 0) {
                 UpdateController.callback()
