@@ -112,7 +112,7 @@ export class NodeBlock extends HTMLSpanElement {
     build_nodeblock() {
         this.innerHTML = ""
         this.title_bar = create("span", 'nodeblock_titlebar', this)
-        this.draghandle = create("span", 'nodeblock_draghandle', this.title_bar, { "innerHTML":"&equiv;"})
+        this.draghandle = create("span", 'nodeblock_draghandle', this.title_bar, { })
         this.add_handle_drag_handlers(this.draghandle)
 
         this.minimised = settings.is_minimised(this.node.id)

@@ -36,6 +36,25 @@
     opacity: 0.5;
 }
 
+.extra_controls {
+    width: 100%
+}
+
+.advanced_controls {
+    margin: 5px 5px 5px 0px;
+    padding: 2px;
+    font-size: 75%;
+    display: flex;
+    justify-content: center;
+    background-color: #C0808060;
+}
+
+.advanced_label {
+    position: relative;
+    top: 4px;
+}
+
+
 .empty_message {
     font-size: 70%;
     text-align: center;
@@ -145,37 +164,6 @@ textarea.input {
     font-size: 85%;
 }
 
-
-/* Footer */
-
-.controller_footer {
-    width:100%
-}
-
-.advanced {
-
-}
-
-.advanced_controls {
-    margin: 5px;
-    padding: 2px;
-    font-size: 75%;
-    display: flex;
-    justify-content: center;
-    background-color: #C0808060;
-}
-
-.advanced_label {
-    position: relative;
-    top: 4px;
-}
-
-.submit_button {
-    margin: 5px 30px 5px 30px;
-    padding: 2px;
-    background-color: #451010;
-    width: 120px;
-}
 
 
 /* Global */

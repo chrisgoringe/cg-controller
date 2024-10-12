@@ -259,6 +259,8 @@ export class ControllerPanel extends HTMLDivElement {
         this.header_span.addEventListener('dragover', function (e) { NodeBlock.drag_over_me(e) } )
         this.header_span.drag_id = "header"
 
+        this.extra_controls = create('span', 'extra_controls', this)
+
         if (GroupManager.any_groups()) {
             this.group_select = create("select", 'header_select', this.header_span) 
             GroupManager.list_group_names().forEach((nm) => {
@@ -293,7 +295,6 @@ export class ControllerPanel extends HTMLDivElement {
             setTimeout(settings.initialise.bind(settings), Timings.SETTINGS_TRY_RELOAD)
 
         }
-
 
         /*
         Add the nodes
@@ -333,13 +334,14 @@ export class ControllerPanel extends HTMLDivElement {
         }
 
         if (this.showAdvancedCheckbox) {
-            const add_div = create('div', 'advanced_controls', this.footer)
+            const add_div = create('div', 'advanced_controls', this.extra_controls)
             this.show_advanced = create("input", "advanced_checkbox", add_div, {"type":"checkbox", "checked":settings.advanced})
             create('span', 'advanced_label', add_div, {"innerText":"Show advanced controls"})
             this.show_advanced.addEventListener('input', function (e) {
                 settings.advanced = e.target.checked
                 ControllerPanel.redraw()
             }.bind(this))
+            this.in
         }
 
         if (this.new_menu_position=="Disabled") {
