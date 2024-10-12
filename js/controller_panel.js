@@ -13,7 +13,7 @@ import { Debug } from "./debug.js";
 
 import { NodeInclusionManager } from "./node_inclusion.js";
 import { settings } from "./settings.js";
-import { SettingIds, Timings } from "./constants.js";
+import { SettingIds, Timings, Texts } from "./constants.js";
 
 export class ControllerPanel extends HTMLDivElement {
     static instance = undefined
@@ -266,7 +266,8 @@ export class ControllerPanel extends HTMLDivElement {
                 o.style.backgroundColor = GroupManager.group_color(nm)
                 this.group_select.add(o)
             })
-            this.group_select.value = settings.group_choice
+            try { this.group_select.value = settings.group_choice }
+            catch { this.group_select.value = Texts.ALL_GROUPS }
             this.group_select.style.backgroundColor = GroupManager.group_color(this.group_select.value)
             this.group_select.addEventListener('change', (e)=>{     
                 this.group_select.classList.remove('unrefreshable')     
