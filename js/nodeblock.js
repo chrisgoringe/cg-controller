@@ -145,7 +145,7 @@ export class NodeBlock extends HTMLSpanElement {
         if (this.node._imgs) this.show_image(this.node._imgs)
         this.valid_nodeblock = true
 
-        this.style.backgroundColor = this.node.bgcolor ? this.node.bgcolor : LiteGraph.NODE_DEFAULT_BGCOLOR
+        this.style.backgroundColor = this.node.bgcolor ?? LiteGraph.NODE_DEFAULT_BGCOLOR
         if (this.node.bgcolor) {
             this.style.backgroundColor = this.node.bgcolor
             this.title_bar.style.backgroundColor = darken(this.node.bgcolor)

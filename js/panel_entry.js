@@ -5,6 +5,7 @@ import { rounding } from "./utilities.js";
 import { make_resizable } from "./resize_manager.js";
 import { UpdateController } from "./update_controller.js";
 import { Debug } from "./debug.js";
+import { SettingIds } from "./constants.js";
 
 function typecheck_number(v) {
     const vv = parseFloat(v)
@@ -18,10 +19,11 @@ export class Entry extends HTMLDivElement {
     /*
     Entry represents a single widget within a NodeBlock
     */
+    static firing_widget_callback = false
     constructor(node, target_widget) {
         super()
         if (target_widget.disabled) return
-        if (target_widget.name=='control_after_generate' && !app.ui.settings.getSettingValue("Controller.extras.control_after_generate", false)) return
+        if (target_widget.name=='control_after_generate' && !app.ui.settings.getSettingValue(SettingIds.CONTROL_AFTER_GENERATE, false)) return
 
         this.classList.add('entry')
         this.entry_label = create('span','entry_label', this, {'innerText':target_widget.name, 'draggable':false} )  
@@ -38,6 +40,7 @@ export class Entry extends HTMLDivElement {
                 break
             case 'number':
                 this.input_element = new FancySlider(node, target_widget, this)
+                this.appendChild(this.input_element)
                 break
             case 'combo':
                 this.input_element = create("select", 'input', this) 
@@ -76,39 +79,54 @@ export class Entry extends HTMLDivElement {
     valid() { return (this.input_element != null) }
 
     input_callback(e) {
-        const v = this.typecheck(e.target.value)
-        if (v != null) {
-            target_widget.value = v
-            target_widget.callback?.(v)
-            app.graph.setDirtyCanvas(true,true)
-        }
+        this.classList.add("unrefreshable")
+        try {
+            const v = this.typecheck(e.target.value)
+            if (v != null) {
+                this.target_widget.value = v
+                this.target_widget.callback?.(v)
+                app.graph.setDirtyCanvas(true,true)
+            }
+        } finally { this.classList.remove("unrefreshable") }
     }
 
     keydown_callback(e) {
-        if (e.key=="Enter") document.activeElement.blur();
+        this.classList.add("unrefreshable")
+        try {
+            if (e.key=="Enter") document.activeElement.blur();
+        } finally { this.classList.remove("unrefreshable") }
     }
 
     button_click_callback(e) {
-        this.target_widget.callback(); 
-        app.graph.setDirtyCanvas(true,true); 
-        UpdateController.make_request()
+        this.classList.add("unrefreshable")
+        try {
+            this.target_widget.callback(); 
+            app.graph.setDirtyCanvas(true,true); 
+            UpdateController.make_request("button clicked")
+        } finally { this.classList.remove("unrefreshable") }
     }
 
     widget_callback_callback (v) {
-        if (this.firing_widget_callback) return                
-        this.firing_widget_callback = true
-        this._widget_calling_callback(v)
-        this.firing_widget_callback = false
+        this.classList.add("unrefreshable")
+        try {
+            if (Entry.firing_widget_callback) return                
+            try { 
+                Entry.firing_widget_callback = true;
+                this._widget_calling_callback(v)
+            } finally { Entry.firing_widget_callback = false }
+           
+        } finally { this.classList.remove("unrefreshable") }
     } 
 
     _widget_calling_callback(v) {
         if (this.target_widget.type=="button") {
             this.original_target_widget_callback?.(v)
-            UpdateController.make_request()
+            UpdateController.make_request("target widget button clicked")
         } else {
             if (this.input_element.value == v) return
             this.input_element.value = v
             this.original_target_widget_callback?.(v)
+            UpdateController.make_request("target widget changed")
         }
     }
 

@@ -2,6 +2,10 @@
 
 The controller is a floating panel which reproduces widget inputs from selected nodes. That's pretty much it.
 
+# Out of date documentation!
+
+This documentation is a bit out of date. A complete rewrite is coming soon!
+
 ## How to use
 
 - Install the custom node
@@ -24,16 +28,9 @@ By default the control_after_generate widget (attached to seeds and int primitiv
 
 You can choose one of four keyboard shortcuts to make the controller appear or disappear, or set it to none. Default is `c`.
 
-### Sliders
+### Some debug stuff
 
-*This is going away soon, so don't get into it!*
-
-In the settings menu you will find three controls, `Override step size`, `Override min values` and `Override max values`. Each of these has the same format, which is a comma separated list of overrides, each of which is either `widget_name=value` (applies to all matching widgets) or `node_name:widget_name=value` (only applies if both node and widget names match).
-
-Using `Override max values` (and maybe `Override min values`) will allow you to make the sliders a lot more usable in `When possible` mode; using `Override step size` 
-can make sliders appear in `When exact` mode. 
-
-The definition used for `When exact` is `(max-min)/step <= 200`
+If you're interested...
 
 ## Updating
 

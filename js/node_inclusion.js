@@ -41,7 +41,7 @@ export class NodeInclusionManager {
 }
 
 function cp_callback_submenu(value, options, e, menu, node) {
-    const current = (node.properties["controller"] ? node.properties["controller"] : NodeInclusionManager.EXCLUDE);
+    const current = node.properties["controller"] ?? NodeInclusionManager.EXCLUDE;
     const submenu = new LiteGraph.ContextMenu(
         [NodeInclusionManager.EXCLUDE, NodeInclusionManager.INCLUDE, NodeInclusionManager.ADVANCED],
         { event: e, callback: function (v) { 
