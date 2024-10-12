@@ -119,6 +119,7 @@ export class NodeBlock extends HTMLSpanElement {
 
         this.minimisedot = create("span", 'nodeblock_minimisedot', this.title_bar, { "innerHTML":"&#11044;"})
         this.minimisedot.addEventListener("click", (e)=>{ settings.toggle_minimised(this.node.id); UpdateController.make_request('minimise') })
+
         this.title_text = create("span", 'nodeblock_title', this.title_bar, {"innerText":this.node.title, 'draggable':false})
 
         this.style.backgroundColor = this.node.bgcolor ?? LiteGraph.NODE_DEFAULT_BGCOLOR

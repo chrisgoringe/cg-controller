@@ -78,9 +78,12 @@
 }
 
 .nodeblock_draghandle {
-    padding-right: 4px;
-    font-size:110%;
-    cursor:grab;
+    cursor: grab;
+    position: absolute;
+    height: 22px;
+    width: calc(100% - 20px);
+    top: 0px;
+    left: 20px;
 }
 
 .nodeblock_title {
