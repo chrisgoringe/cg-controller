@@ -28,7 +28,7 @@ export class UpdateController {
     }
 
     static node_change(node_id) {
-        if (this.interest_in(node_id)) UpdateController.make_request(`node ${node.id} changed`)
+        if (this.interest_in(node_id)) UpdateController.make_request(`node ${node_id} changed`)
     }
 
     static make_request(label, after_ms, noretry) {
