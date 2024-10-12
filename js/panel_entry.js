@@ -70,7 +70,9 @@ export class Entry extends HTMLDivElement {
         }
 
         this.typecheck = (target_widget.type=='number') ? typecheck_number : typecheck_other
-        this.original_target_widget_callback = target_widget.callback
+
+        target_widget.unhijacked_callback = target_widget.unhijacked_callback ?? target_widget.callback
+        this.original_target_widget_callback = target_widget.unhijacked_callback
         target_widget.callback = this.widget_callback_callback.bind(this)
 
         this.render()
@@ -79,7 +81,8 @@ export class Entry extends HTMLDivElement {
     valid() { return (this.input_element != null) }
 
     input_callback(e) {
-        this.classList.add("unrefreshable")
+        Debug.trivia("input_callback")
+        UpdateController.push_pause()
         try {
             const v = this.typecheck(e.target.value)
             if (v != null) {
@@ -87,27 +90,30 @@ export class Entry extends HTMLDivElement {
                 this.target_widget.callback?.(v)
                 app.graph.setDirtyCanvas(true,true)
             }
-        } finally { this.classList.remove("unrefreshable") }
+        } finally { UpdateController.pop_pause() }
     }
 
     keydown_callback(e) {
-        this.classList.add("unrefreshable")
+        Debug.trivia("keydown_callback")
+        UpdateController.push_pause()
         try {
             if (e.key=="Enter") document.activeElement.blur();
-        } finally { this.classList.remove("unrefreshable") }
+        } finally { UpdateController.pop_pause() }
     }
 
     button_click_callback(e) {
-        this.classList.add("unrefreshable")
+        Debug.trivia("button_click_callback")
+        UpdateController.push_pause()
         try {
             this.target_widget.callback(); 
             app.graph.setDirtyCanvas(true,true); 
             UpdateController.make_request("button clicked")
-        } finally { this.classList.remove("unrefreshable") }
+        } finally { UpdateController.pop_pause() }
     }
 
     widget_callback_callback (v) {
-        this.classList.add("unrefreshable")
+        Debug.trivia("widget_callback_callback")
+        UpdateController.push_pause()
         try {
             if (Entry.firing_widget_callback) return                
             try { 
@@ -115,7 +121,7 @@ export class Entry extends HTMLDivElement {
                 this._widget_calling_callback(v)
             } finally { Entry.firing_widget_callback = false }
            
-        } finally { this.classList.remove("unrefreshable") }
+        } finally { UpdateController.pop_pause() }
     } 
 
     _widget_calling_callback(v) {
