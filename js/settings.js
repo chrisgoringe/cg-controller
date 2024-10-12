@@ -3,6 +3,7 @@ import { GroupManager } from "./groups.js"
 
 const DEFAULTS = {
     "showing"      : true,
+    "minimised"    : [],
     "node_order"   : [],
     "heights"      : [],
     "advanced"     : false,
@@ -44,6 +45,19 @@ class _Settings {
     // convenience method
     getSettingValue(comfy_key, _default) {
         return app.ui.settings.getSettingValue(comfy_key, _default)
+    }
+
+    is_minimised(node_id) {
+        return (this.minimised.includes(node_id))
+    }
+
+    toggle_minimised(node_id) {
+        if (this.is_minimised(node_id)) {
+            const index = this.minimised.indexOf(node_id);
+            this.minimised.splice(index, 1)
+        } else {
+            this.minimised.push(node_id)
+        }
     }
 
 }
