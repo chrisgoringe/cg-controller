@@ -48,6 +48,7 @@ class _Settings {
     }
 
     is_minimised(node_id) {
+        if (!this.minimised) this.minimised = []
         return (this.minimised.includes(node_id))
     }
 

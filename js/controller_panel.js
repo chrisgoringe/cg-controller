@@ -287,11 +287,13 @@ export class ControllerPanel extends HTMLDivElement {
         var gc = ""
         try {
             gc = GroupManager.valid_option(settings.group_choice)
+            if (gc != settings.group_choice) settings.group_choice = gc
         } catch {
+            gc = Texts.ALL_GROUPS
             setTimeout(settings.initialise.bind(settings), Timings.SETTINGS_TRY_RELOAD)
+
         }
-        
-        if (gc != settings.group_choice) settings.group_choice = gc
+
 
         /*
         Add the nodes
