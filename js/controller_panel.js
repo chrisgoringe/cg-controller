@@ -65,12 +65,12 @@ export class ControllerPanel extends HTMLDivElement {
     static redraw() {
         Debug.trivia("In ControllerPanel.redraw")
         ControllerPanel.instance.build_controllerPanel()
-        ControllerPanel.instance.classList.remove('hidden')
+        ControllerPanel.instance.holder.classList.remove('hidden')
         settings.showing = true
     }
 
     static hide() {
-        ControllerPanel.instance.classList.add('hidden')
+        ControllerPanel.instance.holder.classList.add('hidden')
         try { settings.showing = false } catch { Debug.trivia("settings exception in hide") }
     }
 
