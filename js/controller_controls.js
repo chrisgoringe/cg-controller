@@ -72,10 +72,10 @@ function settings_menu() {
     app.ui.settings.addSetting({
         id: SettingIds.AUTOUPDATE,
         name: "Autoupdate",
-        tooltop: "How often the controller checks for certain changes in the workflow",
+        tooltip: "How often the controller checks for certain changes in the workflow. Fast rechecks may make the controller less responsive. Turn off if you aren't changing the workflow directly.",
         type: "combo",
-        options: [ {value:0, text:"Off"}, {value:10000, text:"Slow (10s)"}, {value:5000, text:"Normal (5s)"}, {value:1000, text:"Fast (1s)"} ],
-        defaultValue: 5000
+        options: [ {value:0, text:"Off"}, {value:10000, text:"Slow (10s)"}, {value:3000, text:"Fast (3s)"} ],
+        defaultValue: 10000
     })
 
     window.addEventListener('keypress', (e) => {
