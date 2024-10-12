@@ -81,25 +81,31 @@ export class FancySlider extends HTMLSpanElement {
         this.graphic       = create('span', 'fs_graphic', this)
         this.graphic_fill  = create('span', 'fs_graphic_fill', this.graphic)
         this.graphic_text  = create('span', 'fs_graphic_text', this.graphic)
+        this.mouse_pad     = create('span', 'fs_mouse_pad', this.graphic)
         this.text_edit     = create('input','fs_text_edit', this)
 
         this.displaying = "graphic"
 
         this.addEventListener('mousedown', (e) => this._mousedown(e))
-        this.addEventListener('mousemove', (e) => this._mousemove(e))
-        this.addEventListener('mouseleave',(e) => this.enddragging())
-        this.addEventListener('mouseup',   (e) => this.enddragging())
+        this.mouse_pad.addEventListener('mousemove', (e) => this._mousemove(e))
+        this.mouse_pad.addEventListener('mouseleave',(e) => this.enddragging(e))
+        this.addEventListener('mouseup',   (e) => this.enddragging(e))
         this.addEventListener('change',    (e) => this._change(e))
         this.addEventListener('focusin',   (e) => this._focus(e))
+        this.addEventListener('focusout',  (e) => this._focusout(e))
 
         this.redraw()
     }
 
-    enddragging() {
+    enddragging(e) {
         this.mouse_down_on_me_at = null; 
         this.dragging = false
         this.classList.remove('unrefreshable')
         this.classList.remove('can_drag')
+        if (e) {
+            e.preventDefault()
+            e.stopPropagation()
+        }
     }
 
     switch_to_textedit() {
@@ -125,6 +131,10 @@ export class FancySlider extends HTMLSpanElement {
 
     _focus(e) {
         this.text_edit.select()
+    }
+
+    _focusout(e) {
+        if (this.displaying = "text") this.switch_to_graphicaledit()
     }
 
     _change(e) {

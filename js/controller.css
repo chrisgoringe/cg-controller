@@ -1,13 +1,21 @@
+.controller_holder {
+    height: 90vh;
+    /*max-height: 90vh;*/
+    resize: vertical;
+    background: #1c1c1cee;
+    padding: 5px 0px 5px 5px;
+    position: absolute;
+    overflow: hidden;
+}
 
 .controller {
-    padding:5px;
-    position: absolute;
     display: flex;
     flex-direction: column;
-    flex-wrap: nowrap;
-    align-items: center;
+    flex-wrap: wrap;
+    align-items: flex-start;
     --element_width: 340px;
-    background: #1c1c1cee;
+    resize: vertical;
+    height: 100%;
 }
 
 /* Header */
@@ -16,19 +24,13 @@
     display: flex;
     width: var(--element_width);
     justify-content: space-between;
+    margin: 0px 0px 5px 0px;
+    padding: 2px 5px 0px 0px;
 }
 
 .header_title { }
 
 .header_select { }
-
-.controller_main {
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-    align-items: center;
-    max-height: calc(96vh - 70px);
-}
 
 .being_dragged {
     opacity: 0.5;
@@ -43,7 +45,7 @@
 /* Node block */
 
 .nodeblock {
-    margin: 5px;
+    margin: 0px 5px 5px 0px;
     position: relative;
     width: var(--element_width);
     min-height: 40px;
