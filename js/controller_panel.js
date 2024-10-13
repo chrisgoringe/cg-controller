@@ -90,12 +90,6 @@ export class ControllerPanel extends HTMLDivElement {
         }
 
         UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh, (node_id)=>ControllerPanel.instance?.node_blocks[node_id])
-        
-        /*const change = app.graph.change
-        app.graph.change = function() {
-            // UpdateController.make_request()   TODO rethink this
-            change.apply(this, arguments)
-        }*/
 
         NodeInclusionManager.node_change_callback = UpdateController.make_request
         api.addEventListener('graphCleared', ControllerPanel.graph_cleared) 
@@ -183,7 +177,7 @@ export class ControllerPanel extends HTMLDivElement {
         Object.keys(this.node_blocks).forEach((node_id) => {
             const node_block = this.node_blocks[node_id]
             if (NodeInclusionManager.include_node(node_block.node)) {
-                if (GroupManager.is_node_in(settings.group_choice, node_id)) {
+                if (GroupManager.is_node_in(settings.group_choice, node_id) || NodeInclusionManager.node_in_all_views(node_block.node)) {
                     count_included += 1
                     if (NodeInclusionManager.advanced_only(node_block.node)) {
                         this.showAdvancedCheckbox = true
