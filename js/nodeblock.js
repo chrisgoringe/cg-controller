@@ -5,6 +5,8 @@ import { darken } from "./utilities.js";
 import { Entry } from "./panel_entry.js"
 import { create } from "./elements.js";
 import { make_resizable } from "./resize_manager.js";
+import { settings } from "./settings.js";
+import { UpdateController } from "./update_controller.js";
 
 function is_single_image(data) { return (data && data.items && data.items.length==1 && data.items[0].type.includes("image")) }
 
@@ -110,9 +112,33 @@ export class NodeBlock extends HTMLSpanElement {
     build_nodeblock() {
         this.innerHTML = ""
         this.title_bar = create("span", 'nodeblock_titlebar', this)
-        this.draghandle = create("span", 'nodeblock_draghandle', this.title_bar, { "innerHTML":"&equiv;"})
+        this.draghandle = create("span", 'nodeblock_draghandle', this.title_bar, { })
         this.add_handle_drag_handlers(this.draghandle)
+
+        this.minimised = settings.is_minimised(this.node.id)
+
+        this.minimisedot = create("span", 'nodeblock_minimisedot', this.title_bar, { "innerHTML":"&#11044;"})
+        this.minimisedot.addEventListener("click", (e)=>{ settings.toggle_minimised(this.node.id); UpdateController.make_request('minimise') })
+
         this.title_text = create("span", 'nodeblock_title', this.title_bar, {"innerText":this.node.title, 'draggable':false})
+
+        this.style.backgroundColor = this.node.bgcolor ?? LiteGraph.NODE_DEFAULT_BGCOLOR
+        if (this.node.bgcolor) {
+            this.style.backgroundColor = this.node.bgcolor
+            this.title_bar.style.backgroundColor = darken(this.node.bgcolor)
+        } else {
+            this.style.backgroundColor = LiteGraph.NODE_DEFAULT_BGCOLOR
+            this.title_bar.classList.add("titlebar_nocolor")
+        }
+
+        if (this.minimised) {
+            this.minimisedot.classList.add('nodeblock_minimisedot_minimised')
+            this.classList.add('minimised')
+            this.valid_nodeblock = true
+            return
+        }
+        this.classList.remove('minimised')
+        this.minimisedot.classList.remove('nodeblock_minimisedot_minimised')
 
         this.valid_nodeblock = false
         this.node.widgets?.forEach(w => {
@@ -145,14 +171,7 @@ export class NodeBlock extends HTMLSpanElement {
         if (this.node._imgs) this.show_image(this.node._imgs)
         this.valid_nodeblock = true
 
-        this.style.backgroundColor = this.node.bgcolor ?? LiteGraph.NODE_DEFAULT_BGCOLOR
-        if (this.node.bgcolor) {
-            this.style.backgroundColor = this.node.bgcolor
-            this.title_bar.style.backgroundColor = darken(this.node.bgcolor)
-        } else {
-            this.style.backgroundColor = LiteGraph.NODE_DEFAULT_BGCOLOR
-            this.title_bar.classList.add("titlebar_nocolor")
-        }
+
 
     }
 
@@ -186,6 +205,7 @@ export class NodeBlock extends HTMLSpanElement {
     }
 
     show_image(v) {
+        if (this.minimised) return
         if (v.length>0) {
             this.image_panel.classList.remove('nodeblock_image_empty')
             if (this.image_image.src != v[0].src) {

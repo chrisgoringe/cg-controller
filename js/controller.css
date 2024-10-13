@@ -36,6 +36,25 @@
     opacity: 0.5;
 }
 
+.extra_controls {
+    width: var(--element_width);
+}
+
+.advanced_controls {
+    margin: 5px 0px 5px 0px;
+    padding: 2px;
+    font-size: 75%;
+    display: flex;
+    justify-content: center;
+    background-color: #C0808060;
+}
+
+.advanced_label {
+    position: relative;
+    top: 4px;
+}
+
+
 .empty_message {
     font-size: 70%;
     text-align: center;
@@ -51,6 +70,10 @@
     min-height: 40px;
 }
 
+.minimised {
+    min-height: 20px;
+}
+
 .nodeblock_titlebar {
     font-size: 70%;
     display: block;
@@ -59,15 +82,27 @@
     color: #b3b3b3;
 }
 
+.nodeblock_minimisedot {
+    padding: 0px 4px 0px 4px;
+    cursor: url(collapse.png) 8 8, zoom-out;
+}
+
+.nodeblock_minimisedot_minimised {
+    cursor: url(expand.png) 8 8, zoom-out;
+}
+
 .titlebar_nocolor {
     border-bottom: 2px solid #2a2a2a;
     padding-bottom: 1px;
 }
 
 .nodeblock_draghandle {
-    padding-right: 4px;
-    font-size:110%;
-    cursor:grab;
+    cursor: grab;
+    position: absolute;
+    height: 22px;
+    width: calc(100% - 20px);
+    top: 0px;
+    left: 20px;
 }
 
 .nodeblock_title {
@@ -129,37 +164,6 @@ textarea.input {
     font-size: 85%;
 }
 
-
-/* Footer */
-
-.controller_footer {
-    width:100%
-}
-
-.advanced {
-
-}
-
-.advanced_controls {
-    margin: 5px;
-    padding: 2px;
-    font-size: 75%;
-    display: flex;
-    justify-content: center;
-    background-color: #C0808060;
-}
-
-.advanced_label {
-    position: relative;
-    top: 4px;
-}
-
-.submit_button {
-    margin: 5px 30px 5px 30px;
-    padding: 2px;
-    background-color: #451010;
-    width: 120px;
-}
 
 
 /* Global */

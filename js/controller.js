@@ -40,10 +40,10 @@ app.registerExtension({
     },
 
     async nodeCreated(node) {
-        const original_onDrawTitleBar = node.onDrawTitleBar;
-        node.onDrawTitleBar = function(ctx, title_height, node_size) {
-            original_onDrawTitleBar?.apply(this, arguments);
-            NodeInclusionManager.visual(ctx, node, title_height, node_size)
+        const onDrawTitle = node.onDrawTitle
+        node.onDrawTitle = (ctx) => { 
+            onDrawTitle?.apply(this,arguments)
+            NodeInclusionManager.visual(ctx, node)
         }
     },
 
