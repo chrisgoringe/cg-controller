@@ -1,5 +1,7 @@
 import { app } from "../../scripts/app.js"
 import { GroupManager } from "./groups.js"
+import { Debug } from "./debug.js"
+
 
 const DEFAULTS = {
     "showing"      : true,
@@ -13,8 +15,11 @@ const DEFAULTS = {
 const KEYS = Object.keys(DEFAULTS)
 
 class _Settings {
-    load() {
-        if (!app.graph.extra.controller_panel) return 
+    fix_backward_compatibility() {
+        if (!app.graph.extra.controller_panel) {
+            Debug.important("When trying to fix_backward_compatibility, extras did not have controller_panel")
+            return
+        } 
         KEYS.forEach((k) => {
             if (app.graph.extra.controller_panel[k]===undefined) app.graph.extra.controller_panel[k] = DEFAULTS[k]      
             if (app.graph.extra.controller_panel[k]==="1")       app.graph.extra.controller_panel[k] = true
@@ -22,22 +27,33 @@ class _Settings {
         })
     }
 
-    //check() {
-    //    if (!app.graph?.extra?.controller_panel) { app.graph.extra.controller_panel = DEFAULTS }
-    //}
-
-    initialise() {
-        if (!app.graph.extra.controller_panel) {
-            app.graph.extra.controller_panel = {}
-            this.load()
-        }
-    }
-
     constructor() {
         KEYS.forEach((k) => {
             Object.defineProperty(this, k, {
-                get : () =>  { return app.graph.extra.controller_panel[k] },
-                set : (v) => { app.graph.extra.controller_panel[k] = v   }
+                get : () =>  {  
+                    if (app.graph?.extra?.controller_panel?.[k] != undefined) return app.graph.extra.controller_panel[k]  // value exists - all good
+
+                    if (app.graph?.extra.controller_panel) {  // our settings exist, but not this one. Must be new
+                        app.graph.extra.controller_panel[k] = DEFAULTS[k]
+                        return app.graph.extra.controller_panel[k]
+                    } else if (app.graph.extra) {
+                        Debug.extended(`When requesting ${k}, extra did not have controller_panel - normal for new workflows - creating it`)
+                        app.graph.extra.controller_panel = {}
+                        return DEFAULTS[k]
+                    } else {
+                        Debug.important(`When requesting ${k}, extra did not exist`)
+                        return DEFAULTS[k]
+                    }
+                },
+                set : (v) => {
+                    if (app.graph?.extra.controller_panel) {
+                        app.graph.extra.controller_panel[k] = v   
+                    } else if (app.graph.extra) {
+                        Debug.important(`When setting ${k}, extra did not have controller_panel`)
+                    } else {
+                        Debug.important(`When setting ${k}, extra did not exist`)
+                    }
+                }
             })
         })
     }
@@ -48,7 +64,6 @@ class _Settings {
     }
 
     is_minimised(node_id) {
-        if (!this.minimised) this.minimised = []
         return (this.minimised.includes(node_id))
     }
 

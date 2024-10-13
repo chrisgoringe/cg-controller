@@ -75,13 +75,11 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     static graph_cleared() {
-        settings.initialise()
         UpdateController.make_request("graph_cleared")
     }
 
     static on_setup() {
-        settings.load()
-        setTimeout(settings.initialise.bind(settings), 1000)
+        settings.fix_backward_compatibility()
 
         const draw = LGraphCanvas.prototype.draw;
         LGraphCanvas.prototype.draw = function() {
