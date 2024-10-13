@@ -37,11 +37,11 @@
 }
 
 .extra_controls {
-    width: 100%
+    width: var(--element_width);
 }
 
 .advanced_controls {
-    margin: 5px 5px 5px 0px;
+    margin: 5px 0px 5px 0px;
     padding: 2px;
     font-size: 75%;
     display: flex;
