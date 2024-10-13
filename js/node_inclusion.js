@@ -22,12 +22,13 @@ export class NodeInclusionManager {
         return (nd && nd.properties["controller"] && nd.properties["controller"]==NodeInclusionManager.ADVANCED && nd.mode == 0) 
     }
 
-    static visual(ctx, node, title_height, node_size) {
+    static visual(ctx, node) {
         const r = 3
+        const title_mid = 15
         if (NodeInclusionManager.node_includable(node)) {
             ctx.save();
             ctx.beginPath();
-            ctx.arc(3+node_size[0]-title_height/2, -title_height/2, r, 0, 2*Math.PI, false);
+            ctx.arc(3+node.size[0]-title_mid, -title_mid, r, 0, 2*Math.PI, false);
             if (!NodeInclusionManager.advanced_only(node)) {
                 ctx.fillStyle = "#C08080";
                 ctx.fill()
