@@ -44,13 +44,11 @@ app.registerExtension({
             getExtraMenuOptions?.apply(this, arguments);
             add_control_panel_options(options)
         }
-    },
 
-    async nodeCreated(node) {
-        const onDrawTitle = node.onDrawTitle
-        node.onDrawTitle = (ctx) => { 
+        const onDrawTitle = LGraphNode.prototype.onDrawTitle
+        LGraphNode.prototype.onDrawTitle = function (ctx) { 
             onDrawTitle?.apply(this,arguments)
-            NodeInclusionManager.visual(ctx, node)
+            NodeInclusionManager.visual(ctx, this)
         }
     },
 
