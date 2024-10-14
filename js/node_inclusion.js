@@ -31,10 +31,11 @@ export class NodeInclusionManager {
     static visual(ctx, node) {
         const r = 3
         const title_mid = 15
+        const width = node.collapsed ? node._collapsed_width : node.size[0]
         if (NodeInclusionManager.node_includable(node)) {
             ctx.save();
             ctx.beginPath();
-            ctx.arc(3+node.size[0]-title_mid, -title_mid, r, 0, 2*Math.PI, false);
+            ctx.arc(3+width-title_mid, -title_mid, r, 0, 2*Math.PI, false);
             if (!NodeInclusionManager.advanced_only(node)) {
                 ctx.fillStyle = "#C08080";
                 ctx.fill()
