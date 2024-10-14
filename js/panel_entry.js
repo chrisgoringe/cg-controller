@@ -40,6 +40,7 @@ export class Entry extends HTMLDivElement {
                 break
             case 'number':
                 this.input_element = new FancySlider(node, target_widget, this)
+                this.input_element.addEventListener('keydown', this.keydown_callback.bind(this))
                 this.appendChild(this.input_element)
                 break
             case 'combo':
@@ -65,8 +66,7 @@ export class Entry extends HTMLDivElement {
                 this.input_element.addEventListener('click', this.button_click_callback.bind(this)) 
                 break
             default:
-                this.input_element.addEventListener('input', this.input_callback.bind(this))
-                this.input_element.addEventListener('keydown', this.keydown_callback.bind(this))
+                this.input_element.addEventListener('input', this.input_callback.bind(this))  
         }
 
         this.typecheck = (target_widget.type=='number') ? typecheck_number : typecheck_other
@@ -130,7 +130,7 @@ export class Entry extends HTMLDivElement {
             UpdateController.make_request("target widget button clicked")
         } else {
             this.input_element.value = v
-            this.original_target_widget_callback?.(v)
+            this.original_target_widget_callback?.apply(this.target_widget,arguments)
             UpdateController.make_request("target widget changed")
         }
     }

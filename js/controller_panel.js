@@ -98,6 +98,7 @@ export class ControllerPanel extends HTMLDivElement {
             if (!ControllerPanel.showing()) { return -1 }
             if (ControllerPanel.instance.classList.contains('unrefreshable')) { Debug.trivia("already refreshing"); return -1 }
             if (ControllerPanel.instance.updating_heights > 0) { Debug.trivia("no refresh because updating heights"); return -1 }
+            if (ControllerPanel.instance.contains(document.activeElement)) { Debug.trivia("delay refresh because active element"); return 1 }
          
             const unrefreshables = ControllerPanel.instance.getElementsByClassName('unrefreshable')
             if (unrefreshables.length >= 1) {
