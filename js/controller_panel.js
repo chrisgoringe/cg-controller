@@ -102,7 +102,7 @@ export class ControllerPanel extends HTMLDivElement {
                         document.activeElement != ControllerPanel.instance.group_select ) { Debug.trivia("delay refresh because active element"); return 1 }
          
             const unrefreshables = ControllerPanel.instance.getElementsByClassName('unrefreshable')
-            if (unrefreshables.length >= 1000) {
+            if (unrefreshables.length > 0) {
                 Debug.trivia(`Not refreshing because contains unrefreshable element because ${unrefreshables[0].reason}`)
                 return Timings.UPDATE_GENERAL_WAITTIME
             } 
