@@ -129,7 +129,6 @@ export class Entry extends HTMLDivElement {
             this.original_target_widget_callback?.(v)
             UpdateController.make_request("target widget button clicked")
         } else {
-            if (this.input_element.value == v) return
             this.input_element.value = v
             this.original_target_widget_callback?.(v)
             UpdateController.make_request("target widget changed")
