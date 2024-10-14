@@ -132,15 +132,11 @@ export class NodeBlock extends HTMLSpanElement {
         }
 
         if (this.minimised) {
-            //this.minimisedot.classList.add('minimised')
             this.classList.add('minimised')
-            //this.title_bar.classList.add('minimised')
             this.valid_nodeblock = true
             return
         }
         this.classList.remove('minimised')
-        //this.minimisedot.classList.remove('minimised')
-        //this.title_bar.classList.remove('minimised')
 
         this.valid_nodeblock = false
         this.node.widgets?.forEach(w => {
