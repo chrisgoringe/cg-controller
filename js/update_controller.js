@@ -14,19 +14,8 @@ export class UpdateController {
         UpdateController.callback    = callback
         UpdateController.permission  = permission
         UpdateController.interest_in = interest_in
-        UpdateController.periodic_request()
     }
 
-    static periodic_request() {
-        const period = settings.getSettingValue( SettingIds.AUTOUPDATE, 5000 )
-        if (period > 0) {
-            UpdateController.make_request("periodic request", null, true)
-            setTimeout(UpdateController.periodic_request, period)
-        } else {
-            setTimeout(UpdateController.periodic_request, Timings.RECHECK_AUTOUPDATE)
-        }
-        
-    }
 
     static node_change(node_id) {
         if (this.interest_in(node_id)) UpdateController.make_request(`node ${node_id} changed`)

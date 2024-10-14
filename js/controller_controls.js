@@ -69,14 +69,6 @@ function settings_menu() {
         defaultValue: "1"
     })
 
-    app.ui.settings.addSetting({
-        id: SettingIds.AUTOUPDATE,
-        name: "Autoupdate",
-        tooltip: "How often the controller checks for certain changes in the workflow. Fast rechecks may make the controller less responsive. Turn off if you aren't changing the workflow directly.",
-        type: "combo",
-        options: [ {value:0, text:"Off"}, {value:10000, text:"Slow (10s)"}, {value:3000, text:"Fast (3s)"} ],
-        defaultValue: 10000
-    })
 
     window.addEventListener('keypress', (e) => {
         if (e.target.tagName=="CANVAS" || e.target.tagName=="BODY") {

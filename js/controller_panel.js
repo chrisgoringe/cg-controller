@@ -98,9 +98,11 @@ export class ControllerPanel extends HTMLDivElement {
             if (!ControllerPanel.showing()) { return -1 }
             if (ControllerPanel.instance.classList.contains('unrefreshable')) { Debug.trivia("already refreshing"); return -1 }
             if (ControllerPanel.instance.updating_heights > 0) { Debug.trivia("no refresh because updating heights"); return -1 }
+            if (ControllerPanel.instance.contains(document.activeElement) &&
+                        document.activeElement != ControllerPanel.instance.group_select ) { Debug.trivia("delay refresh because active element"); return 1 }
          
             const unrefreshables = ControllerPanel.instance.getElementsByClassName('unrefreshable')
-            if (unrefreshables.length >= 1) {
+            if (unrefreshables.length > 0) {
                 Debug.trivia(`Not refreshing because contains unrefreshable element because ${unrefreshables[0].reason}`)
                 return Timings.UPDATE_GENERAL_WAITTIME
             } 
@@ -247,9 +249,9 @@ export class ControllerPanel extends HTMLDivElement {
         Create the top section
         */
         this.header_span = create('span', 'header', this)
+        this.refresh = create('span', 'refresh_button', this.header_span, {"innerHTML":"&#10227;"})
+        this.refresh.addEventListener('click', (e) => {UpdateController.make_request("refresh_button")})
         create('span', 'header_title', this.header_span, {"innerText":"Controller"})
-        this.header_span.addEventListener('dragover', function (e) { NodeBlock.drag_over_me(e) } )
-        this.header_span.drag_id = "header"
 
         this.extra_controls = create('span', 'extra_controls', this)
 

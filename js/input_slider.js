@@ -94,13 +94,22 @@ export class FancySlider extends HTMLSpanElement {
         this.addEventListener('focusin',   (e) => this._focus(e))
         this.addEventListener('focusout',  (e) => this._focusout(e))
 
+        this._dragging = false
+        Object.defineProperty(this, "dragging", {
+            get : () => { return this._dragging},
+            set : (v) => {
+                this._dragging = v
+                if (v) this.classList.add('unrefreshable')
+                else this.classList.remove('unrefreshable')
+            }
+        })
+
         this.redraw()
     }
 
     enddragging(e) {
         this.mouse_down_on_me_at = null; 
         this.dragging = false
-        this.classList.remove('unrefreshable')
         this.classList.remove('can_drag')
         if (e) {
             e.preventDefault()
@@ -110,11 +119,11 @@ export class FancySlider extends HTMLSpanElement {
 
     switch_to_textedit() {
         if (FancySlider.in_textedit) FancySlider.in_textedit.switch_to_graphicaledit()
-        this.classList.add('unrefreshable')
-        this.reason = "slider in text edit mode"
         FancySlider.in_textedit = this
         this.displaying = "text"
         this.enddragging()
+        this.classList.add('unrefreshable')
+        this.reason = "slider in text edit mode"
         this.redraw()
         setTimeout(()=>{this.please_focus()},100)
     }
@@ -159,8 +168,6 @@ export class FancySlider extends HTMLSpanElement {
         if (this.mouse_down_on_me_at) {
             if (!this.dragging && (Math.abs(e.x-this.mouse_down_on_me_at)>6 || Math.abs(e.movementX)>4)) {
                 this.dragging = true 
-                this.classList.add('unrefreshable')
-                this.reason = "slider being dragged"
             }
             if (this.dragging) {
                 const box = this.getBoundingClientRect()
