@@ -247,9 +247,9 @@ export class ControllerPanel extends HTMLDivElement {
         Create the top section
         */
         this.header_span = create('span', 'header', this)
+        this.refresh = create('span', 'refresh_button', this.header_span, {"innerHTML":"&#10227;"})
+        this.refresh.addEventListener('click', (e) => {UpdateController.make_request("refresh_button")})
         create('span', 'header_title', this.header_span, {"innerText":"Controller"})
-        this.header_span.addEventListener('dragover', function (e) { NodeBlock.drag_over_me(e) } )
-        this.header_span.drag_id = "header"
 
         this.extra_controls = create('span', 'extra_controls', this)
 

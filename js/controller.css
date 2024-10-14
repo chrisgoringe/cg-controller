@@ -24,13 +24,18 @@
     display: flex;
     width: var(--element_width);
     justify-content: space-between;
-    margin: 0px 0px 5px 0px;
+    margin: 0px;
     padding: 0px;
+    align-items: center;
 }
 
 .header_title { }
 
 .header_select { }
+
+.refresh_button {
+    cursor: pointer;
+}
 
 .being_dragged {
     opacity: 0.5;
