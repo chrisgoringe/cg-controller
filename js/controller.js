@@ -36,7 +36,14 @@ app.registerExtension({
 
         // add to the canvas menu, and keyboard shortcuts
         add_controls()
+    },
 
+    async init() {
+        const getExtraMenuOptions = LGraphNode.prototype.getExtraMenuOptions
+        LGraphNode.prototype.getExtraMenuOptions = function(_, options) {
+            getExtraMenuOptions?.apply(this, arguments);
+            add_control_panel_options(options)
+        }
     },
 
     async nodeCreated(node) {

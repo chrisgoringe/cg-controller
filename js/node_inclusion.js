@@ -64,7 +64,7 @@ function cp_callback_submenu(value, options, e, menu, node) {
 }
 
 export function add_control_panel_options(options) {
-    options.push(null);
+    if (options[options.length-1] != null) options.push(null);
     options.push(
         {
             content: "Controller Panel",
@@ -72,5 +72,6 @@ export function add_control_panel_options(options) {
             callback: cp_callback_submenu,
         }
     )
+    options.push(null);
 }
 
