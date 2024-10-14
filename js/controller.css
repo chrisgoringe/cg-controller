@@ -70,7 +70,7 @@
     min-height: 40px;
 }
 
-.minimised {
+.nodeblock.minimised {
     min-height: 20px;
 }
 
@@ -87,13 +87,18 @@
     cursor: url(collapse.png) 8 8, zoom-out;
 }
 
-.nodeblock_minimisedot_minimised {
+.nodeblock.minimised  .nodeblock_minimisedot {
     cursor: url(expand.png) 8 8, zoom-out;
 }
 
 .titlebar_nocolor {
     border-bottom: 2px solid #2a2a2a;
     padding-bottom: 1px;
+}
+
+.nodeblock.minimised .titlebar_nocolor {
+    border-bottom:none;
+    padding-bottom:3px;
 }
 
 .nodeblock_draghandle {
