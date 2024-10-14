@@ -98,10 +98,11 @@ export class ControllerPanel extends HTMLDivElement {
             if (!ControllerPanel.showing()) { return -1 }
             if (ControllerPanel.instance.classList.contains('unrefreshable')) { Debug.trivia("already refreshing"); return -1 }
             if (ControllerPanel.instance.updating_heights > 0) { Debug.trivia("no refresh because updating heights"); return -1 }
-            if (ControllerPanel.instance.contains(document.activeElement)) { Debug.trivia("delay refresh because active element"); return 1 }
+            if (ControllerPanel.instance.contains(document.activeElement) &&
+                        document.activeElement != ControllerPanel.instance.group_select ) { Debug.trivia("delay refresh because active element"); return 1 }
          
             const unrefreshables = ControllerPanel.instance.getElementsByClassName('unrefreshable')
-            if (unrefreshables.length >= 1) {
+            if (unrefreshables.length >= 1000) {
                 Debug.trivia(`Not refreshing because contains unrefreshable element because ${unrefreshables[0].reason}`)
                 return Timings.UPDATE_GENERAL_WAITTIME
             } 
