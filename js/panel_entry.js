@@ -6,6 +6,7 @@ import { make_resizable } from "./resize_manager.js";
 import { UpdateController } from "./update_controller.js";
 import { Debug } from "./debug.js";
 import { SettingIds } from "./constants.js";
+import { Toggle } from "./toggle.js";
 
 function typecheck_number(v) {
     const vv = parseFloat(v)
@@ -19,7 +20,7 @@ export class Entry extends HTMLDivElement {
     /*
     Entry represents a single widget within a NodeBlock
     */
-    static FULL_WIDTH = [ 'customtext' ]
+    static FULL_WIDTH = [ 'customtext', 'toggle' ]
 
     static firing_widget_callback = false
     constructor(node, target_widget) {
@@ -61,6 +62,10 @@ export class Entry extends HTMLDivElement {
                     this.entry_label.innerText = ""
                 }
                 this.input_element = create("button", 'input', this, {"innerText":label})
+                break
+            case 'toggle':
+                this.input_element = new Toggle(target_widget.value, target_widget.name)
+                this.appendChild(this.input_element)
                 break
             default:
                 return

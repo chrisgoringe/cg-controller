@@ -25,7 +25,7 @@
     display: flex;
     width: var(--element_width);
     justify-content: space-between;
-    margin: 0px;
+    margin: 0px 0px 5px 0px;
     padding: 0px;
     align-items: center;
 }
@@ -173,6 +173,43 @@ textarea.input {
     resize: vertical;
     max-height: calc(var(--actual-height) - 50px);
     font-size: 85%;
+}
+
+.toggle {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #222222;
+}
+
+.toggle_label {
+    font-size: 70%;
+    padding-left: 4px;
+    color: #999999;
+}
+
+.toggle_value {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;   
+}
+.toggle_text {
+    font-size: 70%;
+}
+
+.toggle_graphic {
+    font-size: 80%;
+    cursor: pointer;
+    padding: 1px 4px 2px 4px;
+}
+
+.toggle_graphic.true {
+    color: #8899aa;
+}
+
+.toggle_graphic.false {
+    color: #333333;
 }
 
 /* Footer */
