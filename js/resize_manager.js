@@ -5,7 +5,7 @@ export function make_resizable( element, node_id, name_list ) {
         "node_id"   : node_id,
         "name_list" : name_list
     }
-    element.resize_id = `${node_id} ${name_list[name_list.length-1]}`
+    element.resize_id = `${node_id} ${name_list.join(' ')}`
 }
 
 class PersistSize {

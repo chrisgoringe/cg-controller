@@ -43,6 +43,27 @@ export class NodeBlock extends HTMLSpanElement {
         e.dataTransfer.setDragImage(this, 10, 10);
     }
 
+    bottom_of_lowest_element() {
+        var bol = this.lastChild.getBoundingClientRect().bottom
+        if (this.lastChild.previousSibling) bol = Math.max(bol, this.lastChild.previousSibling.getBoundingClientRect().bottom)
+        return bol
+    }
+
+    require_shrink( pixels ) {
+        const resizables = []
+        const add_resizables = ( element ) => {
+            if (element.resize_id) resizables.push(element)
+            element.childNodes.forEach((child) => {add_resizables(child)})
+        }
+        add_resizables(this)
+        if (resizables.length == 0) return
+        const shrink_each_by = Math.ceil( pixels / resizables.length )
+        resizables.forEach((r) => {
+            const new_height =  Math.max(20,Math.floor(Math.max(0, r.getBoundingClientRect().height - shrink_each_by)))
+            r.style.height = `${new_height}px`
+        })
+    }
+
     static drag_over_me(e, nodeblock_over, force_before) {
         nodeblock_over = nodeblock_over ?? e.currentTarget
         if (NodeBlock.dragged) {

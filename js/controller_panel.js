@@ -380,12 +380,30 @@ export class ControllerPanel extends HTMLDivElement {
 
         new ResizeObserver( () => { 
             const actual = this.holder.getBoundingClientRect().height
+            const [bottom_of_children, tallest_child] = this.bottom_of_tallest_child()
+            const bottom_of_me = this.holder.getBoundingClientRect().bottom - 15
+            if (bottom_of_children > bottom_of_me) tallest_child.require_shrink( bottom_of_children - bottom_of_me )
             if (settings.holder_height == actual) return
             settings.holder_height = actual; 
             this.style.setProperty('--actual-height', `${actual}px`);
         } ).observe(this.holder)
 
         setTimeout( this.set_position.bind(this), 20 )
+    }
+
+    bottom_of_tallest_child() {
+        var bottom_of_tallest_so_far = 0
+        var the_tallest_child = null
+        this.childNodes.forEach((child) => { 
+            if (child.bottom_of_lowest_element) {
+                const bottom_of_this_child = child.bottom_of_lowest_element()
+                if (bottom_of_this_child > bottom_of_tallest_so_far) {
+                    the_tallest_child = child
+                    bottom_of_tallest_so_far = bottom_of_this_child
+                }
+            } 
+        })
+        return [bottom_of_tallest_so_far, the_tallest_child]
     }
 
     save_node_order() {

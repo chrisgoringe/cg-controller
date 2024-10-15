@@ -19,6 +19,8 @@ export class Entry extends HTMLDivElement {
     /*
     Entry represents a single widget within a NodeBlock
     */
+    static FULL_WIDTH = [ 'customtext' ]
+
     static firing_widget_callback = false
     constructor(node, target_widget) {
         super()
@@ -26,16 +28,21 @@ export class Entry extends HTMLDivElement {
         if (target_widget.name=='control_after_generate' && !app.ui.settings.getSettingValue(SettingIds.CONTROL_AFTER_GENERATE, false)) return
 
         this.classList.add('entry')
-        this.entry_label = create('span','entry_label', this, {'innerText':target_widget.name, 'draggable':false} )  
         this.target_widget = target_widget
         this.input_element = null
+
+
+        if (!Entry.FULL_WIDTH.includes(target_widget.type)) {
+            this.entry_label = create('span','entry_label', this, {'innerText':target_widget.name, 'draggable':false} )  
+        }
+
 
         switch (target_widget.type) {
             case 'text':
                 this.input_element = create('input', 'input', this) 
                 break
             case 'customtext':
-                this.input_element = create("textarea", 'input', this)
+                this.input_element = create("textarea", 'input', this, {"title":target_widget.name, "placeholder":target_widget.name})
                 make_resizable( this.input_element, node.id, [target_widget.name, "input_element"] )
                 break
             case 'number':
