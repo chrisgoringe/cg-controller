@@ -31,9 +31,6 @@ export class ControllerPanel extends HTMLDivElement {
         this.holder.appendChild(this);
         
         this.node_blocks = {}   // map from node.id to NodeBlock
-        
-        if (ControllerPanel.showing()) ControllerPanel.redraw()
-        else ControllerPanel.hide()
 
         this.addEventListener('dragstart', (e) => { this.classList.add('unrefreshable'); this.reason = 'drag happening' })
         this.addEventListener('dragend',   (e) => { this.save_node_order(); this.classList.remove('unrefreshable') } )
@@ -52,14 +49,20 @@ export class ControllerPanel extends HTMLDivElement {
         /*
         Full width footer
         */
-        this.footer = create('span','footer',this.holder)
+        if (document.getElementsByClassName('footer').length>0) {
+            this.footer = document.getElementsByClassName('footer')[0]
+            if (document.getElementsByClassName('footer').length>1) Debug.error("Too many footers")
+        } else {
+            this.footer = create('span','footer',this.holder)
+        }
+        this.holder.appendChild(this.footer) // move to the end
         this.footer.drag_id = "footer"
         this.footer.addEventListener("dragover", (e) => {
             if (NodeBlock.dragged) {
                 e.preventDefault()
                 if (e.target==this.footer)  this.nodeblock_dragged_over_footer(e)
             }
-        }) 
+        })
 
         this.drag_id = "footer"
         this.addEventListener("dragover", (e) => {
@@ -74,6 +77,9 @@ export class ControllerPanel extends HTMLDivElement {
                 }
             }
         }) 
+
+        if (ControllerPanel.showing()) ControllerPanel.redraw()
+        else ControllerPanel.hide()
 
     }
 
@@ -122,6 +128,7 @@ export class ControllerPanel extends HTMLDivElement {
 
     static can_refresh() {  // returns -1 to say "no, and don't try again", 0 to mean "go ahead!", or n to mean "wait n ms then ask again"
         try {
+            if (app.configuringGraph) {  Debug.trivia("configuring"); return -1 }
             if (!ControllerPanel.showing()) { return -1 }
             if (ControllerPanel.instance.classList.contains('unrefreshable')) { Debug.trivia("already refreshing"); return -1 }
             if (ControllerPanel.instance.updating_heights > 0) { Debug.trivia("no refresh because updating heights"); return -1 }
@@ -180,6 +187,7 @@ export class ControllerPanel extends HTMLDivElement {
         this.updating_heights tracks how many times we've been told in the last RESIZE_DELAY_BEFORE_REDRAW ms.
         When that count gets to zero, we have paused for that long, so save and update.
         */
+       if (app.configuringGraph) { Debug.extended("height change whiel configuring graph"); return}
         this.updating_heights += 1 
         setTimeout( ()=>{
             this.updating_heights -= 1
