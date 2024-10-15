@@ -149,8 +149,8 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     nodeblock_dragged_over_footer(e) {
-        //try {
-            const column_width = this.holder.firstChild.firstChild.getBoundingClientRect().width
+        try {
+            const column_width = this.firstChild.getBoundingClientRect().width
             const abs_left = this.footer.getBoundingClientRect().x - 1
             const column_number = (x) => { return Math.floor((x-abs_left) / column_width) }
             const column = column_number(e.pageX)
@@ -161,10 +161,11 @@ export class ControllerPanel extends HTMLDivElement {
                 return (pretend_over == null)
             })
             
-        //} catch {
-        //     let a;
-        //}
-        NodeBlock.drag_over_me(e, pretend_over, true)
+            NodeBlock.drag_over_me(e, pretend_over, true)
+        } catch (e) {
+            Debug.error("Something wrong in nodeblock_dragged_over_footer:")
+            console.error(e)
+        }
     }
 
     on_update() {
