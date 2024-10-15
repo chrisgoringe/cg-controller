@@ -13,6 +13,7 @@ export class Timings { // ms
     static UPDATE_EXCEPTION_WAITTIME = 10000
     static GROUP_SELECT_NOSELECT_WAIT = 5000
     static PAUSE_STACK_WAIT = 101
+    static HOLDER_RESIZED_WAIT = 2000
 }
 
 export class Colors {

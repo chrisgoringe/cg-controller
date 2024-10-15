@@ -43,31 +43,32 @@ export class NodeBlock extends HTMLSpanElement {
         e.dataTransfer.setDragImage(this, 10, 10);
     }
 
-    static drag_over_me(e) {
+    static drag_over_me(e, nodeblock_over, force_before) {
+        nodeblock_over = nodeblock_over ?? e.currentTarget
         if (NodeBlock.dragged) {
         //    e.dataTransfer.effectAllowed = "all";
             e.dataTransfer.dropEffect = "move"
             e.preventDefault(); 
         }
-        if (NodeBlock.dragged && e.currentTarget!=NodeBlock.dragged) { 
-            if (e.currentTarget != NodeBlock.last_swap) {
-                if (e.currentTarget.drag_id=='header') {
+        if (NodeBlock.dragged && nodeblock_over!=NodeBlock.dragged) { 
+            if (nodeblock_over != NodeBlock.last_swap) {
+                if (nodeblock_over.drag_id=='header') {
                     NodeBlock.dragged.parentElement.insertBefore(NodeBlock.dragged, NodeBlock.dragged.parentElement.firstChild)
-                } else if (e.currentTarget.drag_id=='footer') {
+                } else if (nodeblock_over.drag_id=='footer') {
                     NodeBlock.dragged.parentElement.appendChild(NodeBlock.dragged)
                 } else {
-                    if (e.currentTarget.previousSibling == NodeBlock.dragged) {
-                        e.currentTarget.parentElement.insertBefore(e.currentTarget, NodeBlock.dragged)
+                    if (nodeblock_over.previousSibling == NodeBlock.dragged && !force_before) {
+                        nodeblock_over.parentElement.insertBefore(nodeblock_over, NodeBlock.dragged)
                     } else {
-                        e.currentTarget.parentElement.insertBefore(NodeBlock.dragged, e.currentTarget)
+                        nodeblock_over.parentElement.insertBefore(NodeBlock.dragged, nodeblock_over)
                     }
                 }
-                NodeBlock.last_swap = e.currentTarget
+                NodeBlock.last_swap = nodeblock_over
             }
         }
 
         if (e.dataTransfer.types.includes('Files')) {
-            if (e.currentTarget?.is_image_upload_node?.() && is_single_image(e.dataTransfer)) {
+            if (nodeblock_over?.is_image_upload_node?.() && is_single_image(e.dataTransfer)) {
                 e.dataTransfer.dropEffect = "move"    
                 e.stopPropagation()        
             } else {

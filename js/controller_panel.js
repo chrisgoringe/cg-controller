@@ -48,6 +48,33 @@ export class ControllerPanel extends HTMLDivElement {
             e.preventDefault();
         })
         this.updating_heights = 0
+
+        /*
+        Full width footer
+        */
+        this.footer = create('span','footer',this.holder)
+        this.footer.drag_id = "footer"
+        this.footer.addEventListener("dragover", (e) => {
+            if (NodeBlock.dragged) {
+                e.preventDefault()
+                if (e.target==this.footer)  this.nodeblock_dragged_over_footer(e)
+            }
+        }) 
+
+        this.drag_id = "footer"
+        this.addEventListener("dragover", (e) => {
+            if (NodeBlock.dragged) {
+                e.preventDefault()
+                if (e.target==this) {
+                    if (!this.last_dragover) { this.last_dragover = { "timeStamp":e.timeStamp, "x":e.x, "y":e.y } }
+                    else {
+                        if (Math.abs(e.x-this.last_dragover.x) > 2 || Math.abs(e.y-this.last_dragover.y) > 2) { this.last_dragover = null }
+                        else if ((e.timeStamp - this.last_dragover.timeStamp) > Timings.DRAG_PAUSE_OVER_BACKGROUND) this.nodeblock_dragged_over_footer(e)
+                    }
+                }
+            }
+        }) 
+
     }
 
     static toggle() {
@@ -112,6 +139,25 @@ export class ControllerPanel extends HTMLDivElement {
             return Timings.UPDATE_EXCEPTION_WAITTIME
         }
         return 0
+    }
+
+    nodeblock_dragged_over_footer(e) {
+        //try {
+            const column_width = this.holder.firstChild.firstChild.getBoundingClientRect().width
+            const abs_left = this.footer.getBoundingClientRect().x - 1
+            const column_number = (x) => { return Math.floor((x-abs_left) / column_width) }
+            const column = column_number(e.pageX)
+            var pretend_over = null
+
+            Array.from(this.holder.firstChild.childNodes).every((nodeblock) => {
+                if (column_number(nodeblock.getBoundingClientRect().x) > column) pretend_over = nodeblock
+                return (pretend_over == null)
+            })
+            
+        //} catch {
+        //     let a;
+        //}
+        NodeBlock.drag_over_me(e, pretend_over, true)
     }
 
     on_update() {
@@ -304,21 +350,7 @@ export class ControllerPanel extends HTMLDivElement {
         observe_resizables( this, this.on_height_change.bind(this) )
         if (settings.heights) restore_heights( this.node_blocks, settings.heights )
 
-        if (node_count.visible_nodes > 0) {
-            this.drag_id = "footer"
-            this.addEventListener("dragover", (e) => {
-                if (NodeBlock.dragged) {
-                    e.preventDefault()
-                    if (e.target==this) {
-                        if (!this.last_dragover) { this.last_dragover = { "timeStamp":e.timeStamp, "x":e.x, "y":e.y } }
-                        else {
-                            if (Math.abs(e.x-this.last_dragover.x) > 2 || Math.abs(e.y-this.last_dragover.y) > 2) { this.last_dragover = null }
-                            else if ((e.timeStamp - this.last_dragover.timeStamp) > Timings.DRAG_PAUSE_OVER_BACKGROUND) NodeBlock.drag_over_me(e)
-                        }
-                    }
-                }
-            }) 
-        } else if (node_count.nodes == 0) {
+        if (node_count.nodes == 0) {
             var keystroke = settings.getSettingValue(SettingIds.KEYBOARD_TOGGLE,"C")
             if (keystroke.toUpperCase() == keystroke) keystroke = "Shift-" + keystroke
             const EMPTY_MESSAGE = 
@@ -342,10 +374,17 @@ export class ControllerPanel extends HTMLDivElement {
             this.submit_button = create("button","submit_button",this.footer,{"innerText":"Submit"})
             this.submit_button.addEventListener('click', () => { document.getElementById('queue-button').click() } )
         }
+        
+        if (settings.holder_height) { this.holder.style.height = `${settings.holder_height}px` }
+        this.style.setProperty('--actual-height', `${this.holder.getBoundingClientRect().height}px`);
 
-        /*
-        Finalise
-        */
+        new ResizeObserver( () => { 
+            const actual = this.holder.getBoundingClientRect().height
+            if (settings.holder_height == actual) return
+            settings.holder_height = actual; 
+            this.style.setProperty('--actual-height', `${actual}px`);
+        } ).observe(this.holder)
+
         setTimeout( this.set_position.bind(this), 20 )
     }
 
