@@ -140,7 +140,16 @@ export class NodeBlock extends HTMLSpanElement {
         this.minimised = settings.is_minimised(this.node.id)
 
         this.minimisedot = create("span", 'nodeblock_minimisedot', this.title_bar, { "innerHTML":"&#11044;"})
-        this.minimisedot.addEventListener("click", (e)=>{ settings.toggle_minimised(this.node.id); UpdateController.make_request('minimise') })
+        this.minimisedot.addEventListener("click", (e)=>{ 
+            e.preventDefault(); 
+            e.stopPropagation(); 
+            settings.toggle_minimised(this.node.id);
+            UpdateController.make_request('minimise') 
+        })
+        this.minimisedot.addEventListener("mousedown", (e)=>{ 
+            e.preventDefault(); 
+            e.stopPropagation(); 
+        })
 
         this.title_text = create("span", 'nodeblock_title', this.title_bar, {"innerText":this.node.title, 'draggable':false})
 
