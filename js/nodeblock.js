@@ -42,7 +42,7 @@ export class NodeBlock extends HTMLSpanElement {
         NodeBlock.dragged.classList.add("being_dragged")
         e.dataTransfer.setDragImage(this, 10, 10);
     }
-
+/*
     bottom_of_lowest_element() {
         var bol = this.lastChild.getBoundingClientRect().bottom
         if (this.lastChild.previousSibling) bol = Math.max(bol, this.lastChild.previousSibling.getBoundingClientRect().bottom)
@@ -63,7 +63,7 @@ export class NodeBlock extends HTMLSpanElement {
             r.style.height = `${new_height}px`
         })
     }
-
+*/
     static drag_over_me(e, nodeblock_over, force_before) {
         nodeblock_over = nodeblock_over ?? e.currentTarget
         if (NodeBlock.dragged) {

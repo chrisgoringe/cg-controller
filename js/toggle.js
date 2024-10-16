@@ -17,9 +17,9 @@ export class Toggle extends HTMLSpanElement {
 
         this.label = create('span', 'toggle_label', this, {"innerHTML":label})
 
-        this.value = create('span', 'toggle_value', this)
-        this.text_value = create('span', 'toggle_text', this.value)
-        this.graphical_value = create('span', 'toggle_graphic', this.value, {"innerHTML":"&#11044;"})
+        this.value_span = create('span', 'toggle_value', this)
+        this.text_value = create('span', 'toggle_text', this.value_span)
+        this.graphical_value = create('span', 'toggle_graphic', this.value_span, {"innerHTML":"&#11044;"})
 
         this.render()
     }

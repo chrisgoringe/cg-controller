@@ -10,7 +10,7 @@ const DEFAULTS = {
     "heights"      : [],
     "advanced"     : false,
     "group_choice" : GroupManager.show_all,
-    "holder_height": 0
+    "full_height"  : 0
 }
 
 const KEYS = Object.keys(DEFAULTS)

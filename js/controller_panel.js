@@ -22,13 +22,17 @@ export class ControllerPanel extends HTMLDivElement {
         if (ControllerPanel.instance) { ControllerPanel.instance.remove() }
         ControllerPanel.instance = this
         this.classList.add("controller")
+        document.body.appendChild(this)
 
-        this.holder = document.getElementById('controller_holder')
+        /*this.holder = document.getElementById('controller_holder')
         if (!this.holder) {
             this.holder = create('span','controller_holder',document.body,{'id':'controller_holder'})
-        }
+        }*/
 
-        this.holder.appendChild(this);
+        //this.holder.appendChild(this);
+        this.header = create('span','header', this)
+        this.main   = create('span','main', this)
+        this.footer = create('span','footer', this)
         
         this.node_blocks = {}   // map from node.id to NodeBlock
 
@@ -48,14 +52,15 @@ export class ControllerPanel extends HTMLDivElement {
 
         /*
         Full width footer
-        */
+        
         if (document.getElementsByClassName('footer').length>0) {
             this.footer = document.getElementsByClassName('footer')[0]
             if (document.getElementsByClassName('footer').length>1) Debug.error("Too many footers")
         } else {
             this.footer = create('span','footer',this.holder)
         }
-        this.holder.appendChild(this.footer) // move to the end
+        this.holder.appendChild(this.footer)*/
+
         this.footer.drag_id = "footer"
         this.footer.addEventListener("dragover", (e) => {
             if (NodeBlock.dragged) {
@@ -98,12 +103,12 @@ export class ControllerPanel extends HTMLDivElement {
     static redraw() {
         Debug.trivia("In ControllerPanel.redraw")
         ControllerPanel.instance.build_controllerPanel()
-        ControllerPanel.instance.holder.classList.remove('hidden')
+        ControllerPanel.instance.classList.remove('hidden')
         settings.showing = true
     }
 
     static hide() {
-        ControllerPanel.instance.holder.classList.add('hidden')
+        ControllerPanel.instance.classList.add('hidden')
         try { settings.showing = false } catch { Debug.trivia("settings exception in hide") }
     }
 
@@ -133,7 +138,8 @@ export class ControllerPanel extends HTMLDivElement {
             if (ControllerPanel.instance.classList.contains('unrefreshable')) { Debug.trivia("already refreshing"); return -1 }
             if (ControllerPanel.instance.updating_heights > 0) { Debug.trivia("no refresh because updating heights"); return -1 }
             if (ControllerPanel.instance.contains(document.activeElement) &&
-                        document.activeElement != ControllerPanel.instance.group_select ) { Debug.trivia("delay refresh because active element"); return 1 }
+                        document.activeElement != ControllerPanel.instance.group_select &&
+                        document.activeElement.tagName != "BUTTON" ) { Debug.trivia("delay refresh because active element"); return 1 }
          
             const unrefreshables = ControllerPanel.instance.getElementsByClassName('unrefreshable')
             if (unrefreshables.length > 0) {
@@ -149,7 +155,7 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     nodeblock_dragged_over_footer(e) {
-        try {
+    /*    try {
             const column_width = this.firstChild.getBoundingClientRect().width
             const abs_left = this.footer.getBoundingClientRect().x - 1
             const column_number = (x) => { return Math.floor((x-abs_left) / column_width) }
@@ -160,12 +166,12 @@ export class ControllerPanel extends HTMLDivElement {
                 if (column_number(nodeblock.getBoundingClientRect().x) > column) pretend_over = nodeblock
                 return (pretend_over == null)
             })
-            
-            NodeBlock.drag_over_me(e, pretend_over, true)
-        } catch (e) {
+            */
+            NodeBlock.drag_over_me(e)//, pretend_over, true)
+        /*} catch (e) {
             Debug.error("Something wrong in nodeblock_dragged_over_footer:")
             console.error(e)
-        }
+        }*/
     }
 
     on_update() {
@@ -188,7 +194,7 @@ export class ControllerPanel extends HTMLDivElement {
         this.updating_heights tracks how many times we've been told in the last RESIZE_DELAY_BEFORE_REDRAW ms.
         When that count gets to zero, we have paused for that long, so save and update.
         */
-       if (app.configuringGraph) { Debug.extended("height change whiel configuring graph"); return}
+        if (app.configuringGraph) { Debug.extended("height change whiel configuring graph"); return}
         this.updating_heights += 1 
         setTimeout( ()=>{
             this.updating_heights -= 1
@@ -211,7 +217,7 @@ export class ControllerPanel extends HTMLDivElement {
             }
             if (this.node_blocks[node_id]) {             // if it now exists, add it
                 //this.node_blocks[node_id].on_update()
-                this.append(this.node_blocks[node_id])
+                this.main.append(this.node_blocks[node_id])
                 this.new_node_id_list.push(node_id)
             }
         }        
@@ -262,7 +268,7 @@ export class ControllerPanel extends HTMLDivElement {
             style["border-color"]  = "#353535"
             style["border-radius"] = "0px"
             style["border-width"]  = "0 thick thick 0"
-            style["max-height"] = `calc(100vh - ${top_element.bottom}px)`
+            //style["max-height"] = `calc(100vh - ${top_element.bottom}px)`
         }
         if (this.new_menu_position=="Bottom") {
             const left_element = document.getElementsByClassName('comfyui-body-left')[0].getBoundingClientRect()
@@ -274,13 +280,12 @@ export class ControllerPanel extends HTMLDivElement {
             style["border-radius"] = "0px"
             style["border-width"]  = "thick thick 0 0"
             style["justify-content"] = "flex-end"
-            style["max-height"] = `calc(100vh - ${bottom_element.height}px)`
+            //style["max-height"] = `calc(100vh - ${bottom_element.height}px)`
         }
-        Object.assign(this.holder.style, style)
+        Object.assign(this.style, style)
     }
 
     build_controllerPanel() { 
-        this.innerHTML = ""
         this.classList.add('unrefreshable')
         this.reason = 'already refreshing'
         try {
@@ -292,9 +297,9 @@ export class ControllerPanel extends HTMLDivElement {
 
     _build_controllerPanel() {
         try {
-            this.holder.style.zIndex = app.graph.nodes.length + 1
+            this.style.zIndex = app.graph.nodes.length + 1
         } catch {
-            this.holder.style.zIndex = 1000000
+            this.style.zIndex = 1000000
         }
         this.new_menu_position = settings.getSettingValue('Comfy.UseNewMenu', "Disabled")
         SliderOverrides.setup()
@@ -303,15 +308,13 @@ export class ControllerPanel extends HTMLDivElement {
         /* 
         Create the top section
         */
-        this.header_span = create('span', 'header', this)
-        this.refresh = create('span', 'refresh_button', this.header_span, {"innerHTML":"&#10227;"})
+        this.header.innerHTML = ""
+        this.refresh = create('span', 'refresh_button', this.header, {"innerHTML":"&#10227;"})
         this.refresh.addEventListener('click', (e) => {UpdateController.make_request("refresh_button")})
-        create('span', 'header_title', this.header_span, {"innerText":"Controller"})
-
-        this.extra_controls = create('span', 'extra_controls', this)
+        this.header_title = create('span', 'header_title', this.header, {"innerText":"Controller"})
 
         if (GroupManager.any_groups()) {
-            this.group_select = create("select", 'header_select', this.header_span) 
+            this.group_select = create("select", 'header_select', this.header) 
             GroupManager.list_group_names().forEach((nm) => {
                 const o = new Option(nm,nm)
                 o.style.backgroundColor = GroupManager.group_color(nm)
@@ -335,19 +338,23 @@ export class ControllerPanel extends HTMLDivElement {
 
         }
 
-        var gc = ""
-        try {
-            gc = GroupManager.valid_option(settings.group_choice)
-            if (gc != settings.group_choice) settings.group_choice = gc
-        } catch {
-            gc = Texts.ALL_GROUPS
-            setTimeout(settings.initialise.bind(settings), Timings.SETTINGS_TRY_RELOAD)
+        //var gc = ""
+        //try {
 
-        }
+        // choose a group that exists
+        settings.group_choice = GroupManager.valid_option(settings.group_choice)
+
+        //if (gc != settings.group_choice) settings.group_choice = gc
+        //} catch {
+        //    gc = Texts.ALL_GROUPS
+        //    setTimeout(settings.initialise.bind(settings), Timings.SETTINGS_TRY_RELOAD)
+
+        //}
 
         /*
-        Add the nodes
+        Main section
         */
+        this.main.innerHTML = ""
 
         this.new_node_id_list = []
         this.remove_absent_nodes()
@@ -365,13 +372,17 @@ export class ControllerPanel extends HTMLDivElement {
             const EMPTY_MESSAGE = 
                 "<p>Add nodes to the controller by right-clicking the node<br/>and using the Controller Panel submenu</p>" + 
                 `<p>Toggle controller visibility with ${keystroke}</p>`
-            create('span', 'empty_message', this, {"innerHTML":EMPTY_MESSAGE})
+            create('span', 'empty_message', this.main, {"innerHTML":EMPTY_MESSAGE})
         }
 
+        /*
+        Back to the header
+        */
         if (this.showAdvancedCheckbox) {
-            const add_div = create('div', 'advanced_controls', this.extra_controls)
-            this.show_advanced = create("input", "advanced_checkbox", add_div, {"type":"checkbox", "checked":settings.advanced})
-            create('span', 'advanced_label', add_div, {"innerText":"Show advanced controls"})
+            this.extra_controls = create('span', 'extra_controls', this.header)
+            this.add_div = create('div', 'advanced_controls', this.extra_controls)
+            this.show_advanced = create("input", "advanced_checkbox", this.add_div, {"type":"checkbox", "checked":settings.advanced})
+            create('span', 'advanced_label', this.add_div, {"innerText":"Show advanced controls"})
             this.show_advanced.addEventListener('input', function (e) {
                 settings.advanced = e.target.checked
                 ControllerPanel.redraw()
@@ -379,45 +390,33 @@ export class ControllerPanel extends HTMLDivElement {
             this.in
         }
 
+        /* 
+        Footer 
+        */
+
+        this.footer.innerHTML = ""
         if (this.new_menu_position=="Disabled") {
             this.submit_button = create("button","submit_button",this.footer,{"innerText":"Submit"})
             this.submit_button.addEventListener('click', () => { document.getElementById('queue-button').click() } )
         }
         
-        if (settings.holder_height) { this.holder.style.height = `${settings.holder_height}px` }
-        this.style.setProperty('--actual-height', `${this.holder.getBoundingClientRect().height}px`);
+        /*
+        Finalise
+        */
 
-        new ResizeObserver( () => { 
-            const actual = this.holder.getBoundingClientRect().height
-            const [bottom_of_children, tallest_child] = this.bottom_of_tallest_child()
-            const bottom_of_me = this.holder.getBoundingClientRect().bottom - 15
-            if (bottom_of_children > bottom_of_me) tallest_child.require_shrink( bottom_of_children - bottom_of_me )
-            if (settings.holder_height == actual) return
-            settings.holder_height = actual; 
-            this.style.setProperty('--actual-height', `${actual}px`);
-        } ).observe(this.holder)
+        /* reload saved height */
+        if (settings.full_height) { this.style.height = `${settings.full_height}px` }
 
+        // might want to make scrollbar go away. Might not.
+        // new ResizeObserver( () => {  } ).observe(this)
+
+        /* let all the layout finish then position self */
         setTimeout( this.set_position.bind(this), 20 )
-    }
-
-    bottom_of_tallest_child() {
-        var bottom_of_tallest_so_far = 0
-        var the_tallest_child = null
-        this.childNodes.forEach((child) => { 
-            if (child.bottom_of_lowest_element) {
-                const bottom_of_this_child = child.bottom_of_lowest_element()
-                if (bottom_of_this_child > bottom_of_tallest_so_far) {
-                    the_tallest_child = child
-                    bottom_of_tallest_so_far = bottom_of_this_child
-                }
-            } 
-        })
-        return [bottom_of_tallest_so_far, the_tallest_child]
     }
 
     save_node_order() {
         const node_id_list = []
-        this.childNodes.forEach((child)=>{if (child?.node?.id) node_id_list.push(child.node.id)})
+        this.main.childNodes.forEach((child)=>{if (child?.node?.id) node_id_list.push(child.node.id)})
         settings.node_order = node_id_list
     }
 

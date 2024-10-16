@@ -1,22 +1,13 @@
-.controller_holder {
-    height: 90vh;
-    /*max-height: 90vh;*/
+.controller {
+    max-height: calc(-44px + 100vh);
     resize: vertical;
     background: #1c1c1cee;
     padding: 5px 0px 5px 5px;
     position: absolute;
-    overflow: hidden;
-}
-
-.controller {
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-    align-items: flex-start;
     --element_width: 340px;
-    resize: vertical;
-    height: 100%;
-    --actual-height: 100%;
+    overflow: clip scroll;
+
+    /*--actual-height: 100%;*/
 }
 
 /* Header */
@@ -26,8 +17,9 @@
     width: var(--element_width);
     justify-content: space-between;
     margin: 0px 0px 5px 0px;
-    padding: 0px;
     align-items: center;
+    flex-wrap: wrap;
+    padding: 0px 4px 0px 0px;
 }
 
 .header_title { }
@@ -53,6 +45,7 @@
     display: flex;
     justify-content: center;
     background-color: #C0808060;
+    /*width: calc(var(--element_width) - 4px);*/
 }
 
 .advanced_label {
@@ -74,6 +67,7 @@
     position: relative;
     width: var(--element_width);
     min-height: 40px;
+    display:block;
 }
 
 .nodeblock.minimised {
@@ -83,7 +77,6 @@
 .nodeblock_titlebar {
     font-size: 70%;
     display: block;
-    width: 100%;
     padding: 3px 3px 3px 3px;
     color: #b3b3b3;
 }
@@ -110,10 +103,9 @@
 .nodeblock_draghandle {
     cursor: grab;
     position: absolute;
-    height: 22px;
-    width: calc(100% - 20px);
-    top: 0px;
-    left: 20px;
+    height: 16px;
+    width: calc(var(--element_width) - 32px);
+    left: 16px;
 }
 
 .nodeblock_title {
@@ -171,7 +163,7 @@
 textarea.input {
     height: 72px;
     resize: vertical;
-    max-height: calc(var(--actual-height) - 50px);
+    /*max-height: calc(var(--actual-height) - 50px);*/
     font-size: 85%;
 }
 

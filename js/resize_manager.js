@@ -20,7 +20,7 @@ export function observe_resizables( root, change_callback ) {
             if (PersistSize.sizes[resize.target.resize_id] == sz) return
             PersistSize.sizes[resize.target.resize_id] = sz
             Debug.trivia(`${resize.target.resize_id}  ${sz}`)
-            change_callback()
+            change_callback() 
         })
     } )
     function recursive_observe(element) {
