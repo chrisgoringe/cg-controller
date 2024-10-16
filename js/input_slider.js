@@ -154,6 +154,7 @@ export class FancySlider extends HTMLSpanElement {
 
     _mousedown(e) { 
         if (this.displaying=="graphic") {
+            e.preventDefault()
             if (e.detail==2) {
                 this.switch_to_textedit()
             } else {
