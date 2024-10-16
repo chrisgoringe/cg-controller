@@ -1,9 +1,8 @@
 import { app } from "../../scripts/app.js";
 import { ComfyWidgets } from "../../scripts/widgets.js";
 
-import { darken } from "./utilities.js";
+import { create, darken } from "./utilities.js";
 import { Entry } from "./panel_entry.js"
-import { create } from "./elements.js";
 import { make_resizable } from "./resize_manager.js";
 import { settings } from "./settings.js";
 import { UpdateController } from "./update_controller.js";

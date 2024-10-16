@@ -1,5 +1,21 @@
 import { app } from "../../scripts/app.js"
 
+export function create( tag, clss, parent, properties ) {
+    const nd = document.createElement(tag);
+    if (clss)       clss.split(" ").forEach((s) => nd.classList.add(s))
+    if (parent)     parent.appendChild(nd);
+    if (properties) Object.assign(nd, properties);
+    return nd;
+}
+
+export function create_deep( tag_clss_properties_list, parent ) {
+    tag_clss_properties_list.forEach((tcp) => {
+        parent = create(tcp.tag, tcp.clss, parent, tcp.properties)
+    })
+    return parent
+}
+
+
 export function step_size(options) {
     if (options.round)     return options.round
     if (options.precision) return Math.pow(0.1, options.precision)

@@ -1,5 +1,5 @@
 import { app } from "../../scripts/app.js";
-import { create } from "./elements.js";
+import { create } from "./utilities.js";
 import { FancySlider } from "./input_slider.js";
 import { rounding } from "./utilities.js";
 import { make_resizable } from "./resize_manager.js";

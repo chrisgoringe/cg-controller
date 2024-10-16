@@ -1,4 +1,4 @@
-import { create } from "./elements.js";
+import { create } from "./utilities.js";
 
 export class Toggle extends HTMLSpanElement { 
     constructor(state, label, label_true, label_false) {

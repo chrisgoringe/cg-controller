@@ -1,11 +1,11 @@
 import { app } from "../../scripts/app.js"
-import { api } from "../../scripts/api.js" 
 import { ControllerPanel } from "./controller_panel.js"
 import { CGControllerNode } from "./controller_node.js"   
-import { create } from "./elements.js"
+import { create, create_deep } from "./utilities.js"
 import { add_controls } from "./controller_controls.js"
 import { add_control_panel_options, NodeInclusionManager,  } from "./node_inclusion.js"
 import { UpdateController } from "./update_controller.js"
+import { Debug } from "./debug.js"
 
 app.registerExtension({
 	name: "cg.controller",
@@ -30,6 +30,19 @@ app.registerExtension({
             {'rel':'stylesheet', 'type':'text/css', 'href':'extensions/cg-controller/controller.css' } )
         create('link', null, document.getElementsByTagName('HEAD')[0], 
             {'rel':'stylesheet', 'type':'text/css', 'href':'extensions/cg-controller/slider.css' } )
+
+        var top_menu = document.getElementsByClassName('p-menubar-root-list')
+        try {
+            //top_menu = top_menu[0]
+            const span = create_deep([  {'tag':'li', 'clss':'p-menubar-item relative _controller'}, 
+                                        {'tag':'div', 'clss':'p-menubar-item-link _controller'},  
+                                        {'tag':'span', 'clss':'p-menubar-item-link _controller', 'properties':{"innerText":"Controller"}}
+                                    ], top_menu[0])
+            span.addEventListener('click', ()=>{ControllerPanel.toggle()})
+        } catch (e) {
+            Debug.error("Failed to add to top menu because...")
+            console.error(e)
+        }
 
         // Allow our elements to do any setup they want
         ControllerPanel.on_setup()

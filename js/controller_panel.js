@@ -1,8 +1,7 @@
 import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js" 
 
-import { create } from "./elements.js";
-import { get_node } from "./utilities.js";
+import { create, get_node } from "./utilities.js";
 import { SliderOverrides } from "./input_slider.js";
 import { GroupManager } from "./groups.js";
 
