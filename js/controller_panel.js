@@ -407,8 +407,7 @@ export class ControllerPanel extends HTMLDivElement {
         /* reload saved height */
         if (settings.full_height) { this.style.height = `${settings.full_height}px` }
 
-        // might want to make scrollbar go away. Might not.
-        // new ResizeObserver( () => {  } ).observe(this)
+        new ResizeObserver( () => { settings.full_height = this.getBoundingClientRect().height } ).observe(this)
 
         /* let all the layout finish then position self */
         setTimeout( this.set_position.bind(this), 20 )
