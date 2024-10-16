@@ -8,11 +8,14 @@ export class Toggle extends HTMLSpanElement {
         this.label_false = label_false ?? "false"
 
         this.classList.add('toggle')
-        this.addEventListener('click', () => {
+        this.addEventListener('click', (e) => {
             this.value = !this.value            
-            const e = new Event('input')
-            this.dispatchEvent(e)
+            const e2 = new Event('input')
+            this.dispatchEvent(e2)
             this.render() 
+        })
+        this.addEventListener('mousedown', (e) => {
+            e.preventDefault()
         })
 
         this.label = create('span', 'toggle_label', this, {"innerHTML":label})
