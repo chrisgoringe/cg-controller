@@ -10,6 +10,7 @@
 
 .controller-tab-button.selected {
     border-left: 4px solid var(--p-button-text-primary-color);
+    color: var(--p-button-text-primary-color);
 }
 
 
