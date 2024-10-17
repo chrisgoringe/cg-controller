@@ -282,6 +282,11 @@ export class ControllerPanel extends HTMLDivElement {
             //style["max-height"] = `calc(100vh - ${bottom_element.height}px)`
         }
         Object.assign(this.style, style)
+
+        if (settings.button_position!='top') {
+            this.style.height = "100%"
+            this.style.resize = "none"
+        }
     }
 
     build_controllerPanel() { 

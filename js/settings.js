@@ -28,35 +28,40 @@ class _Settings {
         })
     }
 
+    get(k) {
+        if (app.graph?.extra?.controller_panel?.[k] != undefined) return app.graph.extra.controller_panel[k]  // value exists - all good
+
+        if (app.graph?.extra.controller_panel) {  // our settings exist, but not this one. Must be new
+            app.graph.extra.controller_panel[k] = DEFAULTS[k]
+            return app.graph.extra.controller_panel[k]
+        } else if (app.graph.extra) {
+            Debug.extended(`When requesting ${k}, extra did not have controller_panel - normal for new workflows - creating it`)
+            app.graph.extra.controller_panel = {}
+            return DEFAULTS[k]
+        } else {
+            Debug.important(`When requesting ${k}, extra did not exist`)
+            return DEFAULTS[k]
+        }        
+    }
+
+    set(k,v) {
+        if (app.graph?.extra.controller_panel) {
+            app.graph.extra.controller_panel[k] = v   
+        } else if (app.graph.extra) {
+            Debug.important(`When setting ${k}, extra did not have controller_panel`)
+        } else {
+            Debug.important(`When setting ${k}, extra did not exist`)
+        }
+    }
+
     constructor() {
         KEYS.forEach((k) => {
             Object.defineProperty(this, k, {
-                get : () =>  {  
-                    if (app.graph?.extra?.controller_panel?.[k] != undefined) return app.graph.extra.controller_panel[k]  // value exists - all good
-
-                    if (app.graph?.extra.controller_panel) {  // our settings exist, but not this one. Must be new
-                        app.graph.extra.controller_panel[k] = DEFAULTS[k]
-                        return app.graph.extra.controller_panel[k]
-                    } else if (app.graph.extra) {
-                        Debug.extended(`When requesting ${k}, extra did not have controller_panel - normal for new workflows - creating it`)
-                        app.graph.extra.controller_panel = {}
-                        return DEFAULTS[k]
-                    } else {
-                        Debug.important(`When requesting ${k}, extra did not exist`)
-                        return DEFAULTS[k]
-                    }
-                },
-                set : (v) => {
-                    if (app.graph?.extra.controller_panel) {
-                        app.graph.extra.controller_panel[k] = v   
-                    } else if (app.graph.extra) {
-                        Debug.important(`When setting ${k}, extra did not have controller_panel`)
-                    } else {
-                        Debug.important(`When setting ${k}, extra did not exist`)
-                    }
-                }
+                get : ( ) => { return this.get(k)   },
+                set : (v) => { return this.set(k,v) }
             })
         })
+        this.button_position = "side"
     }
 
     // convenience method

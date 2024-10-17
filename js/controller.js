@@ -6,6 +6,7 @@ import { add_controls } from "./controller_controls.js"
 import { add_control_panel_options, NodeInclusionManager,  } from "./node_inclusion.js"
 import { UpdateController } from "./update_controller.js"
 import { Debug } from "./debug.js"
+import { settings } from "./settings.js"
 
 app.registerExtension({
 	name: "cg.controller",
@@ -31,14 +32,37 @@ app.registerExtension({
         create('link', null, document.getElementsByTagName('HEAD')[0], 
             {'rel':'stylesheet', 'type':'text/css', 'href':'extensions/cg-controller/slider.css' } )
 
-        var top_menu = document.getElementsByClassName('p-menubar-root-list')
         try {
-            //top_menu = top_menu[0]
-            const span = create_deep([  {'tag':'li', 'clss':'p-menubar-item relative _controller'}, 
-                                        {'tag':'div', 'clss':'p-menubar-item-link _controller'},  
-                                        {'tag':'span', 'clss':'p-menubar-item-link _controller', 'properties':{"innerText":"Controller"}}
-                                    ], top_menu[0])
-            span.addEventListener('click', ()=>{ControllerPanel.toggle()})
+            if (settings.button_position=='top') {
+                const top_menu = document.getElementsByClassName('p-menubar-root-list')[0]
+                const span = create_deep([  {'tag':'li', 'clss':'p-menubar-item relative _controller'}, 
+                                            {'tag':'div', 'clss':'p-menubar-item-link _controller'},  
+                                            {'tag':'span', 'clss':'p-menubar-item-link _controller', 'properties':{"innerText":"Controller"}}
+                                        ], top_menu)
+                span.addEventListener('click', ()=>{ControllerPanel.toggle()})
+            } else {
+                const side_menu = document.getElementsByClassName('side-tool-bar-container')[0]
+                side_menu.childNodes.forEach((b)=>{
+                    if (b.type=='button') b.addEventListener('click', ()=>{ControllerPanel.hide(); button.classList.remove('selected')})
+                })
+                const dataname = side_menu.attributes[0].name
+                const button = create('button', 'p-button p-component p-button-icon-only p-button-text controller-tab-button side-bar-button p-button-secondary', null,
+                    {"ariaLabel":"Controller"})
+                button.setAttribute(dataname, "")
+                side_menu.insertBefore(button, side_menu.lastChild)
+                const icon = create('i', 'pi pi-sliders-h side-bar-button-icon', button)
+                //const label = create('span', 'p-button-label', button)
+                button.addEventListener('click', ()=>{
+                    const active = document.getElementsByClassName('side-bar-button-selected')
+                    if (active.length==1 && active[0]!=button) active[0].click()
+                    ControllerPanel.toggle()
+                    if (ControllerPanel.showing()) button.classList.add('selected')
+                    else button.classList.remove('selected')
+                })
+                if (ControllerPanel.showing()) button.classList.add('selected')
+
+
+            }
         } catch (e) {
             Debug.error("Failed to add to top menu because...")
             console.error(e)

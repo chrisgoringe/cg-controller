@@ -1,3 +1,18 @@
+/* Menu */
+
+.controller-tab-button {
+    padding: 8px 0px 8px 0px;
+    border: 1px;
+    height: 64px;
+    width: 64px;
+    border-radius:0px;
+}
+
+.controller-tab-button.selected {
+    border-left: 4px solid var(--p-button-text-primary-color);
+}
+
+
 .controller {
     max-height: calc(-44px + 100vh);
     resize: vertical;
