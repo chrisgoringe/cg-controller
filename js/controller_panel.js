@@ -155,23 +155,7 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     nodeblock_dragged_over_footer(e) {
-    /*    try {
-            const column_width = this.firstChild.getBoundingClientRect().width
-            const abs_left = this.footer.getBoundingClientRect().x - 1
-            const column_number = (x) => { return Math.floor((x-abs_left) / column_width) }
-            const column = column_number(e.pageX)
-            var pretend_over = null
-
-            Array.from(this.holder.firstChild.childNodes).every((nodeblock) => {
-                if (column_number(nodeblock.getBoundingClientRect().x) > column) pretend_over = nodeblock
-                return (pretend_over == null)
-            })
-            */
-            NodeBlock.drag_over_me(e)//, pretend_over, true)
-        /*} catch (e) {
-            Debug.error("Something wrong in nodeblock_dragged_over_footer:")
-            console.error(e)
-        }*/
+        NodeBlock.drag_over_me(e)
     }
 
     on_update() {
@@ -189,21 +173,9 @@ export class ControllerPanel extends HTMLDivElement {
         }
     }
 
-    on_height_change() {
-        /*
-        this.updating_heights tracks how many times we've been told in the last RESIZE_DELAY_BEFORE_REDRAW ms.
-        When that count gets to zero, we have paused for that long, so save and update.
-        */
-        if (app.configuringGraph) { Debug.extended("height change whiel configuring graph"); return}
-        this.updating_heights += 1 
-        setTimeout( ()=>{
-            this.updating_heights -= 1
-            Debug.trivia(`updating_heights stack ${this.updating_heights}`)
-            if (this.updating_heights==0) {
-                settings.heights = get_resizable_heights(this)
-                UpdateController.make_request("heights changed", Timings.END_HEIGHT_CHANGE_PAUSE)
-            }
-        }, Timings.RESIZE_DELAY_BEFORE_REDRAW )
+    on_height_change(delta) {
+        if (delta < 0) this.footer.style.height = `${this.footer.getBoundingClientRect().height - delta}px`
+        //UpdateController.make_request('on_height_change', 100, true)
     }
 
     consider_adding_node(node_or_node_id) {
@@ -262,6 +234,7 @@ export class ControllerPanel extends HTMLDivElement {
         const style = {  }
         const top_element = document.getElementsByClassName('comfyui-body-top')[0].getBoundingClientRect()
         style["top"] = `${top_element.bottom}px`
+        style["height"] = `calc(100vh - ${top_element.bottom}px)`
 
         if (settings.getSettingValue("Comfy.Sidebar.Location")=="left") {
             const left_element = document.getElementsByClassName('comfyui-body-left')[0].getBoundingClientRect()
@@ -274,7 +247,7 @@ export class ControllerPanel extends HTMLDivElement {
         }
 
         Object.assign(this.style, style)
-
+        this.footer.style.height = '20px'
     }
 
     build_controllerPanel() { 
@@ -330,22 +303,8 @@ export class ControllerPanel extends HTMLDivElement {
 
         }
 
-        //var gc = ""
-        //try {
-
-        // choose a group that exists
         settings.group_choice = GroupManager.valid_option(settings.group_choice)
 
-        //if (gc != settings.group_choice) settings.group_choice = gc
-        //} catch {
-        //    gc = Texts.ALL_GROUPS
-        //    setTimeout(settings.initialise.bind(settings), Timings.SETTINGS_TRY_RELOAD)
-
-        //}
-
-        /*
-        Main section
-        */
         this.main.innerHTML = ""
 
         this.new_node_id_list = []
@@ -397,9 +356,9 @@ export class ControllerPanel extends HTMLDivElement {
         */
 
         /* reload saved height */
-        if (settings.full_height) { this.style.height = `${settings.full_height}px` }
+        //if (settings.full_height) { this.style.height = `${settings.full_height}px` }
 
-        new ResizeObserver( () => { settings.full_height = this.getBoundingClientRect().height } ).observe(this)
+        //new ResizeObserver( () => { settings.full_height = this.getBoundingClientRect().height } ).observe(this)
 
         /* let all the layout finish then position self */
         setTimeout( this.set_position.bind(this), 20 )
