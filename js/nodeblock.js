@@ -187,7 +187,7 @@ export class NodeBlock extends HTMLSpanElement {
                 delete this.node.imgs
                 Object.defineProperty(this.node, "imgs", {
                     get : () => { return this.node._imgs },
-                    set : (v) => { this.node._imgs = v; this.show_image(v) }
+                    set : (v) => { this.node._imgs = v; this.show_image(v); UpdateController.make_request("img changed") }
                 })               
             } catch { }
             this.image_image = create('img', 'nodeblock_image', this.image_panel)
