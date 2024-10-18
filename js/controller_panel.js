@@ -24,17 +24,11 @@ export class ControllerPanel extends HTMLDivElement {
         this.classList.add("controller")
         document.body.appendChild(this)
 
-        /*this.holder = document.getElementById('controller_holder')
-        if (!this.holder) {
-            this.holder = create('span','controller_holder',document.body,{'id':'controller_holder'})
-        }*/
-
-        //this.holder.appendChild(this);
         this.header = create('span','header', this)
         this.main   = create('span','main', this)
         this.footer = create('span','footer', this)
         
-        this.node_blocks = {}   // map from node.id to NodeBlock
+        this.node_blocks = {}   
 
         this.addEventListener('dragstart', (e) => { this.classList.add('unrefreshable'); this.reason = 'drag happening' })
         this.addEventListener('dragend',   (e) => { this.save_node_order(); this.classList.remove('unrefreshable') } )
@@ -48,18 +42,6 @@ export class ControllerPanel extends HTMLDivElement {
             }
             e.preventDefault();
         })
-        this.updating_heights = 0
-
-        /*
-        Full width footer
-        
-        if (document.getElementsByClassName('footer').length>0) {
-            this.footer = document.getElementsByClassName('footer')[0]
-            if (document.getElementsByClassName('footer').length>1) Debug.error("Too many footers")
-        } else {
-            this.footer = create('span','footer',this.holder)
-        }
-        this.holder.appendChild(this.footer)*/
 
         this.footer.drag_id = "footer"
         this.footer.addEventListener("dragover", (e) => {
@@ -107,7 +89,7 @@ export class ControllerPanel extends HTMLDivElement {
     hide() {
         this.classList.add('hidden')
         if (ControllerPanel.button) ControllerPanel.button.classList.remove('selected')
-            ControllerPanel.instance.showing = false
+        this.showing = false
     }
 
     static graph_cleared() {
@@ -132,16 +114,19 @@ export class ControllerPanel extends HTMLDivElement {
     static redraw() { ControllerPanel.instance.redraw() }
 
     static can_refresh() {  // returns -1 to say "no, and don't try again", 0 to mean "go ahead!", or n to mean "wait n ms then ask again"
-        try {
-            if (app.configuringGraph) {  Debug.trivia("configuring"); return -1 }
-            if (!ControllerPanel.showing()) { return -1 }
-            if (ControllerPanel.instance.classList.contains('unrefreshable')) { Debug.trivia("already refreshing"); return -1 }
-            if (ControllerPanel.instance.updating_heights > 0) { Debug.trivia("no refresh because updating heights"); return -1 }
-            if (ControllerPanel.instance.contains(document.activeElement) &&
-                        document.activeElement != ControllerPanel.instance.group_select &&
+        if (app.configuringGraph) { Debug.trivia("configuring"); return -1 }
+        if (!ControllerPanel.instance) return -1;
+        return ControllerPanel.instance._can_refresh()
+    }
+
+    _can_refresh() {
+        try {        
+            if (!this.showing) { return -1 }
+            if (this.classList.contains('unrefreshable')) { Debug.trivia("already refreshing"); return -1 }
+            if (this.contains(document.activeElement) && document.activeElement != this.group_select &&
                         document.activeElement.tagName != "BUTTON" ) { Debug.trivia("delay refresh because active element"); return 1 }
          
-            const unrefreshables = ControllerPanel.instance.getElementsByClassName('unrefreshable')
+            const unrefreshables = this.getElementsByClassName('unrefreshable')
             if (unrefreshables.length > 0) {
                 Debug.trivia(`Not refreshing because contains unrefreshable element because ${unrefreshables[0].reason}`)
                 return Timings.UPDATE_GENERAL_WAITTIME
@@ -174,12 +159,14 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     on_height_change(delta) {
+        settings.heights = get_resizable_heights(this)
         if (delta<0) {
             this.footer_height -= delta
             this.footer.style.height = `${this.footer_height}px`
-            Debug.trivia(this.footer_height)
-            this.updating_heights += 1
-            setTimeout( ()=>{this.updating_heights -= 1}, 500 )
+            //this.scrollTop += delta
+            Debug.trivia(`Footer height now ${this.footer_height}`)
+            UpdateController.push_pause()
+            setTimeout( UpdateController.pop_pause, 500 )
             UpdateController.make_request('on_height_change', 1000, true)
         }
     }
