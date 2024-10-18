@@ -65,6 +65,12 @@ export class ControllerPanel extends HTMLDivElement {
             }
         }) 
         this.hide()
+
+        this.footer_resize_stack = 0
+        Object.defineProperty(this, "footer_height", {
+            get : () => { return this.footer.getBoundingClientRect().height },
+            set : (v) => { this.footer.style.height = `${v}px`}
+        })
     }
 
     static toggle() {
@@ -159,15 +165,16 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     on_height_change(delta) {
-        settings.heights = get_resizable_heights(this)
-        if (delta<0) {
-            this.footer_height -= delta
-            this.footer.style.height = `${this.footer_height}px`
-            //this.scrollTop += delta
-            Debug.trivia(`Footer height now ${this.footer_height}`)
-            UpdateController.push_pause()
-            setTimeout( UpdateController.pop_pause, 500 )
-            UpdateController.make_request('on_height_change', 1000, true)
+        if (delta != 0) {
+            settings.heights = get_resizable_heights(this)
+            if ((this.footer_height - delta) > 20) {
+                this.footer_height -= delta
+            }
+            //this.footer_resize_stack += 1
+            //setTimeout( () => {
+            //    this.footer_resize_stack -= 1
+            //    if (this.footer_resize_stack==0) this.footer_height = 20
+            //}, 2000 )
         }
     }
 
