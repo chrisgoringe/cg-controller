@@ -17,11 +17,11 @@ export function observe_resizables( root, change_callback ) {
         x.forEach((resize) => {
             if (resize.borderBoxSize[0].blockSize==0 ) return
             const sz = resize.borderBoxSize[0].blockSize
-            if (PersistSize.sizes[resize.target.resize_id] == sz) return
+            //if (PersistSize.sizes[resize.target.resize_id] == sz) return
             var delta = sz - PersistSize.sizes[resize.target.resize_id]
             PersistSize.sizes[resize.target.resize_id] = sz
-            Debug.trivia(`${resize.target.resize_id}  ${sz}`)
-            Debug.trivia(delta)
+            //Debug.trivia(`${resize.target.resize_id}  ${sz}`)
+            //Debug.trivia(delta)
             if (isNaN(delta)) delta = 0
             change_callback(delta) 
         })

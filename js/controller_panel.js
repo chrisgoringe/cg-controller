@@ -174,8 +174,14 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     on_height_change(delta) {
-        if (delta < 0) this.footer.style.height = `${this.footer.getBoundingClientRect().height - delta}px`
-        //UpdateController.make_request('on_height_change', 100, true)
+        if (delta<0) {
+            this.footer_height -= delta
+            this.footer.style.height = `${this.footer_height}px`
+            Debug.trivia(this.footer_height)
+            this.updating_heights += 1
+            setTimeout( ()=>{this.updating_heights -= 1}, 500 )
+            UpdateController.make_request('on_height_change', 1000, true)
+        }
     }
 
     consider_adding_node(node_or_node_id) {
@@ -248,6 +254,7 @@ export class ControllerPanel extends HTMLDivElement {
 
         Object.assign(this.style, style)
         this.footer.style.height = '20px'
+        this.footer_height = 20
     }
 
     build_controllerPanel() { 
