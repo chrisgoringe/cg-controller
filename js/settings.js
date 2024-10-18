@@ -4,7 +4,7 @@ import { Debug } from "./debug.js"
 
 
 const DEFAULTS = {
-    "showing"      : true,
+    //"showing"      : true,
     "minimised"    : [],
     "node_order"   : [],
     "heights"      : [],

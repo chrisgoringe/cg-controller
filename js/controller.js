@@ -17,11 +17,12 @@ app.registerExtension({
         CGControllerNode.remove()  
         new ControllerPanel()
 
-        /* If the panel is showing (because we reloaded a workflow in which it was), and in the old style, hide the main menu */
+        /* If the panel is showing (because we reloaded a workflow in which it was), and in the old style, hide the main menu 
         if (ControllerPanel.showing() && app.ui.settings.getSettingValue('Comfy.UseNewMenu', "Disabled")=="Disabled") {
             app.ui.menuContainer.style.display = "none";
             app.ui.menuHamburger.style.display = "flex";
-        }
+        } */
+       ControllerPanel.instance.hide()
     },
 
     /* Called at the end of the application startup */
@@ -42,24 +43,28 @@ app.registerExtension({
                 span.addEventListener('click', ()=>{ControllerPanel.toggle()})
             } else {
                 const side_menu = document.getElementsByClassName('side-tool-bar-container')[0]
+                const datanames = new Set()
                 side_menu.childNodes.forEach((b)=>{
-                    if (b.type=='button') b.addEventListener('click', ()=>{ControllerPanel.hide(); button.classList.remove('selected')})
+                    if (b.type=='button') {
+                        b.addEventListener('click', ()=>{ControllerPanel.instance.hide();})
+                        Array.from(b.attributes).forEach((att) => {
+                            if (att.name.startsWith('data')) datanames.add(att.name)
+                        })
+                    }
                 })
-                const dataname = side_menu.attributes[0].name
-                const button = create('button', 'p-button p-component p-button-icon-only p-button-text controller-tab-button side-bar-button p-button-secondary', null,
+
+                ControllerPanel.button = create('button', 'p-button p-component p-button-icon-only p-button-text controller-tab-button side-bar-button p-button-secondary', null,
                     {"ariaLabel":"Controller"})
-                button.setAttribute(dataname, "")
-                side_menu.insertBefore(button, side_menu.lastChild)
-                const icon = create('i', 'pi pi-sliders-h side-bar-button-icon', button)
+                datanames.forEach((d)=>{ ControllerPanel.button.setAttribute(d, "")})
+
+                side_menu.insertBefore(ControllerPanel.button, side_menu.lastChild)
+                const icon = create('i', 'pi pi-sliders-h side-bar-button-icon', ControllerPanel.button)
                 //const label = create('span', 'p-button-label', button)
-                button.addEventListener('click', ()=>{
+                ControllerPanel.button.addEventListener('click', ()=>{
                     const active = document.getElementsByClassName('side-bar-button-selected')
-                    if (active.length==1 && active[0]!=button) active[0].click()
+                    if (active.length==1 && active[0]!=ControllerPanel.button) active[0].click()
                     ControllerPanel.toggle()
-                    if (ControllerPanel.showing()) button.classList.add('selected')
-                    else button.classList.remove('selected')
                 })
-                if (ControllerPanel.showing()) button.classList.add('selected')
 
 
             }

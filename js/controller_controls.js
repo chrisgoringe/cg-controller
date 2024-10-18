@@ -3,7 +3,7 @@ import { ControllerPanel } from "./controller_panel.js"
 import { SettingIds } from "./constants.js";
 
 function canvas_menu() {
-    // Add our items to the canvas menu
+    /*
     const original_getCanvasMenuOptions = LGraphCanvas.prototype.getCanvasMenuOptions;
     LGraphCanvas.prototype.getCanvasMenuOptions = function () {
         const options = original_getCanvasMenuOptions.apply(this, arguments);
@@ -14,7 +14,7 @@ function canvas_menu() {
             callback: () => ControllerPanel.toggle()
         })                
         return options
-    }
+    }*/
 }
 
 function settings_menu() {

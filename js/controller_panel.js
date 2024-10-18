@@ -16,6 +16,7 @@ import { SettingIds, Timings, Texts } from "./constants.js";
 
 export class ControllerPanel extends HTMLDivElement {
     static instance = undefined
+    static button = undefined
     constructor() {
         super()
         if (ControllerPanel.instance) { ControllerPanel.instance.remove() }
@@ -81,34 +82,32 @@ export class ControllerPanel extends HTMLDivElement {
                 }
             }
         }) 
-
-        if (ControllerPanel.showing()) ControllerPanel.redraw()
-        else ControllerPanel.hide()
-
+        this.hide()
     }
 
     static toggle() {
         if (ControllerPanel.instance) {
-            if (ControllerPanel.showing()) ControllerPanel.hide()
-            else ControllerPanel.redraw()
+            if (ControllerPanel.instance.showing) ControllerPanel.instance.hide()
+            else ControllerPanel.instance.redraw()
         }
     }
 
     static showing() { 
-        try { return (settings.showing) }
-        catch { return false; }// graph not loaded, so settings unavailable, so don't show
+        return (ControllerPanel.instance?.showing)
     }
 
-    static redraw() {
+    redraw() {
         Debug.trivia("In ControllerPanel.redraw")
-        ControllerPanel.instance.build_controllerPanel()
-        ControllerPanel.instance.classList.remove('hidden')
-        settings.showing = true
+        this.build_controllerPanel()
+        this.classList.remove('hidden')
+        if (ControllerPanel.button) ControllerPanel.button.classList.add('selected')
+        this.showing = true
     }
 
-    static hide() {
-        ControllerPanel.instance.classList.add('hidden')
-        try { settings.showing = false } catch { Debug.trivia("settings exception in hide") }
+    hide() {
+        this.classList.add('hidden')
+        if (ControllerPanel.button) ControllerPanel.button.classList.remove('selected')
+            ControllerPanel.instance.showing = false
     }
 
     static graph_cleared() {
@@ -129,6 +128,8 @@ export class ControllerPanel extends HTMLDivElement {
         NodeInclusionManager.node_change_callback = UpdateController.make_request
         api.addEventListener('graphCleared', ControllerPanel.graph_cleared) 
     }
+
+    static redraw() { ControllerPanel.instance.redraw() }
 
     static can_refresh() {  // returns -1 to say "no, and don't try again", 0 to mean "go ahead!", or n to mean "wait n ms then ask again"
         try {
@@ -389,7 +390,7 @@ export class ControllerPanel extends HTMLDivElement {
             create('span', 'advanced_label', this.add_div, {"innerText":"Show advanced controls"})
             this.show_advanced.addEventListener('input', function (e) {
                 settings.advanced = e.target.checked
-                ControllerPanel.redraw()
+                this.redraw()
             }.bind(this))
             this.in
         }
