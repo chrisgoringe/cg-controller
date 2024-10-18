@@ -86,8 +86,7 @@ export class FancySlider extends HTMLSpanElement {
         this.displaying = "graphic"
 
         this.addEventListener('mousedown', (e) => this._mousedown(e))
-        this.mouse_pad.addEventListener('mousemove', (e) => this._mousemove(e))
-        this.mouse_pad.addEventListener('mouseleave',(e) => this.enddragging(e))
+        document.addEventListener('mousemove', (e) => this._mousemove(e))
         this.addEventListener('mouseup',   (e) => this.enddragging(e))
         this.addEventListener('change',    (e) => this._change(e))
         this.addEventListener('focusin',   (e) => this._focus(e))
