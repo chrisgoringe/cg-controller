@@ -259,35 +259,22 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     set_position() {
-        const style = { "top":"2vh", "bottom":"", "left":"10px", "justify-content":"", "border":"thin solid white", "border-radius":"4px", "border-width":"thin" }
-        if (this.new_menu_position=="Top") {
-            const top_element = document.getElementsByClassName('comfyui-body-top')[0].getBoundingClientRect()
-            style["top"] = `${top_element.bottom}px`
+        const style = {  }
+        const top_element = document.getElementsByClassName('comfyui-body-top')[0].getBoundingClientRect()
+        style["top"] = `${top_element.bottom}px`
+
+        if (settings.getSettingValue("Comfy.Sidebar.Location")=="left") {
             const left_element = document.getElementsByClassName('comfyui-body-left')[0].getBoundingClientRect()
             style["left"] = `${left_element.right}px`
-            style["border-color"]  = "#353535"
-            style["border-radius"] = "0px"
-            style["border-width"]  = "0 thick thick 0"
-            //style["max-height"] = `calc(100vh - ${top_element.bottom}px)`
+            style["border-width"]  = "0 4px 0 0"
+        } else {
+            const right_element = document.getElementsByClassName('comfyui-body-right')[0].getBoundingClientRect()
+            style["left"] = `${right_element.left - this.getBoundingClientRect().width}px`
+            style["border-width"]  = "0 0 0 4px"
         }
-        if (this.new_menu_position=="Bottom") {
-            const left_element = document.getElementsByClassName('comfyui-body-left')[0].getBoundingClientRect()
-            style["left"] = `${left_element.right}px`
-            const bottom_element = document.getElementsByClassName('comfyui-body-bottom')[0].getBoundingClientRect()
-            style["bottom"] = `${bottom_element.height}px`
-            style["top"] = ""
-            style["border-color"]  = "#353535"
-            style["border-radius"] = "0px"
-            style["border-width"]  = "thick thick 0 0"
-            style["justify-content"] = "flex-end"
-            //style["max-height"] = `calc(100vh - ${bottom_element.height}px)`
-        }
+
         Object.assign(this.style, style)
 
-        if (settings.button_position!='top') {
-            this.style.height = "100%"
-            this.style.resize = "none"
-        }
     }
 
     build_controllerPanel() { 
@@ -302,7 +289,7 @@ export class ControllerPanel extends HTMLDivElement {
 
     _build_controllerPanel() {
         try {
-            this.style.zIndex = app.graph.nodes.length + 1
+            this.style.zIndex = Math.max(app.graph.nodes.length + 1, 2000)
         } catch {
             this.style.zIndex = 1000000
         }

@@ -15,15 +15,19 @@
 
 
 .controller {
-    max-height: calc(-44px + 100vh);
-    resize: vertical;
+    height:100%;
     background: #1c1c1cee;
     padding: 5px 0px 5px 5px;
     position: absolute;
     --element_width: 340px;
     overflow: clip scroll;
-
-    /*--actual-height: 100%;*/
+    border-width: 0px thick thick 0px;
+    border-style: solid;
+    border-color: rgb(53, 53, 53);
+    border-image: initial;
+    border-radius: 0px;
+    resize: none;
+    justify-content:""; 
 }
 
 /* Header */
