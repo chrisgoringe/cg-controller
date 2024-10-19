@@ -17,7 +17,7 @@
 .controller {
     height:100%;
     background: #1c1c1cee;
-    padding: 5px 0px 5px 5px;
+    padding: 0 0 0 5px;
     position: absolute;
     --element_width: 340px;
     overflow: clip scroll;
@@ -33,13 +33,17 @@
 /* Header */
 
 .header {
+    position: sticky;
+    top: 0px;
+    z-index: 40000;
+    padding: 5px;
+    background: #222222;
     display: flex;
     width: var(--element_width);
     justify-content: space-between;
     margin: 0px;
     align-items: center;
     flex-wrap: wrap;
-    padding: 0px;
 }
 
 .header_title { }

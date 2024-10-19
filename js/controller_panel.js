@@ -249,6 +249,13 @@ export class ControllerPanel extends HTMLDivElement {
         Object.assign(this.style, style)
         this.footer.style.height = '20px'
         this.footer_height = 20
+
+        try {
+            this.style.zIndex = Math.max(app.graph.nodes.length + 1, 2000)
+        } catch {
+            this.style.zIndex = 1000000
+        }
+        this.header.style.zIndex = this.style.zIndex + 1
     }
 
     build_controllerPanel() { 
@@ -262,11 +269,7 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     _build_controllerPanel() {
-        try {
-            this.style.zIndex = Math.max(app.graph.nodes.length + 1, 2000)
-        } catch {
-            this.style.zIndex = 1000000
-        }
+
         this.new_menu_position = settings.getSettingValue('Comfy.UseNewMenu', "Disabled")
         SliderOverrides.setup()
         GroupManager.setup(  )
