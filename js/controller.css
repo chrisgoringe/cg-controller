@@ -28,6 +28,7 @@
     border-radius: 0px;
     resize: none;
     justify-content:""; 
+    z-index:auto;
 }
 
 /* Header */
@@ -44,6 +45,7 @@
     margin: 0px;
     align-items: center;
     flex-wrap: wrap;
+    z-index:1;
 }
 
 .header_title { }

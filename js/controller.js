@@ -16,13 +16,7 @@ app.registerExtension({
         /* This is now just for backward compatibility - we *remove* the ControllerNode and put the data in app.graph.extras */
         CGControllerNode.remove()  
         new ControllerPanel()
-
-        /* If the panel is showing (because we reloaded a workflow in which it was), and in the old style, hide the main menu 
-        if (ControllerPanel.showing() && app.ui.settings.getSettingValue('Comfy.UseNewMenu', "Disabled")=="Disabled") {
-            app.ui.menuContainer.style.display = "none";
-            app.ui.menuHamburger.style.display = "flex";
-        } */
-       ControllerPanel.instance.hide()
+        ControllerPanel.instance.hide()
     },
 
     /* Called at the end of the application startup */
@@ -78,6 +72,7 @@ app.registerExtension({
 
         // add to the canvas menu, and keyboard shortcuts
         add_controls()
+
     },
 
     async init() {

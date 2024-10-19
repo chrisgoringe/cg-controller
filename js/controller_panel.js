@@ -105,12 +105,6 @@ export class ControllerPanel extends HTMLDivElement {
     static on_setup() {
         settings.fix_backward_compatibility()
 
-        const draw = LGraphCanvas.prototype.draw;
-        LGraphCanvas.prototype.draw = function() {
-            if (ControllerPanel.instance) ControllerPanel.instance.on_update()
-            draw.apply(this,arguments);
-        }
-
         UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh, (node_id)=>ControllerPanel.instance?.node_blocks[node_id])
 
         NodeInclusionManager.node_change_callback = UpdateController.make_request
@@ -149,13 +143,6 @@ export class ControllerPanel extends HTMLDivElement {
         NodeBlock.drag_over_me(e)
     }
 
-    on_update() {
-        const qt = document.getElementsByClassName('comfy-menu-queue-size')
-        if (this.submit_button) {
-            this.submit_button.disabled = ( qt && qt.length>0 && !(qt[0].innerText.includes(' 0')) )
-        }
-    }
-
     maybe_create_node_block_for_node(node_or_node_id) {
         const nd = get_node(node_or_node_id)
         if (NodeInclusionManager.include_node(nd)) {
@@ -188,7 +175,6 @@ export class ControllerPanel extends HTMLDivElement {
                 this.maybe_create_node_block_for_node(node_id) 
             }
             if (this.node_blocks[node_id]) {             // if it now exists, add it
-                //this.node_blocks[node_id].on_update()
                 this.main.append(this.node_blocks[node_id])
                 this.new_node_id_list.push(node_id)
             }
@@ -250,12 +236,12 @@ export class ControllerPanel extends HTMLDivElement {
         this.footer.style.height = '20px'
         this.footer_height = 20
 
-        try {
+        /*try {
             this.style.zIndex = Math.max(app.graph.nodes.length + 1, 2000)
         } catch {
             this.style.zIndex = 1000000
         }
-        this.header.style.zIndex = this.style.zIndex + 1
+        this.header.style.zIndex = this.style.zIndex + 1*/
     }
 
     build_controllerPanel() { 
