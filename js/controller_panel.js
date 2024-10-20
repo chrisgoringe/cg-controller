@@ -66,7 +66,8 @@ export class ControllerPanel extends HTMLDivElement {
         }) 
         this.hide()
 
-        this.footer_resize_stack = 0
+        this.height_overlay = create('span', 'overlay', null, {'stack':0})
+
         Object.defineProperty(this, "footer_height", {
             get : () => { return this.footer.getBoundingClientRect().height },
             set : (v) => { this.footer.style.height = `${v}px`}
@@ -151,17 +152,21 @@ export class ControllerPanel extends HTMLDivElement {
         }
     }
 
-    on_height_change(delta) {
+    on_height_change(element, delta) {
         if (delta != 0) {
             settings.heights = get_resizable_heights(this)
             if ((this.footer_height - delta) > 20) {
                 this.footer_height -= delta
             }
-            //this.footer_resize_stack += 1
-            //setTimeout( () => {
-            //    this.footer_resize_stack -= 1
-            //    if (this.footer_resize_stack==0) this.footer_height = 20
-            //}, 2000 )
+
+            const height = element.getBoundingClientRect().height
+            this.height_overlay.innerText = `${height}px`
+            element.parentElement.appendChild(this.height_overlay)
+            this.height_overlay.stack += 1
+            setTimeout( ()=>{
+                this.height_overlay.stack -= 1
+                if (this.height_overlay.stack==0) this.height_overlay.remove()
+            }, 1000 )
         }
     }
 

@@ -252,3 +252,15 @@ textarea.input {
 .hidden {
     display:none;
 }
+
+.overlay {
+    position: absolute;
+    text-align: right;
+    bottom:10px;
+    background-color: #ffffff33;
+    color: #ffffff80;
+    right: 10px;
+    padding: 3px;
+    border-radius: 4px;
+    font-size: 80%;
+}
