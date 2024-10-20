@@ -1,5 +1,4 @@
-import { create } from "./elements.js"
-import { step_size } from "./utilities.js"
+import { create, step_size } from "./utilities.js"
 import { rounding } from "./utilities.js"
 import { app } from "../../scripts/app.js"
 
@@ -87,8 +86,7 @@ export class FancySlider extends HTMLSpanElement {
         this.displaying = "graphic"
 
         this.addEventListener('mousedown', (e) => this._mousedown(e))
-        this.mouse_pad.addEventListener('mousemove', (e) => this._mousemove(e))
-        this.mouse_pad.addEventListener('mouseleave',(e) => this.enddragging(e))
+        document.addEventListener('mousemove', (e) => this._mousemove(e))
         this.addEventListener('mouseup',   (e) => this.enddragging(e))
         this.addEventListener('change',    (e) => this._change(e))
         this.addEventListener('focusin',   (e) => this._focus(e))
@@ -154,6 +152,7 @@ export class FancySlider extends HTMLSpanElement {
 
     _mousedown(e) { 
         if (this.displaying=="graphic") {
+            e.preventDefault()
             if (e.detail==2) {
                 this.switch_to_textedit()
             } else {

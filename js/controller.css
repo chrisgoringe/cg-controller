@@ -1,32 +1,51 @@
-.controller_holder {
-    height: 90vh;
-    /*max-height: 90vh;*/
-    resize: vertical;
-    background: #1c1c1cee;
-    padding: 5px 0px 5px 5px;
-    position: absolute;
-    overflow: hidden;
+/* Menu */
+
+.controller-tab-button {
+    padding: 8px 0px 8px 0px;
+    border: 1px;
+    height: 64px;
+    width: 64px;
+    border-radius:0px;
 }
 
+.controller-tab-button.selected {
+    border-left: 4px solid var(--p-button-text-primary-color);
+    color: var(--p-button-text-primary-color);
+}
+
+
 .controller {
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-    align-items: flex-start;
+    height:100%;
+    background: #1c1c1cee;
+    padding: 0 0 0 5px;
+    position: absolute;
     --element_width: 340px;
-    resize: vertical;
-    height: 100%;
+    overflow: clip scroll;
+    border-width: 0px thick thick 0px;
+    border-style: solid;
+    border-color: rgb(53, 53, 53);
+    border-image: initial;
+    border-radius: 0px;
+    resize: none;
+    justify-content:""; 
+    z-index:auto;
 }
 
 /* Header */
 
 .header {
+    position: sticky;
+    top: 0px;
+    z-index: 40000;
+    padding: 5px;
+    background: #222222;
     display: flex;
     width: var(--element_width);
     justify-content: space-between;
     margin: 0px;
-    padding: 0px;
     align-items: center;
+    flex-wrap: wrap;
+    z-index:1;
 }
 
 .header_title { }
@@ -35,6 +54,9 @@
 
 .refresh_button {
     cursor: pointer;
+    position: relative;
+    top: 2px;
+    left: 2px;
 }
 
 .being_dragged {
@@ -52,6 +74,7 @@
     display: flex;
     justify-content: center;
     background-color: #C0808060;
+    /*width: calc(var(--element_width) - 4px);*/
 }
 
 .advanced_label {
@@ -73,6 +96,7 @@
     position: relative;
     width: var(--element_width);
     min-height: 40px;
+    display:block;
 }
 
 .nodeblock.minimised {
@@ -82,7 +106,6 @@
 .nodeblock_titlebar {
     font-size: 70%;
     display: block;
-    width: 100%;
     padding: 3px 3px 3px 3px;
     color: #b3b3b3;
 }
@@ -109,10 +132,9 @@
 .nodeblock_draghandle {
     cursor: grab;
     position: absolute;
-    height: 22px;
-    width: calc(100% - 20px);
-    top: 0px;
-    left: 20px;
+    height: 16px;
+    width: calc(var(--element_width) - 32px);
+    left: 16px;
 }
 
 .nodeblock_title {
@@ -170,10 +192,55 @@
 textarea.input {
     height: 72px;
     resize: vertical;
-    max-height: 80vh;
+    /*max-height: calc(var(--actual-height) - 50px);*/
     font-size: 85%;
 }
 
+.toggle {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #222222;
+}
+
+.toggle_label {
+    font-size: 70%;
+    padding-left: 4px;
+    color: #999999;
+}
+
+.toggle_value {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;   
+}
+.toggle_text {
+    font-size: 70%;
+}
+
+.toggle_graphic {
+    font-size: 80%;
+    cursor: pointer;
+    padding: 1px 4px 2px 4px;
+}
+
+.toggle_graphic.true {
+    color: #8899aa;
+}
+
+.toggle_graphic.false {
+    color: #333333;
+}
+
+/* Footer */
+
+.footer {
+    width: 100%;
+    height: 20px;
+    display: block;
+    position: absolute;
+}
 
 
 /* Global */

@@ -6,8 +6,6 @@ export class UpdateController {
     static callback      = ()=>{}
     static permission    = ()=>{return false}
     static interest_in   = (node_id)=>{return false}
-    static request_stack = 0
-    static request_stack_limit = 10
     static pause_stack = 0
 
     static setup(callback, permission, interest_in) {
@@ -30,29 +28,31 @@ export class UpdateController {
             setTimeout(UpdateController.make_request, after_ms, label, null, noretry)
         } else {
             const wait_time = UpdateController.pause_stack>0 ? Timings.PAUSE_STACK_WAIT : UpdateController.permission()
-            if (label) Debug.extended(`${label} got asked to wait ${wait_time}`)
+
             if (wait_time == 0) {
                 UpdateController.callback()
-            } else if (wait_time < 0) {
                 return
+            }
+
+            if (label) Debug.extended(`${label} got asked to wait ${wait_time}`)
+
+            var reason_not_to_try_again = null
+            if (wait_time < 0)               reason_not_to_try_again = "delay was negative"
+            if (noretry)                     reason_not_to_try_again = "noretry was set"
+            if (UpdateController.requesting) reason_not_to_try_again = "a retry is already pending"
+
+            if (reason_not_to_try_again) {
+                Debug.extended(`${label} not trying again because ${reason_not_to_try_again}`)
             } else {
-                if (noretry) {
-                    Debug.trivia(`noretry set, so ${label} not retrying`)
-                    return
-                }
-                if (UpdateController.request_stack > UpdateController.request_stack_limit) {
-                    Debug.extended(`deferred request stack full`)
-                    return 
-                }
-                UpdateController.request_stack += 1
-                Debug.trivia(`deferred request stack size now ${UpdateController.request_stack}`)
+                UpdateController.requesting = true
                 setTimeout( UpdateController.deferred_request, wait_time, label)
             }
+
         }
     }
 
     static deferred_request(label) {
-        UpdateController.request_stack -= 1
+        UpdateController.requesting = false
         UpdateController.make_request(label)
     }
 

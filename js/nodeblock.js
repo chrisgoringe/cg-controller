@@ -1,9 +1,8 @@
 import { app } from "../../scripts/app.js";
 import { ComfyWidgets } from "../../scripts/widgets.js";
 
-import { darken } from "./utilities.js";
+import { create, darken } from "./utilities.js";
 import { Entry } from "./panel_entry.js"
-import { create } from "./elements.js";
 import { make_resizable } from "./resize_manager.js";
 import { settings } from "./settings.js";
 import { UpdateController } from "./update_controller.js";
@@ -43,31 +42,32 @@ export class NodeBlock extends HTMLSpanElement {
         e.dataTransfer.setDragImage(this, 10, 10);
     }
 
-    static drag_over_me(e) {
+    static drag_over_me(e, nodeblock_over, force_before) {
+        nodeblock_over = nodeblock_over ?? e.currentTarget
         if (NodeBlock.dragged) {
         //    e.dataTransfer.effectAllowed = "all";
             e.dataTransfer.dropEffect = "move"
             e.preventDefault(); 
         }
-        if (NodeBlock.dragged && e.currentTarget!=NodeBlock.dragged) { 
-            if (e.currentTarget != NodeBlock.last_swap) {
-                if (e.currentTarget.drag_id=='header') {
+        if (NodeBlock.dragged && nodeblock_over!=NodeBlock.dragged) { 
+            if (nodeblock_over != NodeBlock.last_swap) {
+                if (nodeblock_over.drag_id=='header') {
                     NodeBlock.dragged.parentElement.insertBefore(NodeBlock.dragged, NodeBlock.dragged.parentElement.firstChild)
-                } else if (e.currentTarget.drag_id=='footer') {
+                } else if (nodeblock_over.drag_id=='footer') {
                     NodeBlock.dragged.parentElement.appendChild(NodeBlock.dragged)
                 } else {
-                    if (e.currentTarget.previousSibling == NodeBlock.dragged) {
-                        e.currentTarget.parentElement.insertBefore(e.currentTarget, NodeBlock.dragged)
+                    if (nodeblock_over.previousSibling == NodeBlock.dragged && !force_before) {
+                        nodeblock_over.parentElement.insertBefore(nodeblock_over, NodeBlock.dragged)
                     } else {
-                        e.currentTarget.parentElement.insertBefore(NodeBlock.dragged, e.currentTarget)
+                        nodeblock_over.parentElement.insertBefore(NodeBlock.dragged, nodeblock_over)
                     }
                 }
-                NodeBlock.last_swap = e.currentTarget
+                NodeBlock.last_swap = nodeblock_over
             }
         }
 
         if (e.dataTransfer.types.includes('Files')) {
-            if (e.currentTarget?.is_image_upload_node?.() && is_single_image(e.dataTransfer)) {
+            if (nodeblock_over?.is_image_upload_node?.() && is_single_image(e.dataTransfer)) {
                 e.dataTransfer.dropEffect = "move"    
                 e.stopPropagation()        
             } else {
@@ -118,7 +118,16 @@ export class NodeBlock extends HTMLSpanElement {
         this.minimised = settings.is_minimised(this.node.id)
 
         this.minimisedot = create("span", 'nodeblock_minimisedot', this.title_bar, { "innerHTML":"&#11044;"})
-        this.minimisedot.addEventListener("click", (e)=>{ settings.toggle_minimised(this.node.id); UpdateController.make_request('minimise') })
+        this.minimisedot.addEventListener("click", (e)=>{ 
+            e.preventDefault(); 
+            e.stopPropagation(); 
+            settings.toggle_minimised(this.node.id);
+            UpdateController.make_request('minimise') 
+        })
+        this.minimisedot.addEventListener("mousedown", (e)=>{ 
+            e.preventDefault(); 
+            e.stopPropagation(); 
+        })
 
         this.title_text = create("span", 'nodeblock_title', this.title_bar, {"innerText":this.node.title, 'draggable':false})
 
@@ -157,7 +166,7 @@ export class NodeBlock extends HTMLSpanElement {
                 delete this.node.imgs
                 Object.defineProperty(this.node, "imgs", {
                     get : () => { return this.node._imgs },
-                    set : (v) => { this.node._imgs = v; this.show_image(v) }
+                    set : (v) => { this.node._imgs = v; this.show_image(v); UpdateController.make_request("img changed") }
                 })               
             } catch { }
             this.image_image = create('img', 'nodeblock_image', this.image_panel)
