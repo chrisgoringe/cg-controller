@@ -241,12 +241,6 @@ export class ControllerPanel extends HTMLDivElement {
         this.footer.style.height = '20px'
         this.footer_height = 20
 
-        /*try {
-            this.style.zIndex = Math.max(app.graph.nodes.length + 1, 2000)
-        } catch {
-            this.style.zIndex = 1000000
-        }
-        this.header.style.zIndex = this.style.zIndex + 1*/
     }
 
     build_controllerPanel() { 
@@ -269,12 +263,19 @@ export class ControllerPanel extends HTMLDivElement {
         Create the top section
         */
         this.header.innerHTML = ""
-        this.refresh = create('span', 'refresh_button', this.header, {"innerHTML":"&#10227;"})
+        this.header1 = create('span','header1',this.header)
+        this.header_title = create('span', 'header_title', this.header1, {"innerText":"CONTROLLER"})
+        this.refresh = create('span', 'refresh_button', this.header1, {"innerHTML":"&#10227;"})
         this.refresh.addEventListener('click', (e) => {UpdateController.make_request("refresh_button")})
-        this.header_title = create('span', 'header_title', this.header, {"innerText":"Controller"})
+        
+        this.header2 = create('span','header2', this.header)
+        this.extra_controls = create('span', 'extra_controls', this.header2)
+
+
+        //this.header3 = create('span','header3',this.header)
 
         if (GroupManager.any_groups()) {
-            this.group_select = create("select", 'header_select', this.header) 
+            this.group_select = create("select", 'header_select', this.header2) 
             GroupManager.list_group_names().forEach((nm) => {
                 const o = new Option(nm,nm)
                 o.style.backgroundColor = GroupManager.group_color(nm)
@@ -325,10 +326,8 @@ export class ControllerPanel extends HTMLDivElement {
         Back to the header
         */
         if (this.showAdvancedCheckbox) {
-            this.extra_controls = create('span', 'extra_controls', this.header)
-            this.add_div = create('div', 'advanced_controls', this.extra_controls)
-            this.show_advanced = create("input", "advanced_checkbox", this.add_div, {"type":"checkbox", "checked":settings.advanced})
-            create('span', 'advanced_label', this.add_div, {"innerText":"Show advanced controls"})
+            this.show_advanced = create("input", "advanced_checkbox", this.extra_controls, {"type":"checkbox", "checked":settings.advanced})
+            create('span', 'advanced_label', this.extra_controls, {"innerText":"Advanced controls"})
             this.show_advanced.addEventListener('input', function (e) {
                 settings.advanced = e.target.checked
                 this.redraw()

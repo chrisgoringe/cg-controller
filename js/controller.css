@@ -38,7 +38,7 @@
     position: sticky;
     top: 0px;
     z-index: 40000;
-    padding: 5px;
+    padding: 5px 0px 5px 0px;
     background: #222222;
     display: flex;
     width: var(--element_width);
@@ -49,15 +49,30 @@
     z-index:1;
 }
 
-.header_title { }
+.header1 {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #353535;
+}
+
+.header2 {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding-top:4px;
+}
+
+.header_title {
+    font-family: Arial, sans-serif;
+    font-size:13px;
+ }
 
 .header_select { }
 
 .refresh_button {
     cursor: pointer;
-    position: relative;
-    top: 2px;
-    left: 2px;
+    padding-right: 2px;
 }
 
 .being_dragged {
@@ -65,11 +80,11 @@
 }
 
 .extra_controls {
-    width: var(--element_width);
+
 }
 
 .advanced_controls {
-    margin: 5px 0px 5px 0px;
+    margin: 5px 2px 5px 0px;
     padding: 2px;
     font-size: 75%;
     display: flex;
@@ -79,8 +94,14 @@
 }
 
 .advanced_label {
+    padding-left: 4px;
+    font-size: 80%;
     position: relative;
-    top: 4px;
+    top: -1px;
+}
+
+.advanced_checkbox {
+    margin: 0px;
 }
 
 
