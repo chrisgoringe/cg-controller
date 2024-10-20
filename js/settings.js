@@ -4,13 +4,9 @@ import { Debug } from "./debug.js"
 
 
 const DEFAULTS = {
-    //"showing"      : true,
-    "minimised"    : [],
     "node_order"   : [],
-    "heights"      : [],
     "advanced"     : false,
     "group_choice" : GroupManager.show_all,
-    "full_height"  : 0
 }
 
 const KEYS = Object.keys(DEFAULTS)
@@ -61,38 +57,11 @@ class _Settings {
                 set : (v) => { return this.set(k,v) }
             })
         })
-        this.button_position = "side"
     }
 
     // convenience method
     getSettingValue(comfy_key, _default) {
         return app.ui.settings.getSettingValue(comfy_key, _default)
-    }
-
-    is_minimised(node_id) {
-        return (this.minimised.includes(node_id))
-    }
-
-    toggle_minimised(node_id) {
-        if (this.is_minimised(node_id)) {
-            const index = this.minimised.indexOf(node_id);
-            this.minimised.splice(index, 1)
-        } else {
-            this.minimised.push(node_id)
-        }
-    }
-
-    copy_from_to(node_from_id, node_to_id) {
-        const newHeights = []
-        this.heights.forEach((h)=>{
-            if (h.node_id == node_from_id) {
-                const new_height = {}
-                Object.assign(new_height, h)
-                new_height.node_id = node_to_id
-                newHeights.push(new_height)
-            }
-        })
-        newHeights.forEach((h) => {this.heights.push(h)})
     }
 
 }

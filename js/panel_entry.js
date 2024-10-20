@@ -21,9 +21,9 @@ export class Entry extends HTMLDivElement {
     Entry represents a single widget within a NodeBlock
     */
     static FULL_WIDTH = [ 'customtext', 'toggle' ]
-
     static firing_widget_callback = false
-    constructor(node, target_widget) {
+
+    constructor(node, target_widget, properties) {
         super()
         if (target_widget.disabled) return
         if (target_widget.name=='control_after_generate' && !app.ui.settings.getSettingValue(SettingIds.CONTROL_AFTER_GENERATE, false)) return
@@ -31,12 +31,11 @@ export class Entry extends HTMLDivElement {
         this.classList.add('entry')
         this.target_widget = target_widget
         this.input_element = null
-
+        this.properties = properties
 
         if (!Entry.FULL_WIDTH.includes(target_widget.type)) {
             this.entry_label = create('span','entry_label', this, {'innerText':target_widget.name, 'draggable':false} )  
         }
-
 
         switch (target_widget.type) {
             case 'text':
@@ -44,7 +43,7 @@ export class Entry extends HTMLDivElement {
                 break
             case 'customtext':
                 this.input_element = create("textarea", 'input', this, {"title":target_widget.name, "placeholder":target_widget.name})
-                make_resizable( this.input_element, node.id, [target_widget.name, "input_element"] )
+                make_resizable( this.input_element, node.id, target_widget.name, properties )
                 break
             case 'number':
                 this.input_element = new FancySlider(node, target_widget, this)

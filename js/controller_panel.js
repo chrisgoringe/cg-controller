@@ -7,7 +7,7 @@ import { GroupManager } from "./groups.js";
 
 import { UpdateController } from "./update_controller.js";
 import { NodeBlock } from "./nodeblock.js";
-import { get_resizable_heights, observe_resizables, restore_heights } from "./resize_manager.js";
+import { observe_resizables } from "./resize_manager.js";
 import { Debug } from "./debug.js";
 
 import { NodeInclusionManager } from "./node_inclusion.js";
@@ -154,7 +154,7 @@ export class ControllerPanel extends HTMLDivElement {
 
     on_height_change(element, delta) {
         if (delta != 0) {
-            settings.heights = get_resizable_heights(this)
+            //settings.heights = get_resizable_heights(this)
             if ((this.footer_height - delta) > 20) {
                 this.footer_height -= delta
             }
@@ -311,7 +311,7 @@ export class ControllerPanel extends HTMLDivElement {
 
         const node_count = this.set_node_visibility()
         observe_resizables( this, this.on_height_change.bind(this) )
-        if (settings.heights) restore_heights( this.node_blocks, settings.heights )
+        //if (settings.heights) restore_heights( this.node_blocks, settings.heights )
 
         if (node_count.nodes == 0) {
             var keystroke = settings.getSettingValue(SettingIds.KEYBOARD_TOGGLE,"C")
@@ -348,11 +348,6 @@ export class ControllerPanel extends HTMLDivElement {
         /*
         Finalise
         */
-
-        /* reload saved height */
-        //if (settings.full_height) { this.style.height = `${settings.full_height}px` }
-
-        //new ResizeObserver( () => { settings.full_height = this.getBoundingClientRect().height } ).observe(this)
 
         /* let all the layout finish then position self */
         setTimeout( this.set_position.bind(this), 20 )
