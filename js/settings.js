@@ -82,6 +82,19 @@ class _Settings {
         }
     }
 
+    copy_from_to(node_from_id, node_to_id) {
+        const newHeights = []
+        this.heights.forEach((h)=>{
+            if (h.node_id == node_from_id) {
+                const new_height = {}
+                Object.assign(new_height, h)
+                new_height.node_id = node_to_id
+                newHeights.push(new_height)
+            }
+        })
+        newHeights.forEach((h) => {this.heights.push(h)})
+    }
+
 }
 
 export const settings = new _Settings()

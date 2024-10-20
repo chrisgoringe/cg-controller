@@ -115,6 +115,20 @@ app.registerExtension({
 
     },
 
+    async nodeCreated(node) {
+        UpdateController.make_request("node_created", 20)
+        const onRemoved = node.onRemoved
+        node.onRemoved = function() {
+            onRemoved?.apply(this, arguments)
+            UpdateController.make_request("node_removed", 20)
+        }
+        const clone = node.clone
+        node.clone = function() {
+            settings.copy_from_to(this.id, app.graph.last_node_id+1)
+            return clone.apply(this, arguments)
+        }
+    },
+
     registerCustomNodes() {
         LiteGraph.registerNodeType("CGControllerNode", CGControllerNode)
     }
