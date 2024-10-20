@@ -107,13 +107,16 @@
 .nodeblock_titlebar {
     font-size: 70%;
     display: block;
-    padding: 3px 3px 3px 3px;
+    padding: 0px 3px 0px 2px;
     color: #b3b3b3;
 }
 
 .nodeblock_minimisedot {
-    padding: 0px 4px 0px 4px;
+    padding: 0px 4px 0px 0px;
     cursor: url(collapse.png) 8 8, zoom-out;
+    position: relative;
+    font-size: 125%;
+    top: 1px;
 }
 
 .nodeblock.minimised  .nodeblock_minimisedot {

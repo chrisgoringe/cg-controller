@@ -117,7 +117,7 @@ export class NodeBlock extends HTMLSpanElement {
 
         this.minimised = settings.is_minimised(this.node.id)
 
-        this.minimisedot = create("span", 'nodeblock_minimisedot', this.title_bar, { "innerHTML":"&#11044;"})
+        this.minimisedot = create("span", 'nodeblock_minimisedot', this.title_bar, { "innerHTML":"&#x25FC;"})
         this.minimisedot.addEventListener("click", (e)=>{ 
             e.preventDefault(); 
             e.stopPropagation(); 
