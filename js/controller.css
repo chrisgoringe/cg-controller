@@ -27,8 +27,9 @@
     border-image: initial;
     border-radius: 0px;
     resize: none;
-    justify-content:""; 
     z-index:auto;
+    scrollbar-width: thin;
+    scrollbar-color: #27262a #18171c;
 }
 
 /* Header */
