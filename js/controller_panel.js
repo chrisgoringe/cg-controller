@@ -160,7 +160,7 @@ export class ControllerPanel extends HTMLDivElement {
             }
 
             const height = element.getBoundingClientRect().height
-            this.height_overlay.innerText = `${height}px`
+            this.height_overlay.innerText = `${Math.round(height)}px`
             element.parentElement.appendChild(this.height_overlay)
             this.height_overlay.stack += 1
             setTimeout( ()=>{
