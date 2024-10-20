@@ -1,5 +1,6 @@
 
 .fancy_slider {
+    display:block;
     --full-height: 20px;
     --full-width: calc(var(--element_width) - 8px);
     height: var(--full-height);

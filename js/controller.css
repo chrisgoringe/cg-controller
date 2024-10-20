@@ -191,27 +191,35 @@
 /* Entry (widget) */
 
 .entry {
-    display: flex;
+    /*display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: space-between;*/
+    position: relative;
     padding:4px;
 }
 
 .entry_label {
-    font-size: 65%;
-    max-width: 80px;
-    min-width: 80px;
-    text-align: right;
-    margin-right: 4px;
+    position: absolute;
+    height: 18px;
+    top: 5px;
+    padding-top: 3px;
+    padding-right: 6px;
+    background: rgb(34 34 34);
+    color: #adadad;
+    text-align: left;
+    left: 8px;
+    font-size: 70%;
     pointer-events: none;
 }
 
 .input {
     width: 100%;
+    left: 25%;
     font-size: 75%;
     background-color: #222222;
     border: none;
     height: 20px;
+    text-align: right;
 }
 
 textarea.input {

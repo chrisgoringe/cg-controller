@@ -20,7 +20,7 @@ export class Entry extends HTMLDivElement {
     /*
     Entry represents a single widget within a NodeBlock
     */
-    static FULL_WIDTH = [ 'customtext', 'toggle', 'number' ]
+    static FULL_WIDTH = [ 'customtext', 'toggle', 'number', 'text' ]
     static firing_widget_callback = false
 
     constructor(node, target_widget, properties) {
@@ -33,12 +33,13 @@ export class Entry extends HTMLDivElement {
         this.input_element = null
         this.properties = properties
 
-        if (!Entry.FULL_WIDTH.includes(target_widget.type)) {
-            this.entry_label = create('span','entry_label', this, {'innerText':target_widget.name, 'draggable':false} )  
-        }
+        //if (!Entry.FULL_WIDTH.includes(target_widget.type)) {
+        //    this.entry_label = create('span','entry_label', this, {'innerText':target_widget.name, 'draggable':false} )  
+       // }
 
         switch (target_widget.type) {
             case 'text':
+                this.entry_label = create('span','entry_label', this, {'innerText':target_widget.name, 'draggable':false} )  
                 this.input_element = create('input', 'input', this) 
                 break
             case 'customtext':
@@ -51,6 +52,7 @@ export class Entry extends HTMLDivElement {
                 this.appendChild(this.input_element)
                 break
             case 'combo':
+                this.entry_label = create('span','entry_label', this, {'innerText':target_widget.name, 'draggable':false} )  
                 this.input_element = create("select", 'input', this) 
                 target_widget.options.values.forEach((o) => this.input_element.add(new Option(o,o)))
                 break
