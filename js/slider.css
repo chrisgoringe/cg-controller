@@ -1,13 +1,25 @@
 
 .fancy_slider {
     --full-height: 20px;
-    --full-width: 248px;
+    --full-width: calc(var(--element_width) - 8px);
     height: var(--full-height);
     width: var(--full-width);
     border:0;
     padding:0;
     margin:0;
     position: relative;
+}
+
+.fs_label {
+    position: absolute;
+    height: calc(var(--full-height) -4);
+    top: 3px;
+    width: var(--full-width);
+    background: rgba(255, 255, 255, 0);
+    text-align: left;
+    padding-left: 4px;
+    font-size: small;
+    pointer-events: none;
 }
 
 .fs_graphic {
@@ -26,8 +38,7 @@
     top: 0;
     height: var(--full-height);
     /*width set dynamically*/
-    background: #4772b3;
-    border-right: thin solid #759edc;
+    background: #657886;
     pointer-events: none;
 }
 
@@ -37,11 +48,12 @@
     top: 3px;
     width: var(--full-width);
     background: rgba(255, 255, 255, 0);
-    text-align: center;
+    text-align: right;
+    padding-right: 4px;
     font-size: small;
     pointer-events: none;
 }
-
+/*
 .fs_mouse_pad {
     position: absolute;
     left: -10px;
@@ -50,13 +62,14 @@
     width: calc(var(--full-width) + 20px);
     background: rgba(80, 80, 80, 0);
     pointer-events: all;
-}
+}*/
 
 .fs_text_edit {
     position: absolute;
     height: var(--full-height);
     width: var(--full-width);
     background: black;    
+    text-align: right;
 }
 
 .can_drag {

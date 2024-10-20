@@ -1,6 +1,7 @@
 import { create, step_size } from "./utilities.js"
 import { rounding } from "./utilities.js"
 import { app } from "../../scripts/app.js"
+import { Debug } from "./debug.js"
 
 export class SliderOverrides {
     static instance = null
@@ -80,17 +81,20 @@ export class FancySlider extends HTMLSpanElement {
         this.graphic       = create('span', 'fs_graphic', this)
         this.graphic_fill  = create('span', 'fs_graphic_fill', this.graphic)
         this.graphic_text  = create('span', 'fs_graphic_text', this.graphic)
-        this.mouse_pad     = create('span', 'fs_mouse_pad', this.graphic)
+        //this.mouse_pad     = create('span', 'fs_mouse_pad', this.graphic)
         this.text_edit     = create('input','fs_text_edit', this)
+        this.label         = create('span', 'fs_label', this, {"innerText":widget.name})
 
         this.displaying = "graphic"
 
-        this.addEventListener('mousedown', (e) => this._mousedown(e))
+        this.addEventListener('mousedown',     (e) => this._mousedown(e))
+        this.addEventListener('wheel',         (e) => this._wheel(e))
+        this.addEventListener('mouseout',      (e) => this._mouseout(e))
         document.addEventListener('mousemove', (e) => this._mousemove(e))
-        this.addEventListener('mouseup',   (e) => this.enddragging(e))
-        this.addEventListener('change',    (e) => this._change(e))
-        this.addEventListener('focusin',   (e) => this._focus(e))
-        this.addEventListener('focusout',  (e) => this._focusout(e))
+        document.addEventListener('mouseup',   (e) => this.enddragging(e))
+        this.addEventListener('change',        (e) => this._change(e))
+        this.addEventListener('focusin',       (e) => this._focus(e))
+        this.addEventListener('focusout',      (e) => this._focusout(e))
 
         this._dragging = false
         Object.defineProperty(this, "dragging", {
@@ -102,6 +106,17 @@ export class FancySlider extends HTMLSpanElement {
             }
         })
 
+        this._wheeling = false
+        Object.defineProperty(this, "wheeling", {
+            get : () => { return this._wheeling},
+            set : (v) => {
+                this._wheeling = v
+                if (v) this.classList.add('unrefreshable')
+                else this.classList.remove('unrefreshable')
+            }
+        })        
+
+        this.rounded_out = 0
         this.redraw()
     }
 
@@ -109,7 +124,7 @@ export class FancySlider extends HTMLSpanElement {
         this.mouse_down_on_me_at = null; 
         this.dragging = false
         this.classList.remove('can_drag')
-        if (e) {
+        if (e && e.target==this) {
             e.preventDefault()
             e.stopPropagation()
         }
@@ -134,6 +149,23 @@ export class FancySlider extends HTMLSpanElement {
         if (FancySlider.in_textedit == this) FancySlider.in_textedit = null
         this.displaying = "graphic"
         this.redraw_with_value(this.text_edit.value)
+    }
+
+    _wheel(e) {
+        if (this.displaying = "graphic") {
+            this.wheeling = true
+            const delta = this.rounded_out + e.wheelDelta * (this.parameters.max - this.parameters.min) / (10000)
+            const new_value = Math.min( this.parameters.max, Math.max( this.value + delta, this.parameters.min))
+            this.redraw_with_value(new_value)
+            this.rounded_out = new_value - this.value
+            Debug.trivia(`Wheel rounding carry = ${this.rounded_out}`)
+            e.preventDefault()
+            e.stopPropagation() 
+        }
+    }
+
+    _mouseout(e) {
+        if (this.wheeling) this.wheeling = false
     }
 
     _focus(e) {

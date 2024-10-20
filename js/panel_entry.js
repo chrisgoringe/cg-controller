@@ -20,7 +20,7 @@ export class Entry extends HTMLDivElement {
     /*
     Entry represents a single widget within a NodeBlock
     */
-    static FULL_WIDTH = [ 'customtext', 'toggle' ]
+    static FULL_WIDTH = [ 'customtext', 'toggle', 'number' ]
     static firing_widget_callback = false
 
     constructor(node, target_widget, properties) {
