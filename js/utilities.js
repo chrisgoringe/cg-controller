@@ -24,6 +24,13 @@ export function step_size(options) {
 
 var floatRegex = /^-?\d+(?:[.,]\d*?)?$/
 
+export function check_float(v) {
+    if (!floatRegex.test(`${v}`)) return false;
+    var vv = parseFloat(v)
+    if (isNaN(vv)) return false
+    return true
+}
+
 export function rounding(v, options) {
     if (!floatRegex.test(`${v}`)) return v;
     var vv = parseFloat(v)
@@ -57,4 +64,17 @@ export function darken(hex) {
     })
 
 	return result;
+}
+
+export function clamp(v,min,max) {
+    if (max!=null) return Math.max(min, Math.min(v,max))
+    return Math.max(min,v)
+}
+
+export function classSet(element, name, add) {
+    if (add) {
+        element.classList.add(name)
+    } else {
+        element.classList.remove(name)
+    }
 }

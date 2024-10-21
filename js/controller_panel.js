@@ -2,7 +2,6 @@ import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js" 
 
 import { create, get_node } from "./utilities.js";
-import { SliderOverrides } from "./input_slider.js";
 import { GroupManager } from "./groups.js";
 
 import { UpdateController } from "./update_controller.js";
@@ -256,7 +255,6 @@ export class ControllerPanel extends HTMLDivElement {
     _build_controllerPanel() {
 
         this.new_menu_position = settings.getSettingValue('Comfy.UseNewMenu', "Disabled")
-        SliderOverrides.setup()
         GroupManager.setup(  )
 
         /* 

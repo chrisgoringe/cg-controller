@@ -2,6 +2,7 @@ export class SettingIds {
     static KEYBOARD_TOGGLE = "Controller.options.keyboard"
     static CONTROL_AFTER_GENERATE = "Controller.options.control_after_generate"
     static DEBUG_LEVEL = "Controller.debug.level"
+    static SCROLL_SPEED = "Controller.options.scroll_speed"
 }
 
 export class Timings { // ms

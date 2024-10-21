@@ -223,9 +223,6 @@ export class NodeBlock extends HTMLSpanElement {
     show_image(v) {
         if (this.minimised) return
         if (v.length>0) {
-            //if (this.node.properties.controller_widgets['__image_panel'].height) {
-            //    this.image_panel.style.height = `${this.node.properties.controller_widgets['__image_panel'].height}px`
-            //}
             this.image_panel.classList.remove('nodeblock_image_empty')
             if (this.image_image.src != v[0].src) {
                 this.image_image.src = v[0].src

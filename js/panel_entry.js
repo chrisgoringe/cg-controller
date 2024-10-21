@@ -33,10 +33,6 @@ export class Entry extends HTMLDivElement {
         this.input_element = null
         this.properties = properties
 
-        //if (!Entry.FULL_WIDTH.includes(target_widget.type)) {
-        //    this.entry_label = create('span','entry_label', this, {'innerText':target_widget.name, 'draggable':false} )  
-       // }
-
         switch (target_widget.type) {
             case 'text':
                 this.entry_label = create('span','entry_label', this, {'innerText':target_widget.name, 'draggable':false} )  
@@ -47,7 +43,7 @@ export class Entry extends HTMLDivElement {
                 make_resizable( this.input_element, node.id, target_widget.name, properties )
                 break
             case 'number':
-                this.input_element = new FancySlider(node, target_widget, this)
+                this.input_element = new FancySlider(node, target_widget, properties)
                 this.input_element.addEventListener('keydown', this.keydown_callback.bind(this))
                 this.appendChild(this.input_element)
                 break

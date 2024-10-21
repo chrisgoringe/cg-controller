@@ -29,7 +29,7 @@
     top: 0;
     height: var(--full-height);
     width: var(--full-width);
-    background: rgb(80 80 80);
+    background: rgb(34 34 34);
     pointer-events: none;
 }
 
@@ -40,6 +40,16 @@
     height: var(--full-height);
     /*width set dynamically*/
     background: #657886;
+    pointer-events: none;
+}
+
+.fs_graphic_scrollhint {
+    position: absolute;
+    top: 0;
+    /* left set dynamically */
+    height: var(--full-height);
+    width: 1px;
+    background: #505050;
     pointer-events: none;
 }
 
@@ -54,16 +64,6 @@
     font-size: small;
     pointer-events: none;
 }
-/*
-.fs_mouse_pad {
-    position: absolute;
-    left: -10px;
-    top: -5px;
-    height: calc(var(--full-height) + 10px);
-    width: calc(var(--full-width) + 20px);
-    background: rgba(80, 80, 80, 0);
-    pointer-events: all;
-}*/
 
 .fs_text_edit {
     position: absolute;
@@ -75,4 +75,61 @@
 
 .can_drag {
     cursor:ew-resize;
+}
+
+.option_setting {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    background: black;
+    border: thin solid white;
+    border-radius: 8px;
+    font-size: 75%;
+    padding: 6px;
+}
+
+.option_setting_title {
+    text-align: center;
+    width: 100%;
+}
+
+.option_setting_panel {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 4px 0px 4px 0px;
+    justify-content: center;
+}
+
+.option_setting_input {
+    width: 50px;
+    font-size: 90%;
+}
+.option_setting_input.min {
+    text-align:right;
+}
+.option_setting_input.max {
+    text-align:left;
+}
+
+
+.option_setting_dash {
+    padding:0px 4px 0px 4px;
+}
+
+.option_setting_buttons {
+    padding-top: 8px;
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.option_setting_button {
+    font-size: 90%;
+    width: 50px;
+    background-color: #0072ff;
+    border-style: none;
+}
+
+.bad_value {
+    background: #ff000042;
 }

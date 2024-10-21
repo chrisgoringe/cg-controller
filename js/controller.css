@@ -191,9 +191,6 @@
 /* Entry (widget) */
 
 .entry {
-    /*display: flex;
-    align-items: center;
-    justify-content: space-between;*/
     position: relative;
     padding:4px;
 }
