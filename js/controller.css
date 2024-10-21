@@ -226,8 +226,9 @@ button.input {
 textarea.input {
     height: 72px;
     resize: vertical;
-    /*max-height: calc(var(--actual-height) - 50px);*/
     font-size: 85%;
+    text-align: left;
+    margin-bottom: -4px;
 }
 
 .toggle {
