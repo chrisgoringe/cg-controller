@@ -56,7 +56,7 @@ export class Entry extends HTMLDivElement {
                 var label = target_widget.label
                 if (!label) {
                     label = target_widget.name
-                    this.entry_label.innerText = ""
+                    //this.entry_label.innerText = ""
                 }
                 this.input_element = create("button", 'input', this, {"innerText":label})
                 break
