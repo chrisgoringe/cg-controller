@@ -44,16 +44,6 @@
     pointer-events: none;
 }
 
-.fs_graphic_scrollhint {
-    position: absolute;
-    top: 0;
-    /* left set dynamically */
-    height: var(--full-height);
-    width: 1px;
-    background: #505050;
-    pointer-events: none;
-}
-
 .fs_graphic_text {
     position: absolute;
     height: calc(var(--full-height) -4);

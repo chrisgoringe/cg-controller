@@ -21,14 +21,6 @@ export function add_controls() {
     })
 
     app.ui.settings.addSetting({
-        id: SettingIds.SCROLL_SPEED,
-        name: "Slider scrollwheel sensitivity",
-        type: "combo",
-        options: [ {value:9, text:"High"}, {value:3, text:"Medium"}, {value:1, text:"Low"}, {value:0.333, text:"Very Low"} ],
-        defaultValue: 3,
-    })
-
-    app.ui.settings.addSetting({
         id: SettingIds.DEBUG_LEVEL,
         name: "Debug level",
         tooltip: "Press f12 for js console",

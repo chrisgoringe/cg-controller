@@ -33,6 +33,7 @@ class SliderOptionEditor extends HTMLSpanElement {
 
         this.slider_options = slider_options
         this.widget = widget
+        this.is_integer = (widget.options.round == 1 || widget.options.precision == 0)
         this.classList.add('option_setting')
         this.style.backgroundColor = color
 
@@ -43,9 +44,14 @@ class SliderOptionEditor extends HTMLSpanElement {
         this.min_edit  = create('input', 'option_setting_input min', this.value_panel, {"value":slider_options.min})
         create('span', 'option_setting_dash', this.value_panel, {"innerHTML":"-"})
         this.max_edit  = create('input', 'option_setting_input max', this.value_panel, {"value":slider_options.max})
+
+        this.step_panel = create('span',  'option_setting_panel', this)
+        create('span', 'option_setting_label', this.step_panel, {"innerHTML":"Step:"})
+        this.step_edit  = create('input', 'option_setting_input step', this.step_panel, {"value":slider_options.step})
         
         this.min_edit.addEventListener('change', (e) => {this.maybe_save()})
         this.max_edit.addEventListener('change', (e) => {this.maybe_save()})
+        this.step_edit.addEventListener('change', (e) => {this.maybe_save()})
 
         this.buttons       = create('span',  'option_setting_buttons', this)
         this.button_cancel = create('button', 'option_setting_button', this.buttons, {"innerText":"Cancel"})
@@ -56,6 +62,7 @@ class SliderOptionEditor extends HTMLSpanElement {
 
         this.min_edit.addEventListener('input', (e)=>{this.check_for_bad_values()})
         this.max_edit.addEventListener('input', (e)=>{this.check_for_bad_values()})
+        this.step_edit.addEventListener('input', (e)=>{this.check_for_bad_values()})
         this.check_for_bad_values()
     }
 
@@ -67,6 +74,10 @@ class SliderOptionEditor extends HTMLSpanElement {
         if (check_float(this.max_edit.value)) {
             this.slider_options.max = parseFloat(this.max_edit.value)
             this.widget.options.max = this.slider_options.max
+        }
+        if (check_float(this.step_edit.value)) {
+            this.slider_options.step = parseFloat(this.step_edit.value)
+            this.widget.options.step = this.slider_options.step
         }
         this.close()
         UpdateController.make_request('slider options changed')
@@ -84,14 +95,22 @@ class SliderOptionEditor extends HTMLSpanElement {
     }
 
     check_for_bad_values() {
-        const min_bad = (!check_float(this.min_edit.value))
-        const max_bad = (!check_float(this.max_edit.value))
+        var min_bad = (!check_float(this.min_edit.value))
+        var max_bad = (!check_float(this.max_edit.value))
         const both_bad = (parseFloat(this.min_edit.value) >= parseFloat(this.max_edit.value))
+        var step_bad = (!check_float(this.step_edit.value))
+        if (this.is_integer) {
+            min_bad = min_bad || (parseFloat(this.min_edit.value) != parseInt(this.min_edit.value))
+            max_bad = max_bad || (parseFloat(this.max_edit.value) != parseInt(this.max_edit.value))
+            step_bad = step_bad || (parseFloat(this.step_edit.value) != parseInt(this.step_edit.value))
+        }
 
         classSet(this.min_edit, 'bad_value', (min_bad || both_bad))
         classSet(this.max_edit, 'bad_value', (max_bad || both_bad))
+        classSet(this.step_edit, 'bad_value', (step_bad))
 
-        this.button_save.disabled = (min_bad || max_bad || (this.min_edit.value == this.slider_options.min && this.max_edit.value == this.slider_options.max))
+        this.button_save.disabled = (min_bad || max_bad || step_bad || 
+            (this.min_edit.value == this.slider_options.min && this.max_edit.value == this.slider_options.max && this.step_edit.value == this.slider_options.step))
     }
 }
 
@@ -111,7 +130,6 @@ export class FancySlider extends HTMLSpanElement {
 
         this.graphic       = create('span', 'fs_graphic', this)
         this.graphic_fill  = create('span', 'fs_graphic_fill', this.graphic)
-        this.scrollhint    = create('span', 'fs_graphic_scrollhint hidden', this.graphic)
         this.graphic_text  = create('span', 'fs_graphic_text', this.graphic)
         this.text_edit     = create('input','fs_text_edit', this)
         this.label         = create('span', 'fs_label', this, {"innerText":widget.name})
@@ -145,13 +163,10 @@ export class FancySlider extends HTMLSpanElement {
                 if (v) this.classList.add('unrefreshable')
                 else {
                     this.classList.remove('unrefreshable')
-                    this.rounded_out = 0
                     this.redraw()
                 }
             }
         })        
-
-        this.rounded_out = 0
         this.redraw()
     }
 
@@ -196,12 +211,8 @@ export class FancySlider extends HTMLSpanElement {
     _wheel(e) {
         if (this.displaying = "graphic") {
             this.wheeling = true
-            const delta = settings.getSettingValue(SettingIds.SCROLL_SPEED, 3) * e.wheelDelta * (this.options.max - this.options.min) / (30000)
-            const new_value =  clamp(this.rounded_out + this.value + delta, this.options.min, this.options.max)
+            const new_value =  this.value + this.options.step * (e.wheelDelta>0 ? 1 : -1)
             this.redraw_with_value(new_value)
-            this.rounded_out = new_value - this.value
-            this.redraw()
-            Debug.trivia(`Wheel rounding carry = ${this.rounded_out}`)
             e.preventDefault()
             e.stopPropagation() 
         }
@@ -291,14 +302,6 @@ export class FancySlider extends HTMLSpanElement {
                 const f = (this.value - this.options.min) / (this.options.max - this.options.min)
                 this.graphic_fill.style.width = `${100*f}%`
                 this.graphic_text.innerHTML   = this.format_for_display(this.value)
-
-                if (this.rounded_out != 0) {
-                    const fh = (this.value + this.rounded_out - this.options.min) / (this.options.max - this.options.min)
-                    this.scrollhint.style.left = `${100*fh}%`
-                    this.scrollhint.classList.remove('hidden')
-                } else {
-                    this.scrollhint.classList.add('hidden')
-                }
             } else {
                 this.graphic.classList.add("hidden")
                 this.text_edit.classList.remove("hidden")
