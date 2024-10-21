@@ -19,8 +19,9 @@
     background: rgba(255, 255, 255, 0);
     text-align: left;
     padding-left: 4px;
-    font-size: small;
     pointer-events: none;
+    font-size: 70%;
+    color: #c5c5c5;
 }
 
 .fs_graphic {
@@ -61,7 +62,7 @@
     background: rgba(255, 255, 255, 0);
     text-align: right;
     padding-right: 4px;
-    font-size: small;
+    font-size: 75%;
     pointer-events: none;
 }
 
