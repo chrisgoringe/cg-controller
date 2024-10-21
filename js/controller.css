@@ -219,6 +219,10 @@
     text-align: right;
 }
 
+button.input {
+    text-align: center;
+}
+
 textarea.input {
     height: 72px;
     resize: vertical;
