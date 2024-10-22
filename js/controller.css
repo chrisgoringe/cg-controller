@@ -211,6 +211,14 @@
     left: 8px;
     font-size: 70%;
     pointer-events: none;
+    width: calc(var(--element_width) - 40px);
+}
+
+.entry_label.value {
+    right: 20px;
+    left: unset;
+    width:unset;
+    color:white;
 }
 
 .input {
@@ -233,6 +241,10 @@ textarea.input {
     font-size: 85%;
     text-align: left;
     margin-bottom: -4px;
+}
+
+.input option {
+    text-align:left;
 }
 
 .toggle {

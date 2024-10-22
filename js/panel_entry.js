@@ -49,8 +49,10 @@ export class Entry extends HTMLDivElement {
                 break
             case 'combo':
                 this.entry_label = create('span','entry_label', this, {'innerText':target_widget.name, 'draggable':false} )  
+                this.entry_value = create('span','entry_label value', this, {'innerText':target_widget.value, 'draggable':false} )  
                 this.input_element = create("select", 'input', this) 
                 target_widget.options.values.forEach((o) => this.input_element.add(new Option(o,o)))
+                this.input_element.addEventListener("change", (e)=>{this.entry_value.innerText=e.target.value})
                 break
             case 'button':
                 var label = target_widget.label
