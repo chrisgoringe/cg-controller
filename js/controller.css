@@ -161,7 +161,7 @@
 .nodeblock_draghandle {
     cursor: grab;
     position: absolute;
-    height: 16px;
+    height: 20px;
     width: calc(var(--element_width) - 32px);
     left: 16px;
 }
