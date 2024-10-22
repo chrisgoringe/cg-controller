@@ -228,7 +228,7 @@ export class FancySlider extends HTMLSpanElement {
     _wheel(e) {
         if (this.displaying = "graphic") {
             const shift_setting = settings.getSettingValue(SettingIds.SCROLL_MOVES_SLIDERS, "yes")
-            if ( shift_setting=="yes" || (shift_setting=="shift" && e.shiftKey) ) {
+            if ( shift_setting=="yes" || (shift_setting=="shift" && e.shiftKey) || (shift_setting=="ctrl" && e.ctrlKey) ) {
                 this.wheeling = true
                 const new_value =  this.value + this.options.step * (e.wheelDelta>0 ? 1 : -1)
                 this.redraw_with_value(new_value)
@@ -257,7 +257,8 @@ export class FancySlider extends HTMLSpanElement {
     }
 
     _mousedown(e) { 
-        if (e.shiftKey) {
+        const shift_setting = settings.getSettingValue(SettingIds.EDIT_SLIDERS, "shift")
+        if ((e.shiftKey && shift_setting=='shift') || (e.ctrlKey && shift_setting=='ctrl')){
             this.edit_min_max(e)
             e.preventDefault()
             e.stopPropagation()

@@ -23,11 +23,23 @@ export function add_controls() {
     app.ui.settings.addSetting({
         id: SettingIds.SCROLL_MOVES_SLIDERS,
         name: "Scrollwheel changes sliders",
-        tooltip: "When does the scrollwheel change a slider value?",
         type: "combo",
         options: [ {value:"no", text:"Never"}, 
                 {value:"yes", text:"Always"}, 
-                {value:"shift", text:"When shift key pressed"} ],
+                {value:"shift", text:"When shift key pressed"},
+                {value:"ctrl", text:"When ctrl key pressed"},
+             ],
+        defaultValue: "yes",
+    })
+
+    app.ui.settings.addSetting({
+        id: SettingIds.EDIT_SLIDERS,
+        name: "Edit slider limits",
+        type: "combo",
+        options: [ 
+                {value:"shift", text:"shift-click"},
+                {value:"ctrl", text:"ctrl-click"},
+             ],
         defaultValue: "yes",
     })
 
