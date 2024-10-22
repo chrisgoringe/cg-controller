@@ -84,6 +84,14 @@ export class ControllerPanel extends HTMLDivElement {
         return (ControllerPanel.instance?.showing)
     }
 
+    static overlapsWith(element) {
+        if (ControllerPanel.showing()) {
+            const bb1 = element.getBoundingClientRect()
+            const bb2 = ControllerPanel.instance.getBoundingClientRect()
+            return (bb1.left < bb2.right && bb1.right > bb2.left)
+        } else { return false }
+    }
+
     redraw() {
         Debug.trivia("In ControllerPanel.redraw")
         this.build_controllerPanel()
