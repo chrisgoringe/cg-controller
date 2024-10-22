@@ -24,7 +24,7 @@ app.registerExtension({
                     const ondraw = widget.options.onDraw
                     widget.options.onDraw = function (widget) {
                         if (ControllerPanel.overlapsWith(widget.element)) {
-                            widget.element.style.zIndex = "auto"
+                            widget.element.style.setProperty("z-index", "auto", "important")
                         } 
                         ondraw?.apply(this, arguments)
                     }
