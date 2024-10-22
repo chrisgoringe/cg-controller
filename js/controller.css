@@ -124,6 +124,7 @@
 
 .nodeblock.minimised {
     min-height: 20px;
+    padding-bottom: 1px;
 }
 
 .nodeblock_titlebar {
@@ -148,11 +149,13 @@
 .titlebar_nocolor {
     border-bottom: 2px solid #2a2a2a;
     padding-bottom: 1px;
+    background-color: #353535;
 }
 
 .nodeblock.minimised .titlebar_nocolor {
-    border-bottom:none;
-    padding-bottom:3px;
+    border-bottom: 2px solid #353535;
+    background-color: #353535;
+    height: 16px;
 }
 
 .nodeblock_draghandle {
