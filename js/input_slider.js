@@ -54,7 +54,7 @@ class SliderOptionEditor extends HTMLSpanElement {
         this.node = node
 
         this.other_like_node = app.graph._nodes.filter((other_node) => (other_node.id != node.id && node.type==other_node.type))
-        this.is_integer = (widget.options.round == 1 || widget.options.precision == 0)
+        this.is_integer = (widget.options.round == 1 && widget.options.precision == 0)
 
         this.heading = create('span',  'option_setting_panel', this)
         this.title = create('span', 'option_setting_title', this.heading, {"innerText":heading_text})
