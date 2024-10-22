@@ -197,18 +197,19 @@ export class NodeBlock extends HTMLSpanElement {
             const box = this.image_panel.getBoundingClientRect()
             this.node.properties.controller_widgets['__image_panel'].height = box.height
             if (box.width) {
+                const w = box.width - 8
                 const im_h = this.image_image?.naturalHeight
                 const im_w = this.image_image?.naturalWidth
                 if (im_h && im_w) {
-                    const scaled_height_fraction = (im_h * box.width) / (im_w * box.height)
+                    const scaled_height_fraction = (im_h * w) / (im_w * box.height)
                     if (scaled_height_fraction<=1) {
-                        this.image_panel.style.height = `${(im_h * box.width) / (im_w)}px`
-                        this.image_panel.style.maxHeight = `${(im_h * box.width) / (im_w)}px`
+                        this.image_panel.style.height = `${(im_h * w) / (im_w)}px`
+                        this.image_panel.style.maxHeight = `${(im_h * w) / (im_w)}px`
                         this.image_image.style.height = `100%`
-                        this.image_image.style.width = `100%`
+                        this.image_image.style.width = `${w}px`
                     } else {
                         this.image_image.style.height = `100%`
-                        this.image_image.style.width = `${100/scaled_height_fraction}%`
+                        this.image_image.style.width = `${w/scaled_height_fraction}px`
                     }
                 }
             } 

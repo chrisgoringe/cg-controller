@@ -17,6 +17,22 @@ app.registerExtension({
         CGControllerNode.remove()  
         new ControllerPanel()
         ControllerPanel.instance.hide()
+
+        app.graph._nodes.forEach((node)=>{
+            node.widgets?.forEach((widget)=>{
+                if (widget.type=='customtext') {
+                    const draw = widget.draw
+                    widget.draw = function (ctx) {
+                        if (ControllerPanel.showing()) {
+                            ctx.beginPath(); // Start a new path
+                            ctx.rect(500, 0, 500, 2000);
+                            ctx.fill()
+                        }
+                        draw.apply(this, arguments)
+                    }
+                }
+            })
+        })
     },
 
     /* Called at the end of the application startup */
