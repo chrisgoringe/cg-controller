@@ -17,7 +17,7 @@ app.registerExtension({
         CGControllerNode.remove()  
         new ControllerPanel()
         ControllerPanel.instance.hide()
-
+/*
         app.graph._nodes.forEach((node)=>{
             node.widgets?.forEach((widget)=>{
                 if (widget.type=='customtext') {
@@ -32,7 +32,7 @@ app.registerExtension({
                     }
                 }
             })
-        })
+        })*/
     },
 
     /* Called at the end of the application startup */
