@@ -8,11 +8,25 @@ import { SettingIds } from "./constants.js";
 
 class SliderOptions {
     static KEYS = [ "min", "max", "step", "precision", "round" ]
-    constructor(widget_options) {
-        this.min       = widget_options.min
-        this.max       = widget_options.max
-        this.step      = step_size(widget_options)
-        this.precision = widget_options.precision
+    constructor(widget_options, saved_values) {
+        const options = {}
+        Object.assign(options, widget_options)
+        Object.assign(options, saved_values)
+        this.min       = options.min
+        this.max       = options.max
+        this.precision = options.precision
+        this._step     = null
+        Object.defineProperty(this, "step", {
+            get : () => { return this._step },
+            set : (v) => {
+                this._step = v
+                if (this.precision) {
+                    while (Math.pow(0.1,this.precision) > (this._step+1e-8)) this.precision += 1
+                }
+            }
+        })
+        this.step = step_size(options)
+        
     }
 }
 
@@ -52,8 +66,8 @@ class SliderOptionEditor extends HTMLSpanElement {
         if (this.other_like_node.length>0) {
             const n = this.other_like_node.length
             this.apply_also_panel = create('span',  'option_setting_panel', this)
-            create('span', 'option_setting_label', this.apply_also_panel, {"innerHTML":`Apply to ${n} similar node${n>1?"s":""}`})
-            this.apply_also_checkbox = create('input', 'option_setting_also_checkbox', this.apply_also_panel, {'type':'checkbox'})
+            create('span', 'option_setting_label', this.apply_also_panel, {"innerHTML":`Apply to ${n} similar node${n>1?"s":"" }`})
+            this.apply_also_checkbox = create('input', 'option_setting_also_checkbox', this.apply_also_panel, {'type':'checkbox', "checked":true})
         }
 
         this.buttons       = create('span',  'option_setting_buttons', this)
@@ -75,22 +89,17 @@ class SliderOptionEditor extends HTMLSpanElement {
     }
 
     save_and_close() {
-
         this.slider_options.min = parseFloat(this.min_edit.value)
-        this.widget.options.min = parseFloat(this.min_edit.value)
         this.slider_options.max = parseFloat(this.max_edit.value)
-        this.widget.options.max = parseFloat(this.max_edit.value)
-
-        this.slider_options.step  = parseFloat(this.step_edit.value)
-        this.widget.options.round = parseFloat(this.step_edit.value)
+        this.slider_options.step = parseFloat(this.step_edit.value)  // also updates precision 
+        
+        this.copy_to_widget(this.node, this.widget, this.slider_options)
 
         if (this.apply_also_checkbox?.checked) {
             this.other_like_node.forEach((node) => {
                 node.widgets?.forEach((widget) => {
                     if (widget.name == this.widget.name) {
-                        widget.options.min   = parseFloat(this.min_edit.value)
-                        widget.options.max   = parseFloat(this.max_edit.value)
-                        widget.options.round = parseFloat(this.step_edit.value)
+                        this.copy_to_widget(node, widget, this.slider_options)
                     }
                 })
             })
@@ -98,6 +107,16 @@ class SliderOptionEditor extends HTMLSpanElement {
 
         this.close()
         UpdateController.make_request('slider options changed')
+        app.graph.setDirtyCanvas(true,true)
+    }
+
+    copy_to_widget(node, widget, options) {
+        const opt = {
+            "min":options.min, "max":options.max, "round":options.step, "precision":options.precision, "step":options.step
+        }
+        Object.assign(widget.options, opt)
+        widget.options.step *= 10 // clicking the arrows moves a widget by 0.1 * step ????
+        node.properties.controller_widgets[widget.name] = opt
     }
 
     maybe_save() {
@@ -142,7 +161,7 @@ export class FancySlider extends HTMLSpanElement {
         this.node = node
         this.widget = widget
 
-        this.options   = new SliderOptions(widget.options)
+        this.options   = new SliderOptions(widget.options, node.properties.controller_widgets[widget.name])
         this.value     = widget.value
         this.last_good = this.value
 
