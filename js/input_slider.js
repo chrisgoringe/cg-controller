@@ -8,7 +8,7 @@ import { SettingIds } from "./constants.js";
 
 function copy_to_widget(node, widget, options) {
     const opt = {
-        "min":options.min, "max":options.max, "round":options.step, "precision":options.precision, "step":options.step
+        "min":options.min, "max":options.max, "round":options.round, "precision":options.precision, "step":options.step
     }
     Object.assign(widget.options, opt)
     widget.options.step *= 10 // clicking the arrows moves a widget by 0.1 * step ????
@@ -29,6 +29,7 @@ class SliderOptions {
             get : () => { return this._step },
             set : (v) => {
                 this._step = v
+                this.round = v
                 if (this.precision) {
                     while (Math.pow(0.1,this.precision) > (this._step+1e-8)) this.precision += 1
                 }
