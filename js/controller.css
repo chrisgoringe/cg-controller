@@ -119,6 +119,7 @@
     width: var(--element_width);
     min-height: 40px;
     display:block;
+    padding-bottom: 4px;
 }
 
 .nodeblock.minimised {
@@ -192,7 +193,7 @@
 
 .entry {
     position: relative;
-    padding:4px;
+    padding:4px 4px 0px 4px;
 }
 
 .entry_label {
