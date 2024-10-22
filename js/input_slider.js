@@ -6,6 +6,15 @@ import { UpdateController } from "./update_controller.js"
 import { settings } from "./settings.js";
 import { SettingIds } from "./constants.js";
 
+function copy_to_widget(node, widget, options) {
+    const opt = {
+        "min":options.min, "max":options.max, "round":options.step, "precision":options.precision, "step":options.step
+    }
+    Object.assign(widget.options, opt)
+    widget.options.step *= 10 // clicking the arrows moves a widget by 0.1 * step ????
+    node.properties.controller_widgets[widget.name] = opt
+}
+
 class SliderOptions {
     static KEYS = [ "min", "max", "step", "precision", "round" ]
     constructor(widget_options, saved_values) {
@@ -93,13 +102,13 @@ class SliderOptionEditor extends HTMLSpanElement {
         this.slider_options.max = parseFloat(this.max_edit.value)
         this.slider_options.step = parseFloat(this.step_edit.value)  // also updates precision 
         
-        this.copy_to_widget(this.node, this.widget, this.slider_options)
+        copy_to_widget(this.node, this.widget, this.slider_options)
 
         if (this.apply_also_checkbox?.checked) {
             this.other_like_node.forEach((node) => {
                 node.widgets?.forEach((widget) => {
                     if (widget.name == this.widget.name) {
-                        this.copy_to_widget(node, widget, this.slider_options)
+                        copy_to_widget(node, widget, this.slider_options)
                     }
                 })
             })
@@ -108,15 +117,6 @@ class SliderOptionEditor extends HTMLSpanElement {
         this.close()
         UpdateController.make_request('slider options changed')
         app.graph.setDirtyCanvas(true,true)
-    }
-
-    copy_to_widget(node, widget, options) {
-        const opt = {
-            "min":options.min, "max":options.max, "round":options.step, "precision":options.precision, "step":options.step
-        }
-        Object.assign(widget.options, opt)
-        widget.options.step *= 10 // clicking the arrows moves a widget by 0.1 * step ????
-        node.properties.controller_widgets[widget.name] = opt
     }
 
     maybe_save() {
@@ -162,6 +162,8 @@ export class FancySlider extends HTMLSpanElement {
         this.widget = widget
 
         this.options   = new SliderOptions(widget.options, node.properties.controller_widgets[widget.name])
+        copy_to_widget(this.node, this.widget, this.options)
+        app.graph.setDirtyCanvas(true,true)
         this.value     = widget.value
         this.last_good = this.value
 
