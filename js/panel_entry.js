@@ -35,7 +35,7 @@ export class Entry extends HTMLDivElement {
 
         switch (target_widget.type) {
             case 'text':
-                this.entry_label = create('span','entry_label', this, {'innerText':target_widget.name, 'draggable':false} )  
+                this.entry_label = create('span','entry_label text', this, {'innerText':target_widget.name, 'draggable':false} )  
                 this.input_element = create('input', 'input', this) 
                 break
             case 'customtext':

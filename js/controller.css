@@ -214,6 +214,10 @@
     width: calc(var(--element_width) - 40px);
 }
 
+.entry_label.text {
+    background: #00000000;
+}
+
 .entry_label.value {
     right: 20px;
     left: unset;
