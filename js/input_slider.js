@@ -1,41 +1,37 @@
+import { app } from "../../scripts/app.js";
 import { create, step_size, check_float } from "./utilities.js"
 import { rounding, clamp, classSet } from "./utilities.js"
 import { Debug } from "./debug.js"
 import { UpdateController } from "./update_controller.js"
-import { settings } from "./settings.js"
-import { SettingIds } from "./constants.js"
+import { settings } from "./settings.js";
+import { SettingIds } from "./constants.js";
 
 class SliderOptions {
     static KEYS = [ "min", "max", "step", "precision", "round" ]
-    constructor(properties, widget_options) {
-        SliderOptions.KEYS.forEach((k)=> {
-            Object.defineProperty(this, k, {
-                get : ( ) => { return properties[k] },
-                set : (v) => { properties[k] = v }
-            })
-        })
-
-        if (properties.min       == undefined) properties.min       = widget_options.min
-        if (properties.max       == undefined) properties.max       = widget_options.max
-        if (properties.step      == undefined) properties.step      = step_size(widget_options)
-        if (properties.round     == undefined) properties.round     = properties.step
-        if (properties.precision == undefined) properties.precision = widget_options.precision
+    constructor(widget_options) {
+        this.min       = widget_options.min
+        this.max       = widget_options.max
+        this.step      = step_size(widget_options)
+        this.precision = widget_options.precision
     }
 }
 
 class SliderOptionEditor extends HTMLSpanElement {
     static instance
 
-    constructor(slider_options, heading_text, widget, color) {
+    constructor(slider_options, heading_text, widget, node) {
         super()
         if (SliderOptionEditor.instance) SliderOptionEditor.instance.remove()
         SliderOptionEditor.instance = this
+        this.classList.add('option_setting')
+        this.style.backgroundColor = node.color
 
         this.slider_options = slider_options
         this.widget = widget
+        this.node = node
+
+        this.other_like_node = app.graph._nodes.filter((other_node) => (other_node.id != node.id && node.type==other_node.type))
         this.is_integer = (widget.options.round == 1 || widget.options.precision == 0)
-        this.classList.add('option_setting')
-        this.style.backgroundColor = color
 
         this.heading = create('span',  'option_setting_panel', this)
         this.title = create('span', 'option_setting_title', this.heading, {"innerText":heading_text})
@@ -48,10 +44,17 @@ class SliderOptionEditor extends HTMLSpanElement {
         this.step_panel = create('span',  'option_setting_panel', this)
         create('span', 'option_setting_label', this.step_panel, {"innerHTML":"Step:"})
         this.step_edit  = create('input', 'option_setting_input step', this.step_panel, {"value":slider_options.step})
-        
-        this.min_edit.addEventListener('change', (e) => {this.maybe_save()})
-        this.max_edit.addEventListener('change', (e) => {this.maybe_save()})
-        this.step_edit.addEventListener('change', (e) => {this.maybe_save()})
+
+        this.min_edit.addEventListener('keyup', (e) => {this._keyup(e)})
+        this.max_edit.addEventListener('keyup', (e) => {this._keyup(e)})
+        this.step_edit.addEventListener('keyup', (e) => {this._keyup(e)})
+
+        if (this.other_like_node.length>0) {
+            const n = this.other_like_node.length
+            this.apply_also_panel = create('span',  'option_setting_panel', this)
+            create('span', 'option_setting_label', this.apply_also_panel, {"innerHTML":`Apply to ${n} similar node${n>1?"s":""}`})
+            this.apply_also_checkbox = create('input', 'option_setting_also_checkbox', this.apply_also_panel, {'type':'checkbox'})
+        }
 
         this.buttons       = create('span',  'option_setting_buttons', this)
         this.button_cancel = create('button', 'option_setting_button', this.buttons, {"innerText":"Cancel"})
@@ -60,25 +63,38 @@ class SliderOptionEditor extends HTMLSpanElement {
         this.button_save.addEventListener('click', (e) => { this.save_and_close() })
         this.button_cancel.addEventListener('click', () => {this.close()})
 
+        /* Highlight in red for bad values */
         this.min_edit.addEventListener('input', (e)=>{this.check_for_bad_values()})
         this.max_edit.addEventListener('input', (e)=>{this.check_for_bad_values()})
         this.step_edit.addEventListener('input', (e)=>{this.check_for_bad_values()})
         this.check_for_bad_values()
     }
 
+    _keyup(e) {
+        if (e.key == "Enter") this.maybe_save()
+    }
+
     save_and_close() {
-        if (check_float(this.min_edit.value)) {
-            this.slider_options.min = parseFloat(this.min_edit.value)
-            this.widget.options.min = this.slider_options.min
+
+        this.slider_options.min = parseFloat(this.min_edit.value)
+        this.widget.options.min  = parseFloat(this.min_edit.value)
+        this.slider_options.max = parseFloat(this.max_edit.value)
+        this.widget.options.max  = parseFloat(this.max_edit.value)
+        this.slider_options.step = parseFloat(this.step_edit.value)
+        this.widget.options.step = parseFloat(this.step_edit.value)
+
+        if (this.apply_also_checkbox?.checked) {
+            this.other_like_node.forEach((node) => {
+                node.widgets?.forEach((widget) => {
+                    if (widget.name == this.widget.name) {
+                        widget.options.min  = parseFloat(this.min_edit.value)
+                        widget.options.max  = parseFloat(this.max_edit.value)
+                        widget.options.step = parseFloat(this.step_edit.value)
+                    }
+                })
+            })
         }
-        if (check_float(this.max_edit.value)) {
-            this.slider_options.max = parseFloat(this.max_edit.value)
-            this.widget.options.max = this.slider_options.max
-        }
-        if (check_float(this.step_edit.value)) {
-            this.slider_options.step = parseFloat(this.step_edit.value)
-            this.widget.options.step = this.slider_options.step
-        }
+
         this.close()
         UpdateController.make_request('slider options changed')
     }
@@ -110,7 +126,8 @@ class SliderOptionEditor extends HTMLSpanElement {
         classSet(this.step_edit, 'bad_value', (step_bad))
 
         this.button_save.disabled = (min_bad || max_bad || step_bad || 
-            (this.min_edit.value == this.slider_options.min && this.max_edit.value == this.slider_options.max && this.step_edit.value == this.slider_options.step))
+            (this.min_edit.value == this.slider_options.min && this.max_edit.value == this.slider_options.max && 
+                this.step_edit.value == this.slider_options.step))
     }
 }
 
@@ -124,7 +141,7 @@ export class FancySlider extends HTMLSpanElement {
         this.node = node
         this.widget = widget
 
-        this.options   = new SliderOptions(properties, widget.options)
+        this.options   = new SliderOptions(widget.options)
         this.value     = widget.value
         this.last_good = this.value
 
@@ -202,7 +219,7 @@ export class FancySlider extends HTMLSpanElement {
     }
 
     edit_min_max(e) {
-        const soe = new SliderOptionEditor(this.options, `${this.node.title}.${this.widget.name} range`, this.widget, this.node.color)
+        const soe = new SliderOptionEditor(this.options, `${this.node.title}.${this.widget.name} range`, this.widget, this.node)
         document.body.appendChild( soe )
         soe.style.left = `${clamp(e.x-10, 10)}px`
         soe.style.top  = `${clamp(e.y-10, 20,  window.innerHeight - soe.getBoundingClientRect().height - 20)}px`
@@ -210,11 +227,14 @@ export class FancySlider extends HTMLSpanElement {
 
     _wheel(e) {
         if (this.displaying = "graphic") {
-            this.wheeling = true
-            const new_value =  this.value + this.options.step * (e.wheelDelta>0 ? 1 : -1)
-            this.redraw_with_value(new_value)
-            e.preventDefault()
-            e.stopPropagation() 
+            const shift_setting = settings.getSettingValue(SettingIds.SCROLL_MOVES_SLIDERS, "yes")
+            if ( shift_setting=="yes" || (shift_setting=="shift" && e.shiftKey) ) {
+                this.wheeling = true
+                const new_value =  this.value + this.options.step * (e.wheelDelta>0 ? 1 : -1)
+                this.redraw_with_value(new_value)
+                e.preventDefault()
+                e.stopPropagation() 
+            }
         }
     }
 
@@ -276,7 +296,7 @@ export class FancySlider extends HTMLSpanElement {
     }
 
     format_for_display(v)  { 
-        if (this.options.precision) {
+        if (this.options.precision != null) {
             return v.toFixed(this.options.precision)
         } else {
             return v

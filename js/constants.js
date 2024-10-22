@@ -1,6 +1,7 @@
 export class SettingIds {
     static KEYBOARD_TOGGLE = "Controller.options.keyboard"
     static CONTROL_AFTER_GENERATE = "Controller.options.control_after_generate"
+    static SCROLL_MOVES_SLIDERS = "Controller.options.scroll_moves_slider"
     static DEBUG_LEVEL = "Controller.debug.level"
 }
 

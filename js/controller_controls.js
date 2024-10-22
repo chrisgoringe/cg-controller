@@ -21,6 +21,17 @@ export function add_controls() {
     })
 
     app.ui.settings.addSetting({
+        id: SettingIds.SCROLL_MOVES_SLIDERS,
+        name: "Scrollwheel changes sliders",
+        tooltip: "When does the scrollwheel change a slider value?",
+        type: "combo",
+        options: [ {value:"no", text:"Never"}, 
+                {value:"yes", text:"Always"}, 
+                {value:"shift", text:"When shift key pressed"} ],
+        defaultValue: "yes",
+    })
+
+    app.ui.settings.addSetting({
         id: SettingIds.DEBUG_LEVEL,
         name: "Debug level",
         tooltip: "Press f12 for js console",
