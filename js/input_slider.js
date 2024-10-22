@@ -77,19 +77,20 @@ class SliderOptionEditor extends HTMLSpanElement {
     save_and_close() {
 
         this.slider_options.min = parseFloat(this.min_edit.value)
-        this.widget.options.min  = parseFloat(this.min_edit.value)
+        this.widget.options.min = parseFloat(this.min_edit.value)
         this.slider_options.max = parseFloat(this.max_edit.value)
-        this.widget.options.max  = parseFloat(this.max_edit.value)
-        this.slider_options.step = parseFloat(this.step_edit.value)
-        this.widget.options.step = parseFloat(this.step_edit.value)
+        this.widget.options.max = parseFloat(this.max_edit.value)
+
+        this.slider_options.step  = parseFloat(this.step_edit.value)
+        this.widget.options.round = parseFloat(this.step_edit.value)
 
         if (this.apply_also_checkbox?.checked) {
             this.other_like_node.forEach((node) => {
                 node.widgets?.forEach((widget) => {
                     if (widget.name == this.widget.name) {
-                        widget.options.min  = parseFloat(this.min_edit.value)
-                        widget.options.max  = parseFloat(this.max_edit.value)
-                        widget.options.step = parseFloat(this.step_edit.value)
+                        widget.options.min   = parseFloat(this.min_edit.value)
+                        widget.options.max   = parseFloat(this.max_edit.value)
+                        widget.options.round = parseFloat(this.step_edit.value)
                     }
                 })
             })
