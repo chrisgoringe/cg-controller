@@ -128,9 +128,9 @@
 }
 
 .nodeblock_titlebar {
-    font-size: 70%;
+    font-size: 80%;
     display: block;
-    padding: 0px 3px 3px 2px;
+    padding: 1px 3px 2px 2px;
     color: #b3b3b3;
 }
 
