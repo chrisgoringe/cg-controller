@@ -44,6 +44,7 @@ export class Entry extends HTMLDivElement {
                 break
             case 'number':
                 this.input_element = new FancySlider(node, target_widget, properties)
+                this.is_integer = this.input_element.is_integer
                 this.input_element.addEventListener('keydown', this.keydown_callback.bind(this))
                 this.appendChild(this.input_element)
                 break
@@ -141,7 +142,9 @@ export class Entry extends HTMLDivElement {
             UpdateController.make_request("target widget button clicked")
         } else {
             this.input_element.value = v
-            this.original_target_widget_callback?.apply(this.target_widget,arguments)
+            if (!this.is_integer) {
+                this.original_target_widget_callback?.apply(this.target_widget,arguments)
+            }
             UpdateController.make_request("target widget changed")
         }
     }

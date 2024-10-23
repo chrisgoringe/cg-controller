@@ -44,6 +44,15 @@ export function rounding(v, options) {
     return parseFloat(vv)
 }
 
+export function integer_rounding(v, options) {
+    const s = options.step / 10
+    let sh = options.min % s
+    if (isNaN(sh)) {
+      sh = 0
+    }
+    return Math.round((v - sh) / s) * s + sh   
+}
+
 export function get_node(node_or_node_id) {
     if (node_or_node_id.id) return node_or_node_id
     return app.graph._nodes_by_id[node_or_node_id]

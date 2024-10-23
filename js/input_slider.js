@@ -1,6 +1,6 @@
 import { app } from "../../scripts/app.js";
 import { create, step_size, check_float } from "./utilities.js"
-import { rounding, clamp, classSet } from "./utilities.js"
+import { rounding, integer_rounding, clamp, classSet } from "./utilities.js"
 import { Debug } from "./debug.js"
 import { UpdateController } from "./update_controller.js"
 import { settings } from "./settings.js";
@@ -163,6 +163,7 @@ export class FancySlider extends HTMLSpanElement {
         this.widget = widget
 
         this.options   = new SliderOptions(widget.options, node.properties.controller_widgets[widget.name])
+        this.is_integer = (this.widget.options.precision == 0)
         copy_to_widget(this.node, this.widget, this.options)
         app.graph.setDirtyCanvas(true,true)
         this.value     = widget.value
@@ -307,7 +308,8 @@ export class FancySlider extends HTMLSpanElement {
             if (this.dragging) {
                 const box = this.getBoundingClientRect()
                 const f =  clamp(( e.x - box.x ) / box.width, 0, 1)
-                const new_value = this.options.min + f * (this.options.max - this.options.min)
+                var new_value = this.options.min + f * (this.options.max - this.options.min)
+                if (this.is_integer) new_value = parseInt(new_value)
                 this.redraw_with_value(new_value)
                 e.preventDefault()
                 e.stopPropagation() 
@@ -316,7 +318,11 @@ export class FancySlider extends HTMLSpanElement {
     }
 
     round_and_clip(v) {
-        return rounding( clamp(v,this.options.min,this.options.max), this.options )
+        //if (this.is_integer) {
+        //    return integer_rounding( clamp(v,this.options.min,this.options.max), this.options )
+        //} else {
+            return clamp(rounding( clamp(v,this.options.min,this.options.max), this.options ), this.options.min,this.options.max)
+        //}
     }
 
     format_for_display(v)  { 
