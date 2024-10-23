@@ -124,7 +124,7 @@
 
 .nodeblock.minimised {
     min-height: 20px;
-    padding-bottom: 1px;
+    padding-bottom: 0px;
 }
 
 .nodeblock_titlebar {
@@ -150,6 +150,10 @@
     border-bottom: 2px solid #2a2a2a;
     padding-bottom: 1px;
     background-color: #353535;
+}
+
+.nodeblock.minimised .nodeblock_titlebar {
+    height:20px
 }
 
 .nodeblock.minimised .titlebar_nocolor {
