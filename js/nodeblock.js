@@ -195,8 +195,8 @@ export class NodeBlock extends HTMLSpanElement {
         this.rescaling = true
         if (this.image_image) {
             const box = this.image_panel.getBoundingClientRect()
-            this.node.properties.controller_widgets['__image_panel'].height = box.height
             if (box.width) {
+                this.node.properties.controller_widgets['__image_panel'].height = box.height
                 const w = box.width - 8
                 const im_h = this.image_image?.naturalHeight
                 const im_w = this.image_image?.naturalWidth

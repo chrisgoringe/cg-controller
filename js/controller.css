@@ -27,7 +27,7 @@
     border-color: rgb(53, 53, 53);
     border-image: initial;
     border-radius: 0px;
-    resize: horizontal;
+    resize: none; /*horizontal;*/
     z-index:auto;
     scrollbar-width: thin;
     scrollbar-color: #27262a #18171c;
