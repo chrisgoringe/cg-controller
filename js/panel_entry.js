@@ -144,6 +144,8 @@ export class Entry extends HTMLDivElement {
             this.input_element.value = v
             if (!this.is_integer) {
                 this.original_target_widget_callback?.apply(this.target_widget,arguments)
+            } else {
+                this.input_element.redraw_with_value(v)
             }
             UpdateController.make_request("target widget changed")
         }
