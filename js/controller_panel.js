@@ -65,7 +65,7 @@ export class ControllerPanel extends HTMLDivElement {
         }) 
         this.hide()
 
-        this.height_overlay = create('span', 'overlay', null, {'stack':0})
+        this.overlay = create('span', 'overlay', null, {'stack':0})
 
         Object.defineProperty(this, "footer_height", {
             get : () => { return this.footer.getBoundingClientRect().height },
@@ -74,17 +74,12 @@ export class ControllerPanel extends HTMLDivElement {
 
         this.style.setProperty("--element_width", `${settings.element_width}px`)
         this.extra_space = null
+        this.should_update_element_width = false
+        this.addEventListener('mousedown', ()=>{this.should_update_element_width = true})
+        window.addEventListener('mouseup', ()=>{this.should_update_element_width = false})
         
-        new ResizeObserver((x) => {
-            if (this.getBoundingClientRect().width>0) {
-                if (this.extra_space != null) {
-                    settings.element_width = this.getBoundingClientRect().width - this.extra_space
-                    this.style.setProperty("--element_width", `${settings.element_width}px`)
-                }
-            }
-        }).observe(this)
+        new ResizeObserver((x) => this.on_width_change()).observe(this)
 
-        setTimeout(this.measure_extra_space.bind(this), 100)
     }
 
     measure_extra_space() {
@@ -181,21 +176,37 @@ export class ControllerPanel extends HTMLDivElement {
         }
     }
 
-    on_height_change(element, delta) {
+    on_child_height_change(element, delta) {
         if (delta != 0) {
-            //settings.heights = get_resizable_heights(this)
             if ((this.footer_height - delta) > 20) {
                 this.footer_height -= delta
             }
 
-            const height = element.getBoundingClientRect().height
-            this.height_overlay.innerText = `${Math.round(height)}px`
-            element.parentElement.appendChild(this.height_overlay)
-            this.height_overlay.stack += 1
-            setTimeout( ()=>{
-                this.height_overlay.stack -= 1
-                if (this.height_overlay.stack==0) this.height_overlay.remove()
-            }, 1000 )
+            this.show_overlay(`${Math.round(element.getBoundingClientRect().height)}px`, element.parentElement)
+            this.update_scrollbar()
+        }
+    }
+
+    show_overlay(text, element) {
+        this.overlay.innerText = text
+        element.appendChild(this.overlay)
+        this.overlay.stack += 1
+        setTimeout( ()=>{
+            this.overlay.stack -= 1
+            if (this.overlay.stack==0) this.overlay.remove()
+        }, 1000 )
+    }
+
+    on_width_change() {
+        if (this.getBoundingClientRect().width>0) {
+            this.show_overlay(`${Math.round(this.getBoundingClientRect().width)}px`, this)
+            if (this.extra_space != null && this.should_update_element_width) {
+                settings.element_width = this.getBoundingClientRect().width - this.extra_space
+                this.style.setProperty("--element_width", `${settings.element_width}px`)
+            } else {
+                this.extra_space = null
+                setTimeout(this.measure_extra_space.bind(this), 100)
+            }
         }
     }
 
@@ -270,6 +281,32 @@ export class ControllerPanel extends HTMLDivElement {
         this.footer.style.height = '20px'
         this.footer_height = 20
 
+        this.update_scrollbar()
+    }
+
+    update_scrollbar() {
+        if (!this.actual_scrollbar_width || this.actual_scrollbar_width<0) {
+            this.actual_scrollbar_width = this.offsetWidth - this.clientWidth - 4
+        }
+        if ((this.scrollHeight-this.footer_height) > this.clientHeight) {
+            if (this.style.overflow != "clip scroll") {
+                settings.element_width -= this.actual_scrollbar_width
+                this.extra_space += this.actual_scrollbar_width
+                this.should_update_element_width = false
+                setTimeout(()=>{this.should_update_element_width=true}, 10)
+                this.style.setProperty("--element_width", `${settings.element_width}px`)
+            }
+            this.style.overflow = "clip scroll"
+        } else {
+            if (this.style.overflow != "hidden") {
+                settings.element_width += this.actual_scrollbar_width
+                this.extra_space -= this.actual_scrollbar_width
+                this.should_update_element_width = false
+                setTimeout(()=>{this.should_update_element_width=true}, 10)
+                this.style.setProperty("--element_width", `${settings.element_width}px`)                
+            }
+            this.style.overflow = "hidden"
+        }
     }
 
     build_controllerPanel() { 
@@ -338,7 +375,7 @@ export class ControllerPanel extends HTMLDivElement {
         if (this.new_node_id_list.length>0) settings.node_order = this.new_node_id_list
 
         const node_count = this.set_node_visibility()
-        observe_resizables( this, this.on_height_change.bind(this) )
+        observe_resizables( this, this.on_child_height_change.bind(this) )
         //if (settings.heights) restore_heights( this.node_blocks, settings.heights )
 
         if (node_count.nodes == 0) {
