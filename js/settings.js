@@ -7,6 +7,7 @@ const DEFAULTS = {
     "node_order"   : [],
     "advanced"     : false,
     "group_choice" : GroupManager.show_all,
+    "element_width": 340,
 }
 
 const KEYS = Object.keys(DEFAULTS)

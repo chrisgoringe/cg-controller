@@ -20,13 +20,14 @@
     padding: 0 0 0 5px;
     position: absolute;
     --element_width: 340px;
+    min-width: 235px;
     overflow: clip scroll;
     border-width: 0px thick thick 0px;
     border-style: solid;
     border-color: rgb(53, 53, 53);
     border-image: initial;
     border-radius: 0px;
-    resize: none;
+    resize: horizontal;
     z-index:auto;
     scrollbar-width: thin;
     scrollbar-color: #27262a #18171c;

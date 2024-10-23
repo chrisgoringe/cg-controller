@@ -71,6 +71,14 @@ export class ControllerPanel extends HTMLDivElement {
             get : () => { return this.footer.getBoundingClientRect().height },
             set : (v) => { this.footer.style.height = `${v}px`}
         })
+
+        this.style.setProperty("--element_width", `${settings.element_width}px`)
+        new ResizeObserver((x) => {
+            if (this.getBoundingClientRect().width>0) {
+                settings.element_width = this.getBoundingClientRect().width - 24
+                this.style.setProperty("--element_width", `${settings.element_width}px`)
+            }
+        }).observe(this)
     }
 
     static toggle() {
