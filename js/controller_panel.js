@@ -73,12 +73,26 @@ export class ControllerPanel extends HTMLDivElement {
         })
 
         this.style.setProperty("--element_width", `${settings.element_width}px`)
+        this.extra_space = null
+        
         new ResizeObserver((x) => {
             if (this.getBoundingClientRect().width>0) {
-                settings.element_width = this.getBoundingClientRect().width - 24
-                this.style.setProperty("--element_width", `${settings.element_width}px`)
+                if (this.extra_space != null) {
+                    settings.element_width = this.getBoundingClientRect().width - this.extra_space
+                    this.style.setProperty("--element_width", `${settings.element_width}px`)
+                }
             }
         }).observe(this)
+
+        setTimeout(this.measure_extra_space.bind(this), 100)
+    }
+
+    measure_extra_space() {
+        if (this.getBoundingClientRect().width>0) {
+            this.extra_space = this.getBoundingClientRect().width - settings.element_width
+        } else {
+            setTimeout(this.measure_extra_space.bind(this), 100)
+        }
     }
 
     static toggle() {
