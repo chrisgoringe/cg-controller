@@ -53,45 +53,42 @@ The controller scrolls to accomodate as many nodes as you like, but we can do be
 
 ### Rearrange the nodes
 
-<div style="display:flex; align-items: center; ">
 <img src="images/drag.png" style="padding-right:8px;"/>
+
 You can rearrange the node panels in the controller by clicking on the node panel title bar and dragging it up or down.
-</div>
 
 ### Advanced controls
 
-<div style="display:flex; align-items: center; ">
 <img src="images/gears.png" style="padding-right:8px;"/>
-<p>If there are nodes that you only occasionally need to interact with, you can designate them as 'advanced controls' when you 
+
+If there are nodes that you only occasionally need to interact with, you can designate them as 'advanced controls' when you 
 add them to the controller. Advanced controls will only be shown if the 'Advanced controls' icon (the gears in the top right hand corner) is blue, 
-and the node in the workflow gets an open circle in place of the dot in the top right. The gears icon only appears if there are advanced controls to show or hide!</p>
-</div>
+and the node in the workflow gets an open circle in place of the dot in the top right. The gears icon only appears if there are advanced controls to show or hide!
 
 ### Collapse nodes
 
-<div style="display:flex; align-items: center; ">
+
 <img src="images/collapse.png" style="padding-right:8px;"/>
-<p>You can save space by collapsing the node panels, just like you can collapse nodes in the workflow. Just click the square
-at the left-hand side of the title bar, click it again to expand.</p>
-</div>
+
+You can save space by collapsing the node panels, just like you can collapse nodes in the workflow. Just click the square
+at the left-hand side of the title bar, click it again to expand.
 
 ### Resize text and images
 
-<div style="display:flex; align-items: center; ">
 <img src="images/resize.png" style="padding-right:8px;"/>
+
 Multiline text fields and image displays can be rescaled up or down using the resize handle in the bottom right hand corner of the widget.
 As you drag the height is shown as an overlay, in case you want to make things the same size.
-</div>
 
 ### Selecting groups
 
-<div style="display:flex; align-items: center; ">
 <img src="images/groups.png" style="padding-right:8px;"/>
+
 If you've build a complex workflow you've probably used groups to help you organise the nodes. 
 Using the drop-down menu at the top of the controller you can choose to just see the nodes in a single group.
-So you can quickly flick between the controls for your prompt, your controlnet, your upscaling...</br>&nbsp;<br/>
+So you can quickly flick between the controls for your prompt, your controlnet, your upscaling...
+
 And if you want a node to be visible whatever group is selected, just add it with the 'Include this node in all group views' setting.
-</div>
 
 ## Other cool things
 
