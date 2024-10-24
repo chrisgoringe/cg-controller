@@ -4,6 +4,8 @@ The Controller is a new way to interact with a Comfy workflow,
 in which just the nodes that you select are mirrored in the Controller, 
 without you needing to make any changes to the workflow itself.
 
+![image](images/example.png)
+
 So you can lay your workflow out however makes most sense to you, 
 and then bring all the nodes you want to see together in one place.
 When you want to edit the workflow, it's still there, untouched.
@@ -39,7 +41,10 @@ Numeric fields (like cfg in the image) a represented using an editable slider.
 Click on the slider and drag left or right, and the value will change between the minimum and maximum values.
 You can also just hover the mouse over the slider and move the value up or down with your mouse scrollwheel.
 To enter a precise value, double click and the slider turns into a text entry box where you can type the value you want.
-If the minimum and maximum values aren't convenient, shift-click on the slider to change them.
+If the minimum and maximum values, or the step size, aren't convenient, shift-click on the slider to change them. 
+Note that changes made here will be reflected in the actual widget as well.
+
+You can change the way the scrollwheel interacts with the sliders, and the keys required to edit the limits, in the main settings.
 
 ## Getting more organised
 
@@ -109,6 +114,10 @@ and settings to control how you can interact with the sliders.
 
 There's also a debug setting that I might ask you to use if you report a problem!
 
+### Controller width
+
+There is a little drag box at the bottom right of the controller that you can use to make it narrower or wider. 
+Its width is independant of the other sidebar controls.
 
 ## Known Limitations
 
