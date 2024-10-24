@@ -7,6 +7,7 @@ import { add_control_panel_options, NodeInclusionManager,  } from "./node_inclus
 import { UpdateController } from "./update_controller.js"
 import { Debug } from "./debug.js"
 import { settings } from "./settings.js"
+import { BASE_PATH } from "./constants.js"
 
 app.registerExtension({
 	name: "cg.controller",
@@ -37,9 +38,9 @@ app.registerExtension({
     async setup() {
         // Add the css call to the document
         create('link', null, document.getElementsByTagName('HEAD')[0], 
-            {'rel':'stylesheet', 'type':'text/css', 'href':'extensions/cg-controller/controller.css' } )
+            {'rel':'stylesheet', 'type':'text/css', 'href':`${BASE_PATH}/controller.css` } )
         create('link', null, document.getElementsByTagName('HEAD')[0], 
-            {'rel':'stylesheet', 'type':'text/css', 'href':'extensions/cg-controller/slider.css' } )
+            {'rel':'stylesheet', 'type':'text/css', 'href':`${BASE_PATH}/slider.css` } )
 
         try {
             const side_menu = document.getElementsByClassName('side-tool-bar-container')[0]

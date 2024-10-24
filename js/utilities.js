@@ -87,3 +87,8 @@ export function classSet(element, name, add) {
         element.classList.remove(name)
     }
 }
+
+export function add_tooltip(element, text) {
+    element.classList.add('tooltip')
+    create('span', 'tooltiptext', element, {"innerHTML":text.replaceAll(' ','&nbsp;')})
+}

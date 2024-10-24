@@ -1,7 +1,7 @@
 import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js" 
 
-import { create, get_node } from "./utilities.js";
+import { create, get_node, add_tooltip } from "./utilities.js";
 import { GroupManager } from "./groups.js";
 
 import { UpdateController } from "./update_controller.js";
@@ -11,7 +11,7 @@ import { Debug } from "./debug.js";
 
 import { NodeInclusionManager } from "./node_inclusion.js";
 import { settings } from "./settings.js";
-import { SettingIds, Timings, Texts } from "./constants.js";
+import { SettingIds, Timings, Texts, BASE_PATH } from "./constants.js";
 
 export class ControllerPanel extends HTMLDivElement {
     static instance = undefined
@@ -330,13 +330,9 @@ export class ControllerPanel extends HTMLDivElement {
         this.header.innerHTML = ""
         this.header1 = create('span','header1',this.header)
         this.header_title = create('span', 'header_title', this.header1, {"innerText":"CONTROLLER"})
-        this.refresh = create('span', 'refresh_button', this.header1, {"innerHTML":"&#10227;"})
-        this.refresh.addEventListener('click', (e) => {UpdateController.make_request("refresh_button")})
-        
+        this.extra_controls = create('span', 'extra_controls', this.header1)
         this.header2 = create('span','header2', this.header)
-        this.extra_controls = create('span', 'extra_controls', this.header2)
-
-
+        
         //this.header3 = create('span','header3',this.header)
 
         if (GroupManager.any_groups()) {
@@ -391,14 +387,21 @@ export class ControllerPanel extends HTMLDivElement {
         Back to the header
         */
         if (this.showAdvancedCheckbox) {
-            this.show_advanced = create("input", "advanced_checkbox", this.extra_controls, {"type":"checkbox", "checked":settings.advanced})
-            create('span', 'advanced_label', this.extra_controls, {"innerText":"Advanced controls"})
-            this.show_advanced.addEventListener('input', function (e) {
-                settings.advanced = e.target.checked
-                this.redraw()
-            }.bind(this))
-            this.in
+            //this.show_advanced = create("input", "advanced_checkbox", this.extra_controls, {"type":"checkbox", "checked":settings.advanced})
+            const icon = settings.advanced ? "advanced-options-on.png" : "advanced-options.png"
+            this.show_advanced = create('img', 'advanced_label', this.extra_controls, {"src":`${BASE_PATH}/${icon}`})
+            this.show_advanced_ = create('span', 'advanced_label_', this.extra_controls)
+            const toggle = () => {
+                settings.advanced = !settings.advanced
+                this.redraw()                
+            }
+            this.show_advanced_.addEventListener('click', toggle)
+            this.show_advanced.addEventListener('click', toggle)
+            add_tooltip(this.show_advanced_, `${settings.advanced?"Hide":"Show"} advanced controls`)
         }
+        this.refresh = create('span', 'refresh_button', this.extra_controls, {"innerHTML":"&#10227;"})
+        this.refresh.addEventListener('click', (e) => {UpdateController.make_request("refresh_button")})
+        add_tooltip(this.refresh, `Refresh controller`)
 
         /* 
         Footer 

@@ -20,7 +20,7 @@
     padding: 0 0 0 5px;
     position: absolute;
     --element_width: 340px;
-    min-width: 235px;
+    min-width: 150px;
     overflow: clip scroll;
     border-width: 0px thick thick 0px;
     border-style: solid;
@@ -55,13 +55,15 @@
     display: flex;
     justify-content: space-between;
     border-bottom: 1px solid #353535;
+    align-items: center;
 }
 
 .header2 {
     width: 100%;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     padding-top:4px;
+    align-items: center;
 }
 
 .header_title {
@@ -69,7 +71,9 @@
     font-size:13px;
  }
 
-.header_select { }
+.header_select {
+    max-width: var(--element_width);
+ }
 
 .refresh_button {
     cursor: pointer;
@@ -95,10 +99,21 @@
 }
 
 .advanced_label {
-    padding-left: 4px;
     font-size: 80%;
-    position: relative;
-    top: -1px;
+    position: absolute;
+    top: 6px;
+    right: 22px;
+    height: 15px;
+    cursor: pointer;
+}
+
+.advanced_label_ {
+    width: 15px;
+    height: 15px;
+    background-color: #00000000;
+    cursor: pointer;
+    left: -5px;
+    top: 1px;
 }
 
 .advanced_checkbox {
@@ -320,3 +335,28 @@ textarea.input {
     border-radius: 4px;
     font-size: 80%;
 }
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+  }
+  
+  /* Tooltip text */
+  .tooltip .tooltiptext {
+    visibility:hidden;
+    max-width: var(--element_width);
+    background-color: #ffffffc0;
+    color: #353535;
+    font-size: 70%;
+    text-align: center;
+    padding: 5px;
+    border-radius: 6px;
+    position: absolute;
+    right: 0px;
+    top: 20px;
+  }
+  
+  /* Show the tooltip text when you mouse over the tooltip container */
+  .tooltip:hover .tooltiptext {
+    visibility: visible;
+  }
