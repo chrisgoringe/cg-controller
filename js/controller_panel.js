@@ -72,6 +72,7 @@ export class ControllerPanel extends HTMLDivElement {
             set : (v) => { this.footer.style.height = `${v}px`}
         })
 
+        this.log_widths('in constructor before seting property')
         this.style.setProperty("--element_width", `${settings.element_width}px`)
         this.extra_space = null
         this.should_update_element_width = false
@@ -85,6 +86,7 @@ export class ControllerPanel extends HTMLDivElement {
     measure_extra_space() {
         if (this.getBoundingClientRect().width>0) {
             this.extra_space = this.getBoundingClientRect().width - settings.element_width
+            this.log_widths('in measure extra space')
         } else {
             setTimeout(this.measure_extra_space.bind(this), 100)
         }
@@ -197,8 +199,13 @@ export class ControllerPanel extends HTMLDivElement {
         }, 1000 )
     }
 
+    log_widths(txt) {
+        Debug.trivia(`${txt}   bounding width = ${this.getBoundingClientRect().width}  settings.element_width = ${settings.element_width}  ${settings.scrollbar_on} `)
+    } 
+
     on_width_change() {
         if (this.getBoundingClientRect().width>0) {
+            this.log_widths('in on_width_change')
             this.show_overlay(`${Math.round(this.getBoundingClientRect().width)}px`, this)
             if (this.extra_space != null && this.should_update_element_width) {
                 settings.element_width = this.getBoundingClientRect().width - this.extra_space
@@ -207,6 +214,7 @@ export class ControllerPanel extends HTMLDivElement {
                 this.extra_space = null
                 setTimeout(this.measure_extra_space.bind(this), 100)
             }
+            this.log_widths('end of on_width_change')
         }
     }
 
@@ -285,11 +293,12 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     update_scrollbar() {
+        this.log_widths('in update_scrollbar')
         if (!this.actual_scrollbar_width || this.actual_scrollbar_width<0) {
             this.actual_scrollbar_width = this.offsetWidth - this.clientWidth - 4
         }
         if ((this.scrollHeight-this.footer_height) > this.clientHeight) {
-            if (this.style.overflow != "clip scroll") {
+            if (!settings.scrollbar_on) {
                 settings.element_width -= this.actual_scrollbar_width
                 this.extra_space += this.actual_scrollbar_width
                 this.should_update_element_width = false
@@ -297,8 +306,9 @@ export class ControllerPanel extends HTMLDivElement {
                 this.style.setProperty("--element_width", `${settings.element_width}px`)
             }
             this.style.overflow = "clip scroll"
+            settings.scrollbar_on = true
         } else {
-            if (this.style.overflow != "hidden") {
+            if (settings.scrollbar_on) {
                 settings.element_width += this.actual_scrollbar_width
                 this.extra_space -= this.actual_scrollbar_width
                 this.should_update_element_width = false
@@ -306,7 +316,9 @@ export class ControllerPanel extends HTMLDivElement {
                 this.style.setProperty("--element_width", `${settings.element_width}px`)                
             }
             this.style.overflow = "hidden"
+            settings.scrollbar_on = false
         }
+        this.log_widths('end of update_scrollbar')
     }
 
     build_controllerPanel() { 
