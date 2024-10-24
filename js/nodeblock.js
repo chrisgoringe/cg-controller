@@ -43,7 +43,7 @@ export class NodeBlock extends HTMLSpanElement {
     drag_me(e) {
         NodeBlock.dragged = this
         NodeBlock.dragged.classList.add("being_dragged")
-        e.dataTransfer.setDragImage(this, 10, 10);
+        e.dataTransfer.setDragImage(this, e.layerX, e.layerY);
     }
 
     static drag_over_me(e, nodeblock_over, force_before) {
