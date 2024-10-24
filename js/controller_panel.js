@@ -321,6 +321,23 @@ export class ControllerPanel extends HTMLDivElement {
         this.log_widths('end of update_scrollbar')
     }
 
+    set_element_width() {
+        try {
+            const x = document.getElementsByClassName('graph-canvas-container')[0].getBoundingClientRect().width
+            /* 
+            the sidebar panel requests (20%-4) with flex-grow and flex-shrink 1 
+            the gutter insists on 4
+            the main panel requests (100%-4) with flex-grow and flex-shrink 1 
+            So (x-4) gets divided in ratio (0.2x-4):(x-4).
+            The element size is 10 smaller (controller padding + nodeblock margin)
+            */
+            settings.element_width = ((x-4)*(0.2*x-4)/(1.2*x-8)) - 10
+            this.style.setProperty("--element_width", `${settings.element_width}px`)
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
     build_controllerPanel() { 
         this.classList.add('unrefreshable')
         this.reason = 'already refreshing'
@@ -332,7 +349,7 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     _build_controllerPanel() {
-
+        if (settings.element_width==0) this.set_element_width()
         this.new_menu_position = settings.getSettingValue('Comfy.UseNewMenu', "Disabled")
         GroupManager.setup(  )
 
@@ -390,7 +407,7 @@ export class ControllerPanel extends HTMLDivElement {
             var keystroke = settings.getSettingValue(SettingIds.KEYBOARD_TOGGLE,"C")
             if (keystroke.toUpperCase() == keystroke) keystroke = "Shift-" + keystroke
             const EMPTY_MESSAGE = 
-                "<p>Add nodes to the controller by right-clicking the node<br/>and using the Controller Panel submenu</p>" + 
+                "<p>Add nodes to the controller<br/>by right-clicking the node<br/>and using the Controller Panel submenu</p>" + 
                 `<p>Toggle controller visibility with ${keystroke}</p>`
             create('span', 'empty_message', this.main, {"innerHTML":EMPTY_MESSAGE})
         }

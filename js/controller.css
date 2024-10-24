@@ -22,7 +22,7 @@
     --element_width: 340px;
     min-width: 150px;
     overflow: clip scroll;
-    border-width: 0px thick thick 0px;
+    border-width: 0px 5px 0px 0px;
     border-style: solid;
     border-color: rgb(53, 53, 53);
     border-image: initial;
@@ -122,9 +122,11 @@
 
 
 .empty_message {
+    display: block;
     font-size: 70%;
     text-align: center;
-    width: 100%;
+    width: var(--element_width);
+    margin-right:5px;
 }
 
 /* Node block */
