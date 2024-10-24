@@ -133,7 +133,7 @@ Future features will depend on community feedback, but some of the top contender
 - Multiple controller columns
 - Multiple group selection
 
-For more details of what's under consideration, take a look [here](https://github.com/chrisgoringe/cg-controller/milestone/21), and jump into the discussion [here](https://github.com/chrisgoringe/cg-controller/discussions/144).
+For more details of what's under consideration, take a look [here](https://github.com/chrisgoringe/cg-controller/milestone/21), and jump into the discussion [here](https://github.com/chrisgoringe/cg-controller/discussions/210).
 
 [Bug reports or feature requests very welcome](https://github.com/chrisgoringe/cg-controller/issues)
 
