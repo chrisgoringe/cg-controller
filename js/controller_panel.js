@@ -293,7 +293,7 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     update_scrollbar() {
-    /*    this.log_widths('in update_scrollbar')
+        /*this.log_widths('in update_scrollbar')
         if (!this.actual_scrollbar_width || this.actual_scrollbar_width<0) {
             this.actual_scrollbar_width = this.offsetWidth - this.clientWidth - 4
         }
@@ -318,7 +318,8 @@ export class ControllerPanel extends HTMLDivElement {
             this.style.overflow = "hidden"
             settings.scrollbar_on = false
         }
-        this.log_widths('end of update_scrollbar')*/
+        this.log_widths('end of update_scrollbar')       */  
+
     }
 
     set_element_width() {
@@ -349,7 +350,10 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     _build_controllerPanel() {
-        if (settings.element_width==0) this.set_element_width()
+        if (settings.element_width==0) {
+            this.set_element_width()
+            this.style.width = ""
+        }
         this.new_menu_position = settings.getSettingValue('Comfy.UseNewMenu', "Disabled")
         GroupManager.setup(  )
 
