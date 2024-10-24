@@ -24,6 +24,13 @@ export function step_size(options) {
 
 var floatRegex = /^-?\d+(?:[.,]\d*?)?$/
 
+export function check_float(v) {
+    if (!floatRegex.test(`${v}`)) return false;
+    var vv = parseFloat(v)
+    if (isNaN(vv)) return false
+    return true
+}
+
 export function rounding(v, options) {
     if (!floatRegex.test(`${v}`)) return v;
     var vv = parseFloat(v)
@@ -35,6 +42,15 @@ export function rounding(v, options) {
         vv = vv.toFixed(options.precision)
     }
     return parseFloat(vv)
+}
+
+export function integer_rounding(v, options) {
+    const s = options.step / 10
+    let sh = options.min % s
+    if (isNaN(sh)) {
+      sh = 0
+    }
+    return Math.round((v - sh) / s) * s + sh   
 }
 
 export function get_node(node_or_node_id) {
@@ -57,4 +73,22 @@ export function darken(hex) {
     })
 
 	return result;
+}
+
+export function clamp(v,min,max) {
+    if (max!=null) return Math.max(min, Math.min(v,max))
+    return Math.max(min,v)
+}
+
+export function classSet(element, name, add) {
+    if (add) {
+        element.classList.add(name)
+    } else {
+        element.classList.remove(name)
+    }
+}
+
+export function add_tooltip(element, text) {
+    element.classList.add('tooltip')
+    create('span', 'tooltiptext', element, {"innerHTML":text.replaceAll(' ','&nbsp;')})
 }

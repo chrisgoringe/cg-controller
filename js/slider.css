@@ -1,7 +1,8 @@
 
 .fancy_slider {
+    display:block;
     --full-height: 20px;
-    --full-width: 248px;
+    --full-width: calc(var(--element_width) - 8px);
     height: var(--full-height);
     width: var(--full-width);
     border:0;
@@ -10,13 +11,26 @@
     position: relative;
 }
 
+.fs_label {
+    position: absolute;
+    height: calc(var(--full-height) -4);
+    top: 3px;
+    width: var(--full-width);
+    background: rgba(255, 255, 255, 0);
+    text-align: left;
+    padding-left: 4px;
+    pointer-events: none;
+    font-size: 70%;
+    color: #c5c5c5;
+}
+
 .fs_graphic {
     position: absolute;
     left: 0;
     top: 0;
     height: var(--full-height);
     width: var(--full-width);
-    background: rgb(80 80 80);
+    background: rgb(34 34 34);
     pointer-events: none;
 }
 
@@ -26,8 +40,7 @@
     top: 0;
     height: var(--full-height);
     /*width set dynamically*/
-    background: #4772b3;
-    border-right: thin solid #759edc;
+    background: #657886;
     pointer-events: none;
 }
 
@@ -37,19 +50,10 @@
     top: 3px;
     width: var(--full-width);
     background: rgba(255, 255, 255, 0);
-    text-align: center;
-    font-size: small;
+    text-align: right;
+    padding-right: 4px;
+    font-size: 75%;
     pointer-events: none;
-}
-
-.fs_mouse_pad {
-    position: absolute;
-    left: -10px;
-    top: -5px;
-    height: calc(var(--full-height) + 10px);
-    width: calc(var(--full-width) + 20px);
-    background: rgba(80, 80, 80, 0);
-    pointer-events: all;
 }
 
 .fs_text_edit {
@@ -57,8 +61,66 @@
     height: var(--full-height);
     width: var(--full-width);
     background: black;    
+    text-align: right;
 }
 
 .can_drag {
     cursor:ew-resize;
+}
+
+.option_setting {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    background: black;
+    border: thin solid white;
+    border-radius: 8px;
+    font-size: 75%;
+    padding: 6px;
+}
+
+.option_setting_title {
+    text-align: center;
+    width: 100%;
+}
+
+.option_setting_panel {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 4px 0px 4px 0px;
+    justify-content: center;
+}
+
+.option_setting_input {
+    width: 50px;
+    font-size: 90%;
+}
+.option_setting_input.min {
+    text-align:right;
+}
+.option_setting_input.max {
+    text-align:left;
+}
+
+
+.option_setting_dash {
+    padding:0px 4px 0px 4px;
+}
+
+.option_setting_buttons {
+    padding-top: 8px;
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.option_setting_button {
+    font-size: 90%;
+    width: 50px;
+    background-color: #0072ff;
+    border-style: none;
+}
+
+.bad_value {
+    background: #ff000042;
 }

@@ -1,105 +1,125 @@
 # Controller
 
-The controller is a floating panel which reproduces widget inputs from selected nodes. That's pretty much it.
+The Controller is a new way to interact with a Comfy workflow, 
+in which just the nodes that you select are mirrored in the Controller, 
+without you needing to make any changes to the workflow itself.
 
-# Out of date documentation!
+So you can lay your workflow out however makes most sense to you, 
+and then bring all the nodes you want to see together in one place.
+When you want to edit the workflow, it's still there, untouched.
 
-This documentation is a bit out of date. A complete rewrite is coming soon!
+The controller gets saved with the workflow, so once you've set it up, it's always there for you.
+And if you share the workflow with someone else, they get your controller as well...
 
-## How to use
+## Getting started
 
-- Install the custom node
-```
-cd custom_nodes
-git clone https://github.com/chrisgoringe/cg-controller
-```
-- Right click a node and use the Controller Panel menu to set a node to be included, excluded, or included as an advanced control
-- Right-click the canvas and select 'Show Controller Panel'
+The Controller is an extra sidebar tab. Like other sidebar tabs, just click it to bring the Controller into view.
 
-## Options
+![sidebar](images/sidebar.png)
 
-In the main comfy menu there are some options:
+At first, the Controller will be empty. To add nodes to it, right-click on the node and in the Controller Panel menu select "Include this node".
 
-### Show control after generate
+![menu](images/menu.png)
 
-By default the control_after_generate widget (attached to seeds and int primitives) is hidden. You can choose to show it.
+When you include a node, it appears on the Controller panel, and it also gains a coloured dot in the top-right hand corner, 
+so when you look at the workflow you can easily see which nodes are included.
 
-### Toggle controller visibility
+The node, with all standard widgets (we'll work to include the most popular custom widgets in future releases!) will now appear in the controller
+as a panel with the same title and colour as the node, underneath which are all the widgets. 
 
-You can choose one of four keyboard shortcuts to make the controller appear or disappear, or set it to none. Default is `c`.
+|Controller|Node|
+|-|-|
+|![nodeblock](images/nodeblock.png)|![node](images/ksampler.png)|
+||Where is the control_before_generate? It's hidden, but you can change that in the settings|
 
-### Some debug stuff
+If you now edit the values in those widgets, the changes will be reflected in the workflow (and vica versa). 
+Combo boxes, toggle switches, buttons, and text fields all work just as you would expect. 
 
-If you're interested...
+Numeric fields (like cfg in the image) a represented using an editable slider. 
+Click on the slider and drag left or right, and the value will change between the minimum and maximum values.
+You can also just hover the mouse over the slider and move the value up or down with your mouse scrollwheel.
+To enter a precise value, double click and the slider turns into a text entry box where you can type the value you want.
+If the minimum and maximum values aren't convenient, shift-click on the slider to change them.
 
-## Updating
+## Getting more organised
 
-- To update the controller code (if you haven't added it via the manager)
-```
-cd custom_nodes/cg-controller
-git pull
-```
+For more complex workflows, you will probably find that there are quite a few nodes that you want to be able to control. 
+The controller scrolls to accomodate as many nodes as you like, but we can do better than that...
 
-## Bugs or ideas
+### Rearrange the nodes
 
-Raise them as [issues](https://github.com/chrisgoringe/cg-controller/issues)
+You can rearrange the node panels in the controller by clicking on the node panel title bar and dragging it up or down.
 
-## Release history
+### Advanced controls
 
-### v0.9
+If there are nodes that you only occasionally need to interact with, you can designate them as 'advanced controls' when you 
+add them to the controller. Advanced controls will only be shown if the 'Advanced controls' checkbox is ticked, and the node
+in the workflow gets an open circle in place of the dot in the top right.
 
-- Removed colour based controls and replaced with right click menu
-- Lots of aesthetics
+### Collapse nodes
 
-### v0.8 9/10/2024
+You can save space by collapsing the node panels, just like you can collapse nodes in the workflow. Just click the square
+at the left-hand side of the title bar, click it again to expand.
 
-- Allow image nodes to be rescaled down
-- Drag handle for rearranging
-- Visual improvements
-- Much nicer sliders
+### Resize text and images
 
-### v0.7 7/10/2024
+Multiline text fields and image displays can be rescaled up or down using the resize handle in the bottom right hand corner of the widget.
+As you drag the height is shown as an overlay, in case you want to make things the same size.
 
-- Image upload image updates
-- Drag and drop images onto image upload
-- Drag and drop to reorder nodes in the controller
-- Controller update automated 
-- Settings to choose color for control nodes and advanced control nodes
+### Selecting groups
 
-### v0.6 6/10/2024
+If you've build a complex workflow you've probably used groups to help you organise the nodes. 
+Using the drop-down menu at the top of the controller you can choose to just see the nodes in a single group.
+So you can quickly flick between the controls for your prompt, your controlnet, your upscaling...
 
-- Added group selector
-- Fixed positioning etc with new menu system 
+And if you want a node to be visible whatever group is selected, just add it with the 'Include this node in all group views' setting.
 
-### v0.5 5/10/2024
+## Other cool things
 
-- Better controls for sliders (target by node, override min and step)
-- hide control_after_generate
-- submit to registry
+### The workflow is still there
 
-### v0.4 4/10/2024
+Any time you want to, you can go back to the workflow and work with it directly. 
+The Controller is just a way of viewing it (and changing widgets values).
 
-- Added keyboard shortcuts
-- Added sliders
+Some changes that you make will not be immediately reflected in the Controller (for instance, if you change the colour of a node), 
+but you just need to click the refresh button (top right of the Controller) to bring it up to date.
 
-### v0.3 3/10/2024
+### Images
 
-- Updating the panel now picks up changes in widgets and colors 
-- Title changes now picked up
-- Node order preserved in cases where it was lost
+The Controller works with Load, Save and Preview image nodes, as well as the imagwe previews shown on the sampler node.
 
-### v0.2 3/10/2024
+### Settings
 
-- Preserve height of resized text areas
-- Close panel when workflow cleared
-- Cleaned up the layout when multi column
-- Submitted to Comfy Manager
+In the main settings menu are a few things you can tweak - scrollwheel sensitivity, hiding control_after_generate, and a keyboard shortcut to show or hide the Controller. 
+There's also a debug setting that I might ask you to use if you report a problem!
 
-### v0.1 2/10/2024
 
-- Added support for Image nodes
-- Added 'advanced' colour
+## Known Limitations
 
-### v0.0.9 1/10/2024
+### Custom widgets
 
-- Initial release
+At present only standard Comfy widgets are supported. We'll be working to bring some of the more popular custom node widgets to the controller
+in future releases, probably starting with rgthree's Power Lora Loader.
+
+### Some visuals 
+
+There are a few visual issues we're aware of, and will be working to fix. You can see a list of known visual issues [here](https://github.com/chrisgoringe/cg-controller/issues?q=is%3Aissue+is%3Aopen+label%3Avisual).
+
+# The road ahead...
+
+Future features will depend on community feedback, but some of the top contenders right now are...
+
+- Visual links between the controller and workflow (click a workflow group to select it in the controller)
+- Toggling node and group bypass from the controller
+- Multiple controller columns
+- Multiple group selection
+
+For more details of what's under consideration, take a look [here](https://github.com/chrisgoringe/cg-controller/milestone/21), and jump into the discussion [here](https://github.com/chrisgoringe/cg-controller/discussions/144).
+
+[Bug reports or feature requests very welcome](https://github.com/chrisgoringe/cg-controller/issues)
+
+# Credits
+
+Controller has been developed by [Chris Goringe](https://github.com/chrisgoringe). 
+
+[JorgeR81](https://github.com/JorgeR81) has been making invaluable suggestions, testing, and UI mockups since the first alpha release, and more recently [LukeG89](https://github.com/LukeG89) has become a regular and valuable contributor to the discussions and testing.

@@ -17,6 +17,10 @@ export class NodeBlock extends HTMLSpanElement {
     constructor(node) { 
         super()
         this.node = node
+        if (!this.node.properties.controller_details) {
+            this.node.properties.controller_details = {}
+            this.node.properties.controller_widgets = {}
+        }
         this.classList.add("nodeblock")
         this.build_nodeblock()
         this.add_block_drag_handlers()
@@ -115,13 +119,13 @@ export class NodeBlock extends HTMLSpanElement {
         this.draghandle = create("span", 'nodeblock_draghandle', this.title_bar, { })
         this.add_handle_drag_handlers(this.draghandle)
 
-        this.minimised = settings.is_minimised(this.node.id)
+        this.minimised = this.node.properties.controller_details.minimised
 
-        this.minimisedot = create("span", 'nodeblock_minimisedot', this.title_bar, { "innerHTML":"&#11044;"})
+        this.minimisedot = create("span", 'nodeblock_minimisedot', this.title_bar, { "innerHTML":"&#x25FC;"})
         this.minimisedot.addEventListener("click", (e)=>{ 
             e.preventDefault(); 
             e.stopPropagation(); 
-            settings.toggle_minimised(this.node.id);
+            this.node.properties.controller_details.minimised = (!!!this.node.properties.controller_details.minimised)
             UpdateController.make_request('minimise') 
         })
         this.minimisedot.addEventListener("mousedown", (e)=>{ 
@@ -149,37 +153,41 @@ export class NodeBlock extends HTMLSpanElement {
 
         this.valid_nodeblock = false
         this.node.widgets?.forEach(w => {
-            const e = new Entry(this.node, w)
+            if (!this.node.properties.controller_widgets[w.name]) this.node.properties.controller_widgets[w.name] = {}
+            const properties = this.node.properties.controller_widgets[w.name]
+            const e = new Entry(this.node, w, properties)
             if (e.valid()) {
                 this.appendChild(e)
                 this[w.name] = e
-                this.valid_nodeblock = true
-            } 
+                this.valid_nodeblock = true                    
+            }
         })
 
         if (this.image_panel) {
             this.appendChild(this.image_panel)
         } else {
+            if (!this.node.properties.controller_widgets['__image_panel']) this.node.properties.controller_widgets['__image_panel'] = {}
             this.image_panel = create("div", "nodeblock_image_panel nodeblock_image_empty", this)
             this.node._imgs = this.node.imgs
             try {
                 delete this.node.imgs
                 Object.defineProperty(this.node, "imgs", {
                     get : () => { return this.node._imgs },
-                    set : (v) => { this.node._imgs = v; this.show_image(v); UpdateController.make_request("img changed") }
+                    set : (v) => { 
+                        this.node._imgs = v; 
+                        this.show_image(v); 
+                        UpdateController.make_request("img changed") 
+                    }
                 })               
             } catch { }
             this.image_image = create('img', 'nodeblock_image', this.image_panel)
             this.image_image.addEventListener('load', this.rescale_image.bind(this))
             
-            make_resizable( this.image_panel, this.node.id, ["image_panel"] )
+            make_resizable( this.image_panel, this.node.id, "__image_panel", this.node.properties.controller_widgets['__image_panel'] )
             new ResizeObserver(this.rescale_image.bind(this)).observe(this.image_panel)
         }
         if (this.node._imgs) this.show_image(this.node._imgs)
         this.valid_nodeblock = true
-
-
-
     }
 
     rescale_image() {
@@ -188,18 +196,21 @@ export class NodeBlock extends HTMLSpanElement {
         if (this.image_image) {
             const box = this.image_panel.getBoundingClientRect()
             if (box.width) {
+                this.node.properties.controller_widgets['__image_panel'].height = box.height
+                const w = box.width - 8
                 const im_h = this.image_image?.naturalHeight
                 const im_w = this.image_image?.naturalWidth
                 if (im_h && im_w) {
-                    const scaled_height_fraction = (im_h * box.width) / (im_w * box.height)
+                    const scaled_height_fraction = (im_h * w) / (im_w * box.height)
                     if (scaled_height_fraction<=1) {
-                        this.image_panel.style.height = `${(im_h * box.width) / (im_w)}px`
-                        this.image_panel.style.maxHeight = `${(im_h * box.width) / (im_w)}px`
+                        this.image_panel.style.height = `${(im_h * w) / (im_w)}px`
+                        this.image_panel.style.maxHeight = `${(im_h * w) / (im_w)}px`
                         this.image_image.style.height = `100%`
-                        this.image_image.style.width = `100%`
+                        this.image_image.style.width = `${w}px`
                     } else {
+                        this.image_panel.style.maxHeight = `${(im_h * w) / (im_w)}px`
                         this.image_image.style.height = `100%`
-                        this.image_image.style.width = `${100/scaled_height_fraction}%`
+                        this.image_image.style.width = `${w/scaled_height_fraction}px`
                     }
                 }
             } 

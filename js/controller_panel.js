@@ -1,18 +1,17 @@
 import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js" 
 
-import { create, get_node } from "./utilities.js";
-import { SliderOverrides } from "./input_slider.js";
+import { create, get_node, add_tooltip } from "./utilities.js";
 import { GroupManager } from "./groups.js";
 
 import { UpdateController } from "./update_controller.js";
 import { NodeBlock } from "./nodeblock.js";
-import { get_resizable_heights, observe_resizables, restore_heights } from "./resize_manager.js";
+import { observe_resizables } from "./resize_manager.js";
 import { Debug } from "./debug.js";
 
 import { NodeInclusionManager } from "./node_inclusion.js";
 import { settings } from "./settings.js";
-import { SettingIds, Timings, Texts } from "./constants.js";
+import { SettingIds, Timings, Texts, BASE_PATH } from "./constants.js";
 
 export class ControllerPanel extends HTMLDivElement {
     static instance = undefined
@@ -66,11 +65,31 @@ export class ControllerPanel extends HTMLDivElement {
         }) 
         this.hide()
 
-        this.footer_resize_stack = 0
+        this.overlay = create('span', 'overlay', null, {'stack':0})
+
         Object.defineProperty(this, "footer_height", {
             get : () => { return this.footer.getBoundingClientRect().height },
             set : (v) => { this.footer.style.height = `${v}px`}
         })
+
+        this.log_widths('in constructor before seting property')
+        this.style.setProperty("--element_width", `${settings.element_width}px`)
+        this.extra_space = null
+        this.should_update_element_width = false
+        this.addEventListener('mousedown', ()=>{this.should_update_element_width = true})
+        window.addEventListener('mouseup', ()=>{this.should_update_element_width = false})
+        
+        new ResizeObserver((x) => this.on_width_change()).observe(this)
+
+    }
+
+    measure_extra_space() {
+        if (this.getBoundingClientRect().width>0) {
+            this.extra_space = this.getBoundingClientRect().width - settings.element_width
+            this.log_widths('in measure extra space')
+        } else {
+            setTimeout(this.measure_extra_space.bind(this), 100)
+        }
     }
 
     static toggle() {
@@ -82,6 +101,14 @@ export class ControllerPanel extends HTMLDivElement {
 
     static showing() { 
         return (ControllerPanel.instance?.showing)
+    }
+
+    static overlapsWith(element) {
+        if (ControllerPanel.showing()) {
+            const bb1 = element.getBoundingClientRect()
+            const bb2 = ControllerPanel.instance.getBoundingClientRect()
+            return (bb1.left < bb2.right && bb1.right > bb2.left)
+        } else { return false }
     }
 
     redraw() {
@@ -151,17 +178,43 @@ export class ControllerPanel extends HTMLDivElement {
         }
     }
 
-    on_height_change(delta) {
+    on_child_height_change(element, delta) {
         if (delta != 0) {
-            settings.heights = get_resizable_heights(this)
             if ((this.footer_height - delta) > 20) {
                 this.footer_height -= delta
             }
-            //this.footer_resize_stack += 1
-            //setTimeout( () => {
-            //    this.footer_resize_stack -= 1
-            //    if (this.footer_resize_stack==0) this.footer_height = 20
-            //}, 2000 )
+
+            this.show_overlay(`${Math.round(element.getBoundingClientRect().height)}px`, element.parentElement)
+            this.update_scrollbar()
+        }
+    }
+
+    show_overlay(text, element) {
+        this.overlay.innerText = text
+        element.appendChild(this.overlay)
+        this.overlay.stack += 1
+        setTimeout( ()=>{
+            this.overlay.stack -= 1
+            if (this.overlay.stack==0) this.overlay.remove()
+        }, 1000 )
+    }
+
+    log_widths(txt) {
+        Debug.trivia(`${txt}   bounding width = ${this.getBoundingClientRect().width}  settings.element_width = ${settings.element_width}  ${settings.scrollbar_on} `)
+    } 
+
+    on_width_change() {
+        if (this.getBoundingClientRect().width>0) {
+            this.log_widths('in on_width_change')
+            this.show_overlay(`${Math.round(this.getBoundingClientRect().width)}px`, this)
+            if (this.extra_space != null && this.should_update_element_width) {
+                settings.element_width = this.getBoundingClientRect().width - this.extra_space
+                this.style.setProperty("--element_width", `${settings.element_width}px`)
+            } else {
+                this.extra_space = null
+                setTimeout(this.measure_extra_space.bind(this), 100)
+            }
+            this.log_widths('end of on_width_change')
         }
     }
 
@@ -236,12 +289,28 @@ export class ControllerPanel extends HTMLDivElement {
         this.footer.style.height = '20px'
         this.footer_height = 20
 
-        /*try {
-            this.style.zIndex = Math.max(app.graph.nodes.length + 1, 2000)
-        } catch {
-            this.style.zIndex = 1000000
+        this.update_scrollbar()
+    }
+
+    update_scrollbar() {
+
+    }
+
+    set_element_width() {
+        try {
+            const x = document.getElementsByClassName('graph-canvas-container')[0].getBoundingClientRect().width
+            /* 
+            the sidebar panel requests (20%-4) with flex-grow and flex-shrink 1 
+            the gutter insists on 4
+            the main panel requests (100%-4) with flex-grow and flex-shrink 1 
+            So (x-4) gets divided in ratio (0.2x-4):(x-4).
+            The element size is 10 smaller (controller padding + nodeblock margin)
+            */
+            settings.element_width = ((x-4)*(0.2*x-4)/(1.2*x-8)) - 10
+            this.style.setProperty("--element_width", `${settings.element_width}px`)
+        } catch (e) {
+            console.error(e)
         }
-        this.header.style.zIndex = this.style.zIndex + 1*/
     }
 
     build_controllerPanel() { 
@@ -255,21 +324,26 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     _build_controllerPanel() {
-
+        if (settings.element_width==0) {
+            this.set_element_width()
+            this.style.width = ""
+        }
         this.new_menu_position = settings.getSettingValue('Comfy.UseNewMenu', "Disabled")
-        SliderOverrides.setup()
         GroupManager.setup(  )
 
         /* 
         Create the top section
         */
         this.header.innerHTML = ""
-        this.refresh = create('span', 'refresh_button', this.header, {"innerHTML":"&#10227;"})
-        this.refresh.addEventListener('click', (e) => {UpdateController.make_request("refresh_button")})
-        this.header_title = create('span', 'header_title', this.header, {"innerText":"Controller"})
+        this.header1 = create('span','header1',this.header)
+        this.header_title = create('span', 'header_title', this.header1, {"innerText":"CONTROLLER"})
+        this.extra_controls = create('span', 'extra_controls', this.header1)
+        this.header2 = create('span','header2', this.header)
+        
+        //this.header3 = create('span','header3',this.header)
 
         if (GroupManager.any_groups()) {
-            this.group_select = create("select", 'header_select', this.header) 
+            this.group_select = create("select", 'header_select', this.header2) 
             GroupManager.list_group_names().forEach((nm) => {
                 const o = new Option(nm,nm)
                 o.style.backgroundColor = GroupManager.group_color(nm)
@@ -304,14 +378,14 @@ export class ControllerPanel extends HTMLDivElement {
         if (this.new_node_id_list.length>0) settings.node_order = this.new_node_id_list
 
         const node_count = this.set_node_visibility()
-        observe_resizables( this, this.on_height_change.bind(this) )
-        if (settings.heights) restore_heights( this.node_blocks, settings.heights )
+        observe_resizables( this, this.on_child_height_change.bind(this) )
+        //if (settings.heights) restore_heights( this.node_blocks, settings.heights )
 
         if (node_count.nodes == 0) {
             var keystroke = settings.getSettingValue(SettingIds.KEYBOARD_TOGGLE,"C")
             if (keystroke.toUpperCase() == keystroke) keystroke = "Shift-" + keystroke
             const EMPTY_MESSAGE = 
-                "<p>Add nodes to the controller by right-clicking the node<br/>and using the Controller Panel submenu</p>" + 
+                "<p>Add nodes to the controller<br/>by right-clicking the node<br/>and using the Controller Panel submenu</p>" + 
                 `<p>Toggle controller visibility with ${keystroke}</p>`
             create('span', 'empty_message', this.main, {"innerHTML":EMPTY_MESSAGE})
         }
@@ -320,16 +394,21 @@ export class ControllerPanel extends HTMLDivElement {
         Back to the header
         */
         if (this.showAdvancedCheckbox) {
-            this.extra_controls = create('span', 'extra_controls', this.header)
-            this.add_div = create('div', 'advanced_controls', this.extra_controls)
-            this.show_advanced = create("input", "advanced_checkbox", this.add_div, {"type":"checkbox", "checked":settings.advanced})
-            create('span', 'advanced_label', this.add_div, {"innerText":"Show advanced controls"})
-            this.show_advanced.addEventListener('input', function (e) {
-                settings.advanced = e.target.checked
-                this.redraw()
-            }.bind(this))
-            this.in
+            //this.show_advanced = create("input", "advanced_checkbox", this.extra_controls, {"type":"checkbox", "checked":settings.advanced})
+            const icon = settings.advanced ? "advanced-options-on.png" : "advanced-options.png"
+            this.show_advanced = create('img', 'advanced_label', this.extra_controls, {"src":`${BASE_PATH}/${icon}`})
+            this.show_advanced_ = create('span', 'advanced_label_', this.extra_controls)
+            const toggle = () => {
+                settings.advanced = !settings.advanced
+                this.redraw()                
+            }
+            this.show_advanced_.addEventListener('click', toggle)
+            this.show_advanced.addEventListener('click', toggle)
+            add_tooltip(this.show_advanced_, `${settings.advanced?"Hide":"Show"} advanced controls`)
         }
+        this.refresh = create('span', 'refresh_button', this.extra_controls, {"innerHTML":"&#10227;"})
+        this.refresh.addEventListener('click', (e) => {UpdateController.make_request("refresh_button")})
+        add_tooltip(this.refresh, `Refresh controller`)
 
         /* 
         Footer 
@@ -344,11 +423,6 @@ export class ControllerPanel extends HTMLDivElement {
         /*
         Finalise
         */
-
-        /* reload saved height */
-        //if (settings.full_height) { this.style.height = `${settings.full_height}px` }
-
-        //new ResizeObserver( () => { settings.full_height = this.getBoundingClientRect().height } ).observe(this)
 
         /* let all the layout finish then position self */
         setTimeout( this.set_position.bind(this), 20 )

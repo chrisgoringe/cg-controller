@@ -1,6 +1,8 @@
 export class SettingIds {
     static KEYBOARD_TOGGLE = "Controller.options.keyboard"
     static CONTROL_AFTER_GENERATE = "Controller.options.control_after_generate"
+    static SCROLL_MOVES_SLIDERS = "Controller.options.scroll_moves_slider"
+    static EDIT_SLIDERS = "Controller.options.edit_slider"
     static DEBUG_LEVEL = "Controller.debug.level"
 }
 
@@ -23,3 +25,5 @@ export class Colors {
 export class Texts {
     static ALL_GROUPS = "All Groups"
 }
+
+export const BASE_PATH = "extensions/cg-controller"

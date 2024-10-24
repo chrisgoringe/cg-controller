@@ -2,11 +2,7 @@ import { app } from "../../scripts/app.js"
 import { ControllerPanel } from "./controller_panel.js"
 import { SettingIds } from "./constants.js";
 
-function canvas_menu() {
-
-}
-
-function settings_menu() {
+export function add_controls() {
     app.ui.settings.addSetting({
         id: SettingIds.KEYBOARD_TOGGLE,
         name: "Toggle controller visibility:",
@@ -17,33 +13,34 @@ function settings_menu() {
     });
 
     app.ui.settings.addSetting({
-        id: "Controller.sliders.max",
-        name: "Override max values:",
-        tooltip: "Max values for sliders. Comma separated list of widget_name=value or node_name:widget_name=value. First match wins.",
-        type: 'text',
-        defaultValue: 'guidance=10, steps=50, cfg=20'
-    });
-    app.ui.settings.addSetting({
-        id: "Controller.sliders.min",
-        name: "Override min values:",
-        tooltip: "Min values for sliders. Comma separated list of widget_name=value or node_name:widget_name=value. First match wins.",
-        type: 'text',
-        defaultValue: ''
-    });
-    app.ui.settings.addSetting({
-        id: "Controller.sliders.step",
-        name: "Override step size:",
-        tooltip: "Step size for sliders. Comma separated list of widget_name=value or node_name:widget_name=value. First match wins.",
-        type: 'text',
-        defaultValue: 'cfg=0.1'
-    });
-
-    app.ui.settings.addSetting({
         id: SettingIds.CONTROL_AFTER_GENERATE,
         name: "Show control after generate",
         tooltip: "Allow the control_after_generate widget to be shown",
         type: "boolean",
         defaultValue: true
+    })
+
+    app.ui.settings.addSetting({
+        id: SettingIds.SCROLL_MOVES_SLIDERS,
+        name: "Scrollwheel changes sliders",
+        type: "combo",
+        options: [ {value:"no", text:"Never"}, 
+                {value:"yes", text:"Always"}, 
+                {value:"shift", text:"When shift key pressed"},
+                {value:"ctrl", text:"When ctrl key pressed"},
+             ],
+        defaultValue: "yes",
+    })
+
+    app.ui.settings.addSetting({
+        id: SettingIds.EDIT_SLIDERS,
+        name: "Edit slider limits",
+        type: "combo",
+        options: [ 
+                {value:"shift", text:"shift-click"},
+                {value:"ctrl", text:"ctrl-click"},
+             ],
+        defaultValue: "yes",
     })
 
     app.ui.settings.addSetting({
@@ -70,9 +67,4 @@ function settings_menu() {
             }
         }
     })
-}
-
-export function add_controls() {
-    canvas_menu()
-    settings_menu()
 }

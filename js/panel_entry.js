@@ -20,10 +20,10 @@ export class Entry extends HTMLDivElement {
     /*
     Entry represents a single widget within a NodeBlock
     */
-    static FULL_WIDTH = [ 'customtext', 'toggle' ]
-
+    static FULL_WIDTH = [ 'customtext', 'toggle', 'number', 'text' ]
     static firing_widget_callback = false
-    constructor(node, target_widget) {
+
+    constructor(node, target_widget, properties) {
         super()
         if (target_widget.disabled) return
         if (target_widget.name=='control_after_generate' && !app.ui.settings.getSettingValue(SettingIds.CONTROL_AFTER_GENERATE, false)) return
@@ -31,35 +31,35 @@ export class Entry extends HTMLDivElement {
         this.classList.add('entry')
         this.target_widget = target_widget
         this.input_element = null
-
-
-        if (!Entry.FULL_WIDTH.includes(target_widget.type)) {
-            this.entry_label = create('span','entry_label', this, {'innerText':target_widget.name, 'draggable':false} )  
-        }
-
+        this.properties = properties
 
         switch (target_widget.type) {
             case 'text':
+                this.entry_label = create('span','entry_label text', this, {'innerText':target_widget.name, 'draggable':false} )  
                 this.input_element = create('input', 'input', this) 
                 break
             case 'customtext':
                 this.input_element = create("textarea", 'input', this, {"title":target_widget.name, "placeholder":target_widget.name})
-                make_resizable( this.input_element, node.id, [target_widget.name, "input_element"] )
+                make_resizable( this.input_element, node.id, target_widget.name, properties )
                 break
             case 'number':
-                this.input_element = new FancySlider(node, target_widget, this)
+                this.input_element = new FancySlider(node, target_widget, properties)
+                this.is_integer = this.input_element.is_integer
                 this.input_element.addEventListener('keydown', this.keydown_callback.bind(this))
                 this.appendChild(this.input_element)
                 break
             case 'combo':
+                this.entry_label = create('span','entry_label', this, {'innerText':target_widget.name, 'draggable':false} )  
+                this.entry_value = create('span','entry_label value', this, {'innerText':target_widget.value, 'draggable':false} )  
                 this.input_element = create("select", 'input', this) 
                 target_widget.options.values.forEach((o) => this.input_element.add(new Option(o,o)))
+                this.input_element.addEventListener("change", (e)=>{this.entry_value.innerText=e.target.value})
                 break
             case 'button':
                 var label = target_widget.label
                 if (!label) {
                     label = target_widget.name
-                    this.entry_label.innerText = ""
+                    //this.entry_label.innerText = ""
                 }
                 this.input_element = create("button", 'input', this, {"innerText":label})
                 break
@@ -142,7 +142,11 @@ export class Entry extends HTMLDivElement {
             UpdateController.make_request("target widget button clicked")
         } else {
             this.input_element.value = v
-            this.original_target_widget_callback?.apply(this.target_widget,arguments)
+            if (!this.is_integer) {
+                this.original_target_widget_callback?.apply(this.target_widget,arguments)
+            } else {
+                this.input_element.redraw_with_value(v)
+            }
             UpdateController.make_request("target widget changed")
         }
     }
