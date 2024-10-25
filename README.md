@@ -42,7 +42,8 @@ Click on the slider and drag left or right, and the value will change between th
 You can also just hover the mouse over the slider and move the value up or down with your mouse scrollwheel.
 To enter a precise value, double click and the slider turns into a text entry box where you can type the value you want.
 If the minimum and maximum values, or the step size, aren't convenient, shift-click on the slider to change them. 
-Note that changes made here will be reflected in the actual widget as well.
+Note that changes made here will be reflected in the actual widget as well, however, if you set a value outside 
+of the original limits the workflow may fail to validate.
 
 You can change the way the scrollwheel interacts with the sliders, and the keys required to edit the limits, in the main settings.
 
@@ -133,7 +134,8 @@ Future features will depend on community feedback, but some of the top contender
 - Multiple controller columns
 - Multiple group selection
 
-For more details of what's under consideration, take a look [here](https://github.com/chrisgoringe/cg-controller/milestone/21), and jump into the discussion [here](https://github.com/chrisgoringe/cg-controller/discussions/210).
+For more details of what's under consideration, take a look [here](https://github.com/chrisgoringe/cg-controller/milestone/21), 
+and jump into the discussion [here](https://github.com/chrisgoringe/cg-controller/discussions/210).
 
 [Bug reports or feature requests very welcome](https://github.com/chrisgoringe/cg-controller/issues)
 
