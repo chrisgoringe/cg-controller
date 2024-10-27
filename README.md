@@ -43,7 +43,7 @@ You can also just hover the mouse over the slider and move the value up or down 
 To enter a precise value, double click and the slider turns into a text entry box where you can type the value you want.
 If the minimum and maximum values, or the step size, aren't convenient, shift-click on the slider to change them. 
 Note that changes made here will be reflected in the actual widget as well, however, if you set a value outside 
-of the original limits the workflow may fail to validate.
+of the original limits the workflow may fail to validate on the server.
 
 You can change the way the scrollwheel interacts with the sliders, and the keys required to edit the limits, in the main settings.
 
