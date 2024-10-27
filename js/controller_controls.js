@@ -1,6 +1,7 @@
 import { app } from "../../scripts/app.js"
 import { ControllerPanel } from "./controller_panel.js"
 import { SettingIds } from "./constants.js";
+import { UpdateController } from "./update_controller.js";
 
 export function add_controls() {
     app.ui.settings.addSetting({
@@ -10,6 +11,18 @@ export function add_controls() {
         options: [ {value:0, text:"Off"}, {value:"c", text:"c"}, {value:"C", text:"shift-C"}, 
                                           {value:"o", text:"o"}, {value:"O", text:"shift-O"}],
         defaultValue: "C",
+    });
+
+    app.ui.settings.addSetting({
+        id: SettingIds.FONT_SIZE,
+        name: "Controller font base size:",
+        tooltip: "All font sizes will be scaled relative to this value",
+        type: "slider",
+        attrs: {
+            min: 6,
+            max: 20
+          },
+        defaultValue: 12
     });
 
     app.ui.settings.addSetting({

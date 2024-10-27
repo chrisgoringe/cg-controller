@@ -4,6 +4,7 @@ export class SettingIds {
     static SCROLL_MOVES_SLIDERS = "Controller.options.scroll_moves_slider"
     static EDIT_SLIDERS = "Controller.options.edit_slider"
     static DEBUG_LEVEL = "Controller.debug.level"
+    static FONT_SIZE = "Controller.options.font_size"
 }
 
 export class Timings { // ms
