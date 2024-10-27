@@ -173,7 +173,7 @@ export class FancySlider extends HTMLSpanElement {
         this.graphic_fill  = create('span', 'fs_graphic_fill', this.graphic)
         this.graphic_text  = create('span', 'fs_graphic_text', this.graphic)
         this.text_edit     = create('input','fs_text_edit', this)
-        this.label         = create('span', 'fs_label', this, {"innerText":widget.name})
+        this.label         = create('span', 'fs_label', this, {"innerText":widget.label ?? widget.name})
 
         this.displaying = "graphic"
 

@@ -28,6 +28,8 @@ export class Entry extends HTMLDivElement {
         if (target_widget.disabled) return
         if (target_widget.name=='control_after_generate' && !app.ui.settings.getSettingValue(SettingIds.CONTROL_AFTER_GENERATE, false)) return
 
+        const widget_label = target_widget.label ?? target_widget.name
+
         this.classList.add('entry')
         this.target_widget = target_widget
         this.input_element = null
@@ -35,11 +37,11 @@ export class Entry extends HTMLDivElement {
 
         switch (target_widget.type) {
             case 'text':
-                this.entry_label = create('span','entry_label text', this, {'innerText':target_widget.name, 'draggable':false} )  
+                this.entry_label = create('span','entry_label text', this, {'innerText':widget_label, 'draggable':false} )  
                 this.input_element = create('input', 'input', this) 
                 break
             case 'customtext':
-                this.input_element = create("textarea", 'input', this, {"title":target_widget.name, "placeholder":target_widget.name})
+                this.input_element = create("textarea", 'input', this, {"title":widget_label, "placeholder":widget_label})
                 make_resizable( this.input_element, node.id, target_widget.name, properties )
                 break
             case 'number':
@@ -49,22 +51,17 @@ export class Entry extends HTMLDivElement {
                 this.appendChild(this.input_element)
                 break
             case 'combo':
-                this.entry_label = create('span','entry_label', this, {'innerText':target_widget.name, 'draggable':false} )  
+                this.entry_label = create('span','entry_label', this, {'innerText':widget_label, 'draggable':false} )  
                 this.entry_value = create('span','entry_label value', this, {'innerText':target_widget.value, 'draggable':false} )  
                 this.input_element = create("select", 'input', this) 
                 target_widget.options.values.forEach((o) => this.input_element.add(new Option(o,o)))
                 this.input_element.addEventListener("change", (e)=>{this.entry_value.innerText=e.target.value})
                 break
             case 'button':
-                var label = target_widget.label
-                if (!label) {
-                    label = target_widget.name
-                    //this.entry_label.innerText = ""
-                }
-                this.input_element = create("button", 'input', this, {"innerText":label})
+                this.input_element = create("button", 'input', this, {"innerText":widget_label})
                 break
             case 'toggle':
-                this.input_element = new Toggle(target_widget.value, target_widget.name)
+                this.input_element = new Toggle(target_widget.value, widget_label)
                 this.appendChild(this.input_element)
                 break
             default:
