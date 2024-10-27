@@ -78,7 +78,15 @@
 
 .refresh_button {
     cursor: pointer;
-    padding-right: 2px;
+    padding-right: 3px;
+    font-size: 12pt;
+    color: #dadada;
+    top: -4px;
+    left: -1px;
+}
+
+.clicked {
+    color: #60a5fa;
 }
 
 .being_dragged {

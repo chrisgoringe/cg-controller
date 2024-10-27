@@ -408,7 +408,11 @@ export class ControllerPanel extends HTMLDivElement {
             add_tooltip(this.show_advanced_, `${settings.advanced?"Hide":"Show"} advanced controls`)
         }
         this.refresh = create('span', 'refresh_button', this.extra_controls, {"innerHTML":"&#10227;"})
-        this.refresh.addEventListener('click', (e) => {UpdateController.make_request("refresh_button")})
+        this.refresh.addEventListener('click', (e) => {
+            UpdateController.make_request("refresh_button");
+            this.refresh.classList.add("clicked");
+            setTimeout(()=>{this.refresh.classList.remove("clicked")}, 200);
+        })
         add_tooltip(this.refresh, `Refresh controller`)
 
         /* 
