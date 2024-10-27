@@ -281,6 +281,10 @@ textarea.input {
     background-color: #222222;
 }
 
+.toggle.false .toggle_value .toggle_text {
+    color: #999999;
+}
+
 .toggle_label {
     font-size: 70%;
     padding-left: 4px;
