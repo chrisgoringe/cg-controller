@@ -324,7 +324,8 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     _build_controllerPanel() {
-        this.style.fontSize = `${1.333*settings.getSettingValue(SettingIds.FONT_SIZE, 12)}px`
+        //this.style.fontSize = `${1.333*settings.getSettingValue(SettingIds.FONT_SIZE, 12)}px`
+        this.style.setProperty('--font-size',`${1.333*settings.getSettingValue(SettingIds.FONT_SIZE, 12)}px`)
         if (settings.element_width==0) {
             this.set_element_width()
             this.style.width = ""

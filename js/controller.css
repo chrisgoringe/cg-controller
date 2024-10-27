@@ -15,7 +15,8 @@
 
 
 .controller {
-    font-size: 12pt;
+    --font-size: 12px;
+    font-size: var(--font-size);
     height:100%;
     background: #1c1c1cee;
     padding: 0 0 0 5px;
@@ -232,9 +233,8 @@
 
 .entry_label {
     position: absolute;
-    height: 18px;
-    top: 5px;
-    padding-top: 3px;
+    height: calc(var(--font-size) - 2px);
+    top: 9px;
     padding-right: 6px;
     background: rgb(34 34 34);
     color: #c5c5c5;
@@ -251,9 +251,13 @@
 
 .entry_label.value {
     right: 20px;
+    height: calc(var(--font-size) - 2px);
+    top: 9px;
     left: unset;
-    width:unset;
-    color:white;
+    width: unset;
+    color: white;
+    max-width: calc(100% - 24px);
+    overflow: clip;
 }
 
 .input {
@@ -264,6 +268,9 @@
     border: none;
     height: 20px;
     text-align: right;
+}
+select.input {
+    height: calc(var(--font-size) + 4px)
 }
 
 button.input {

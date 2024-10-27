@@ -19,7 +19,7 @@ export function add_controls() {
         tooltip: "All font sizes will be scaled relative to this value",
         type: "slider",
         attrs: {
-            min: 6,
+            min: 10,
             max: 16
           },
         defaultValue: 12
