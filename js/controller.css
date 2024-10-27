@@ -40,7 +40,6 @@
     position: sticky;
     top: 0px;
     z-index: 40000;
-    padding: 5px 0px 5px 0px;
     background: #222222;
     display: flex;
     width: var(--element_width);
@@ -51,20 +50,21 @@
     z-index:1;
 }
 
-.header1 {
+.subheader {
     width: 100%;
     display: flex;
     justify-content: space-between;
     border-bottom: 1px solid #353535;
     align-items: center;
+    padding: 8px 4px 8px 4px;
 }
 
-.header2 {
-    width: 100%;
-    display: flex;
-    justify-content: flex-end;
-    padding-top:4px;
-    align-items: center;
+.subheader1 {
+
+}
+
+.subheader2 {
+
 }
 
 .header_title {
@@ -76,13 +76,13 @@
     max-width: var(--element_width);
  }
 
-.refresh_button {
+.header_button {
     cursor: pointer;
-    padding-right: 3px;
     font-size: 12pt;
     color: #dadada;
     top: -4px;
-    left: -1px;
+    padding-left: 6px;
+    padding-right: 2px;
 }
 
 .clicked {
@@ -94,7 +94,7 @@
 }
 
 .extra_controls {
-
+    height: 15px;
 }
 
 .advanced_controls {

@@ -336,10 +336,10 @@ export class ControllerPanel extends HTMLDivElement {
         Create the top section
         */
         this.header.innerHTML = ""
-        this.header1 = create('span','header1',this.header)
+        this.header1 = create('span','subheader subheader1',this.header)
         this.header_title = create('span', 'header_title', this.header1, {"innerText":"CONTROLLER"})
         this.extra_controls = create('span', 'extra_controls', this.header1)
-        this.header2 = create('span','header2', this.header)
+        this.header2 = create('span','subheader subheader2', this.header)
         
         //this.header3 = create('span','header3',this.header)
 
@@ -393,21 +393,24 @@ export class ControllerPanel extends HTMLDivElement {
 
         /*
         Back to the header
+
+        <i class="pi pi-sliders-h side-bar-button-icon"></i>pi icon
+
         */
         if (this.showAdvancedCheckbox) {
             //this.show_advanced = create("input", "advanced_checkbox", this.extra_controls, {"type":"checkbox", "checked":settings.advanced})
-            const icon = settings.advanced ? "advanced-options-on.png" : "advanced-options.png"
-            this.show_advanced = create('img', 'advanced_label', this.extra_controls, {"src":`${BASE_PATH}/${icon}`})
-            this.show_advanced_ = create('span', 'advanced_label_', this.extra_controls)
+            //const icon = settings.advanced ? "advanced-options-on.png" : "advanced-options.png"
+            this.show_advanced = create('i', `pi pi-caret-down header_button${settings.advanced ? " clicked":""}`, this.extra_controls)
+            //this.show_advanced_ = create('span', 'advanced_label_', this.extra_controls)
             const toggle = () => {
                 settings.advanced = !settings.advanced
                 this.redraw()                
             }
-            this.show_advanced_.addEventListener('click', toggle)
+            //this.show_advanced_.addEventListener('click', toggle)
             this.show_advanced.addEventListener('click', toggle)
-            add_tooltip(this.show_advanced_, `${settings.advanced?"Hide":"Show"} advanced controls`)
+            add_tooltip(this.show_advanced, `${settings.advanced?"Hide":"Show"} advanced controls`)
         }
-        this.refresh = create('span', 'refresh_button', this.extra_controls, {"innerHTML":"&#10227;"})
+        this.refresh = create('i', 'pi pi-sync header_button', this.extra_controls)
         this.refresh.addEventListener('click', (e) => {
             UpdateController.make_request("refresh_button");
             this.refresh.classList.add("clicked");

@@ -20,7 +20,7 @@ export function add_controls() {
         type: "slider",
         attrs: {
             min: 6,
-            max: 20
+            max: 16
           },
         defaultValue: 12
     });
