@@ -19,7 +19,7 @@ app.registerExtension({
         //new ControllerPanel()
         //ControllerPanel.instance.hide()
 
-        app.graph._nodes.forEach((node)=>{
+        /*app.graph._nodes.forEach((node)=>{
             node.widgets?.forEach((widget)=>{
                 if (widget.type=='customtext') {
                     const ondraw = widget.options.onDraw
@@ -31,7 +31,7 @@ app.registerExtension({
                     }
                 }
             })
-        })
+        })*/
     },
 
     /* Called at the end of the application startup */

@@ -30,7 +30,7 @@
     border-color: rgb(83 83 83);
     border-radius: 4px;
     resize: both;
-    z-index:auto;
+    z-index:999;
     scrollbar-width: thin;
     scrollbar-color: #27262a #18171c;
 }
