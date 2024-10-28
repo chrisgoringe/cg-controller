@@ -6,6 +6,12 @@ export class NodeInclusionManager {
     static INCLUDE  = "Include this node"
     static ALWAYS   = "Include this node in all group views"
     static ADVANCED = "Include this node as advanced control"
+
+    static EXCLUDES =  NodeInclusionManager.EXCLUDE.replace('this node', 'these nodes')
+    static INCLUDES  = NodeInclusionManager.INCLUDE.replace('this node', 'these nodes')
+    static ALWAYSS   = NodeInclusionManager.ALWAYS.replace('this node', 'these nodes')
+    static ADVANCEDS = NodeInclusionManager.ADVANCED.replace('this node', 'these nodes')
+
     static node_change_callback = null
 
     static node_includable(node_or_node_id) {
@@ -48,12 +54,21 @@ export class NodeInclusionManager {
     }
 }
 
+function selected_nodes() {
+    return app.graph._nodes.filter((node)=>node.is_selected)
+}
+
 function cp_callback_submenu(value, options, e, menu, node) {
     const current = node.properties["controller"] ?? NodeInclusionManager.EXCLUDE;
+    const selection = selected_nodes()
+    const choices = (selection.length==1) ? 
+        [NodeInclusionManager.EXCLUDE, NodeInclusionManager.INCLUDE, NodeInclusionManager.ALWAYS, NodeInclusionManager.ADVANCED] : 
+        [NodeInclusionManager.EXCLUDES, NodeInclusionManager.INCLUDES, NodeInclusionManager.ALWAYSS, NodeInclusionManager.ADVANCEDS]
     const submenu = new LiteGraph.ContextMenu(
-        [NodeInclusionManager.EXCLUDE, NodeInclusionManager.INCLUDE, NodeInclusionManager.ALWAYS, NodeInclusionManager.ADVANCED],
+        choices,
         { event: e, callback: function (v) { 
-            node.properties["controller"] = v; 
+            selection.forEach((nd)=>{nd.properties["controller"] = v.replace('these nodes', 'this node')})
+            //node.properties["controller"] = v; 
             NodeInclusionManager.node_change_callback?.();
             app.canvas.setDirty(true, true) 
         }, 
@@ -73,6 +88,6 @@ export function add_control_panel_options(options) {
             callback: cp_callback_submenu,
         }
     )
-    options.push(null);
+    //options.push(null);
 }
 
