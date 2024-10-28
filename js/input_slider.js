@@ -371,7 +371,7 @@ export class FancySlider extends HTMLSpanElement {
 }
 
 function handle_mouse_move(e) {
-    if (FancySlider.mouse_down_on) FancySlider.mouse_down_on._mousemove(e).bind(FancySlider.mouse_down_on)
+    if (FancySlider.mouse_down_on) FancySlider.mouse_down_on._mousemove.bind(FancySlider.mouse_down_on)(e)
 }
 
 customElements.define('cp-fslider', FancySlider, {extends: 'span'})
