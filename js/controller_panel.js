@@ -265,7 +265,7 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     header_mouse(e) {
-        if (e.type=='mousedown') {
+        if (e.type=='mousedown' && e.target==this.header1) {
             this.being_dragged = true
             this.offset_x = e.x - settings.position.x
             this.offset_y = e.y - settings.position.y
@@ -367,17 +367,19 @@ export class ControllerPanel extends HTMLDivElement {
         if (!settings.collapsed) {
             if (this.showAdvancedCheckbox) {
                 this.show_advanced = create('i', `pi pi-bolt header_button${settings.advanced ? " clicked":""}`, this.header1)
-                this.show_advanced.addEventListener('click', () => {
+                this.show_advanced.addEventListener('click', (e) => {
                     settings.advanced = !settings.advanced
-                    this.redraw()                
+                    this.redraw()
+                    e.stopPropagation()    
                 })
                 add_tooltip(this.show_advanced, `${settings.advanced?"Hide":"Show"} advanced controls`)
             }
             this.refresh = create('i', 'pi pi-sync header_button', this.header1)
-            this.refresh.addEventListener('click', () => {
+            this.refresh.addEventListener('click', (e) => {
                 UpdateController.make_request("refresh_button");
                 this.refresh.classList.add("clicked");
                 setTimeout(()=>{this.refresh.classList.remove("clicked")}, 200);
+                e.stopPropagation()    
             })
             add_tooltip(this.refresh, `Refresh controller`)
         }
