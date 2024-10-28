@@ -156,6 +156,8 @@ export class FancySlider extends HTMLSpanElement {
 
     static in_textedit = null
 
+    static mouse_down_on = null
+
     constructor(node, widget, properties) {
         super()
         this.classList.add("fancy_slider")
@@ -180,7 +182,7 @@ export class FancySlider extends HTMLSpanElement {
         this.addEventListener('mousedown',     (e) => this._mousedown(e))
         this.addEventListener('wheel',         (e) => this._wheel(e))
         this.addEventListener('mouseout',      (e) => this._mouseout(e))
-        document.addEventListener('mousemove', (e) => this._mousemove(e))
+        
         document.addEventListener('mouseup',   (e) => this.enddragging(e))
         this.addEventListener('change',        (e) => this._change(e))
         this.addEventListener('focusin',       (e) => this._focus(e))
@@ -213,6 +215,8 @@ export class FancySlider extends HTMLSpanElement {
 
     enddragging(e) {
         this.mouse_down_on_me_at = null; 
+        FancySlider.mouse_down_on = null;
+        document.removeEventListener('mousemove', handle_mouse_move)
         this.dragging = false
         this.classList.remove('can_drag')
         if (e && e.target==this) {
@@ -295,25 +299,25 @@ export class FancySlider extends HTMLSpanElement {
             } else {
                 this.classList.add('can_drag')
                 this.mouse_down_on_me_at = e.x;
+                FancySlider.mouse_down_on = this
+                document.addEventListener('mousemove', handle_mouse_move)
                 e.stopPropagation()
             }
         }
     }
 
     _mousemove(e) { 
-        if (this.mouse_down_on_me_at) {
-            if (!this.dragging && (Math.abs(e.x-this.mouse_down_on_me_at)>6 || Math.abs(e.movementX)>4)) {
-                this.dragging = true 
-            }
-            if (this.dragging) {
-                const box = this.getBoundingClientRect()
-                const f =  clamp(( e.x - box.x ) / box.width, 0, 1)
-                var new_value = this.options.min + f * (this.options.max - this.options.min)
-                if (this.is_integer) new_value = parseInt(new_value)
-                this.redraw_with_value(new_value)
-                e.preventDefault()
-                e.stopPropagation() 
-            }
+        if (!this.dragging && (Math.abs(e.x-this.mouse_down_on_me_at)>6 || Math.abs(e.movementX)>4)) {
+            this.dragging = true 
+        }
+        if (this.dragging) {
+            const box = this.getBoundingClientRect()
+            const f =  clamp(( e.x - box.x ) / box.width, 0, 1)
+            var new_value = this.options.min + f * (this.options.max - this.options.min)
+            if (this.is_integer) new_value = parseInt(new_value)
+            this.redraw_with_value(new_value)
+            e.preventDefault()
+            e.stopPropagation() 
         }
     }
 
@@ -364,6 +368,10 @@ export class FancySlider extends HTMLSpanElement {
         }
     }
 
+}
+
+function handle_mouse_move(e) {
+    if (FancySlider.mouse_down_on) FancySlider.mouse_down_on._mousemove(e).bind(FancySlider.mouse_down_on)
 }
 
 customElements.define('cp-fslider', FancySlider, {extends: 'span'})

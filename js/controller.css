@@ -18,6 +18,7 @@
     --font-size: 12px;
     font-size: var(--font-size);
     height:100%;
+    min-height: 42px;
     background: #1c1c1cee;
     padding: 0 0 0 2px;
     position: absolute;

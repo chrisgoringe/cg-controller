@@ -1,11 +1,11 @@
 import { app } from "../../scripts/app.js"
-import { GroupManager } from "./groups.js"
 import { Debug } from "./debug.js"
+import { Texts } from "./constants.js"
 
 const DEFAULTS = {
     "node_order"   : [],
     "advanced"     : false,
-    "group_choice" : GroupManager.show_all,
+    "group_choice" : Texts.ALL_GROUPS,
     "position"     : {"x" : 0, "y" : 0, "w" : 250, "h" : 180},
     "collapsed"    : false,
 } 
