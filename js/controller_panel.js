@@ -83,7 +83,7 @@ export class ControllerPanel extends HTMLDivElement {
         this.should_update_size = false; 
         this.being_dragged = false;
         this.classList.remove('being_dragged')
-        this.set_position()
+        this.set_position(true)
     }
 
     static overlapsWith(element) {
@@ -102,12 +102,17 @@ export class ControllerPanel extends HTMLDivElement {
         UpdateController.make_request("graph_cleared")
     }
 
+    static onWindowResize() {
+        ControllerPanel.instance.set_position(false)
+    }
+
     static on_setup() {
         settings.fix_backward_compatibility()
         UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh, (node_id)=>ControllerPanel.instance?.node_blocks[node_id])
         NodeInclusionManager.node_change_callback = UpdateController.make_request
         api.addEventListener('graphCleared', ControllerPanel.graph_cleared) 
         ControllerPanel.create()
+        window.addEventListener("resize", ControllerPanel.onWindowResize)
     }
 
     static create() {
@@ -244,7 +249,17 @@ export class ControllerPanel extends HTMLDivElement {
         settings.position.h = clamp(settings.position.h, 0, box.height - settings.position.y)
     }
 
-    set_position() {
+    set_position(set_by_user) {
+        /* 
+        if this change was user generated, the new positions are the desired ones.
+        Otherwise, retrieve the desired positions
+        */
+        if (set_by_user) {
+            Object.assign(settings.userposition, settings.position)
+        } else {
+            Object.assign(settings.position, settings.userposition)
+        }
+
         this.check_dimensions()
 
         if (settings.collapsed) {
@@ -265,18 +280,20 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     header_mouse(e) {
-        if (e.type=='mousedown' && e.target==this.header1) {
-            this.being_dragged = true
-            this.offset_x = e.x - settings.position.x
-            this.offset_y = e.y - settings.position.y
-            this.classList.add('being_dragged')
-            e.preventDefault()
-            e.stopPropagation()
+        if (e.type=='mousedown') {
+            if (e.target==this.header_title) {
+                this.being_dragged = true
+                this.offset_x = e.x - settings.position.x
+                this.offset_y = e.y - settings.position.y
+                this.classList.add('being_dragged')
+                e.preventDefault()
+                e.stopPropagation()
+            }
         }
         if (e.type=='mousemove' && this.being_dragged && e.currentTarget==window) {
             settings.position.x = e.x - this.offset_x
             settings.position.y = e.y - this.offset_y
-            this.set_position()
+            this.set_position(true)
             this.offset_x = e.x - settings.position.x
             this.offset_y = e.y - settings.position.y
         }
@@ -387,7 +404,7 @@ export class ControllerPanel extends HTMLDivElement {
         /*
         Finalise
         */
-        this.set_position()
+        this.set_position(true)
     }
 
     save_node_order() {
