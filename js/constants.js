@@ -1,10 +1,11 @@
 export class SettingIds {
-    static KEYBOARD_TOGGLE = "Controller.options.keyboard"
+    //static KEYBOARD_TOGGLE = "Controller.options.keyboard"
     static CONTROL_AFTER_GENERATE = "Controller.options.control_after_generate"
     static SCROLL_MOVES_SLIDERS = "Controller.options.scroll_moves_slider"
     static EDIT_SLIDERS = "Controller.options.edit_slider"
     static DEBUG_LEVEL = "Controller.debug.level"
     static FONT_SIZE = "Controller.options.font_size"
+    static TOOLTIPS = "Controller.options.tooltips"
 }
 
 export class Timings { // ms

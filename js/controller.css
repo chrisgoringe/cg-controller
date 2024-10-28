@@ -19,20 +19,35 @@
     font-size: var(--font-size);
     height:100%;
     background: #1c1c1cee;
-    padding: 0 0 0 5px;
+    padding: 0 0 0 2px;
     position: absolute;
-    --element_width: 340px;
-    min-width: 150px;
+    --element_width: 100%;
+    min-width: 185px;
     overflow: clip scroll;
-    border-width: 0px 5px 0px 0px;
+    border-width: 4px;
     border-style: solid;
-    border-color: rgb(53, 53, 53);
-    border-image: initial;
-    border-radius: 0px;
-    resize: horizontal;
+    border-color: rgb(83 83 83);
+    border-radius: 4px;
+    resize: both;
     z-index:auto;
     scrollbar-width: thin;
     scrollbar-color: #27262a #18171c;
+}
+
+.controller.collapsed {
+    overflow: clip;
+    min-width: 0px;
+    width: 128px;
+}
+
+.header_button.collapse_button {
+    color: #60a5fa;
+    padding-right: 6px;
+    padding-left:2px;
+}
+
+.controller.collapsed .header_button.collapse_button {
+    color: #dadada;
 }
 
 /* Header */
@@ -54,14 +69,18 @@
 .subheader {
     width: 100%;
     display: flex;
-    justify-content: space-between;
     border-bottom: 1px solid #353535;
-    align-items: center;
     padding: 8px 4px 8px 4px;
+    justify-content: flex-end;
+    align-items: center;
 }
 
 .subheader1 {
+    cursor:grab;
+}
 
+.controller.being_dragged .subheader1 {
+    cursor:grabbing;
 }
 
 .subheader2 {
@@ -71,6 +90,8 @@
 .header_title {
     font-family: Arial, sans-serif;
     font-size:13px;
+    flex-grow:1;
+    text-align: center;
  }
 
 .header_select {
@@ -81,7 +102,6 @@
     cursor: pointer;
     font-size: 12pt;
     color: #dadada;
-    top: -4px;
     padding-left: 6px;
     padding-right: 2px;
 }
@@ -105,7 +125,6 @@
     display: flex;
     justify-content: center;
     background-color: #C0808060;
-    /*width: calc(var(--element_width) - 4px);*/
 }
 
 .advanced_label {
@@ -142,7 +161,7 @@
 /* Node block */
 
 .nodeblock {
-    margin: 0px 5px 5px 0px;
+    margin: 0px 0px 5px 0px;
     position: relative;
     width: var(--element_width);
     min-height: 40px;
@@ -162,7 +181,7 @@
     color: #b3b3b3;
 }
 
-.nodeblock_minimisedot {
+.minimisedot {
     padding: 0px 4px 0px 0px;
     cursor: url(collapse.png) 8 8, zoom-out;
     position: relative;
@@ -366,7 +385,6 @@ textarea.input {
   /* Tooltip text */
   .tooltip .tooltiptext {
     visibility:hidden;
-    max-width: var(--element_width);
     background-color: #ffffffc0;
     color: #353535;
     font-size: 70%;
@@ -376,6 +394,15 @@ textarea.input {
     position: absolute;
     right: 0px;
     top: 20px;
+  }
+
+  .tooltip.right .tooltiptext {
+    right: unset;
+    left: 0px;
+  }
+
+  .controller.collapsed .tooltiptext {
+    top:0px;
   }
   
   /* Show the tooltip text when you mouse over the tooltip container */

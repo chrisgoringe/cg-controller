@@ -1,4 +1,6 @@
 import { app } from "../../scripts/app.js"
+import { SettingIds } from "./constants.js";
+import { settings } from "./settings.js";
 
 export function create( tag, clss, parent, properties ) {
     const nd = document.createElement(tag);
@@ -88,7 +90,10 @@ export function classSet(element, name, add) {
     }
 }
 
-export function add_tooltip(element, text) {
-    element.classList.add('tooltip')
-    create('span', 'tooltiptext', element, {"innerHTML":text.replaceAll(' ','&nbsp;')})
+export function add_tooltip(element, text, right) {
+    if (settings.getSettingValue(SettingIds.TOOLTIPS, true)) {
+        element.classList.add('tooltip')
+        if (right) element.classList.add('right')
+        create('span', 'tooltiptext', element, {"innerHTML":text.replaceAll(' ','&nbsp;')})
+    }
 }

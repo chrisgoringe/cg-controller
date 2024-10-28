@@ -2,14 +2,13 @@ import { app } from "../../scripts/app.js"
 import { GroupManager } from "./groups.js"
 import { Debug } from "./debug.js"
 
-
 const DEFAULTS = {
     "node_order"   : [],
     "advanced"     : false,
     "group_choice" : GroupManager.show_all,
-    "element_width": 0,
-    "scrollbar_on" : false
-}
+    "position"     : {"x" : 0, "y" : 0, "w" : 250, "h" : 180},
+    "collapsed"    : false,
+} 
 
 const KEYS = Object.keys(DEFAULTS)
 
