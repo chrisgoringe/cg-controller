@@ -373,7 +373,7 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     _build_controllerPanel() {
-        classSet(this, 'hidden', this.settings.hidden)
+        classSet(this, 'hidden', global_settings.hidden)
         this.style.setProperty('--font-size',`${1.333*getSettingValue(SettingIds.FONT_SIZE, 12)}px`)
         GroupManager.setup(  )
 
