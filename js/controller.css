@@ -13,23 +13,43 @@
 
 .controller {
     --font-size: 12px;
+    --element_width: 100%;
+
+    --main-fore-color: #ffffff;
+    --mid-fore-color: #c5c5c5;
+    --muted-fore-color: #999999;
+
+    --deep-back-color: #000000;
+    --main-back-color: #1c1c1cee;
+    --second-back-color: #222222;
+    --third-back-color:  #353535;
+
+    --overlay-background:  #ffffff66;
+    --overlay-foreground: #353535;
+
+    --toggle-on: #8899aa;
+    --toggle-off: #333333;
+
+    --main-border-color: rgb(83 83 83);
+
+
     font-size: var(--font-size);
     height:100%;
     min-height: 42px;
-    background: #1c1c1cee;
+    background: var(--main-back-color);
     padding: 0 0 0 2px;
     position: absolute;
-    --element_width: 100%;
+
     min-width: 185px;
     overflow: clip scroll;
     border-width: 4px;
     border-style: solid;
-    border-color: rgb(83 83 83);
+    border-color: var(--main-border-color);
     border-radius: 4px;
     resize: both;
     z-index:999;
     scrollbar-width: thin;
-    scrollbar-color: #27262a #18171c;
+    scrollbar-color: var(--third-back-color) var(--main-back-color);
     pointer-events: all;
     user-select: none;
 }
@@ -47,7 +67,7 @@
 }
 
 .controller.collapsed .header_button.collapse_button {
-    color: #dadada;
+    color: var(--mid-fore-color);
 }
 
 /* Header */
@@ -56,7 +76,7 @@
     position: sticky;
     top: 0px;
     z-index: 40000;
-    background: #222222;
+    background: var(--second-back-color);
     display: flex;
     width: var(--element_width);
     justify-content: space-between;
@@ -69,7 +89,7 @@
 .subheader {
     width: 100%;
     display: flex;
-    border-bottom: 1px solid #353535;
+    border-bottom: 1px solid var(--third-back-color);
     padding: 8px 4px 8px 4px;
     justify-content: flex-end;
     align-items: center;
@@ -96,12 +116,13 @@
 
 .header_select {
     max-width: var(--element_width);
+    color: var(--main-fore-color);
  }
 
 .header_button {
     cursor: pointer;
     font-size: 12pt;
-    color: #dadada;
+    color: var(--mid-fore-color);
     padding-left: 6px;
     padding-right: 2px;
 }
@@ -117,7 +138,7 @@
 .extra_controls {
     height: 15px;
 }
-
+/*
 .advanced_controls {
     margin: 5px 2px 5px 0px;
     padding: 2px;
@@ -147,7 +168,7 @@
 
 .advanced_checkbox {
     margin: 0px;
-}
+}*/
 
 
 .empty_message {
@@ -180,7 +201,7 @@
     font-size: 80%;
     display: block;
     padding: 1px 3px 2px 2px;
-    color: #b3b3b3;
+    color: var(--mid-fore-color);
 }
 
 .minimisedot {
@@ -196,9 +217,9 @@
 }
 
 .titlebar_nocolor {
-    border-bottom: 2px solid #2a2a2a;
+    border-bottom: 2px solid var(--second-back-color);
     padding-bottom: 1px;
-    background-color: #353535;
+    background-color: var(--third-back-color)
 }
 
 .nodeblock.minimised .nodeblock_titlebar {
@@ -206,8 +227,8 @@
 }
 
 .nodeblock.minimised .titlebar_nocolor {
-    border-bottom: 2px solid #353535;
-    background-color: #353535;
+    border-bottom: 2px solid var(--third-back-color);
+    background-color: var(--third-back-color);
     height: 16px;
 }
 
@@ -257,8 +278,8 @@
     height: calc(var(--font-size) - 2px);
     top: 9px;
     padding-right: 6px;
-    background: rgb(34 34 34);
-    color: #c5c5c5;
+    background: var(--second-back-color);
+    color: var(--mid-fore-color);
     text-align: left;
     left: 8px;
     font-size: 70%;
@@ -267,7 +288,7 @@
 }
 
 .entry_label.text {
-    background: #00000000;
+    background: var(--deep-back-color);
 }
 
 .entry_label.value {
@@ -276,7 +297,7 @@
     top: 9px;
     left: unset;
     width: unset;
-    color: white;
+    color: var(--main-fore-color);
     max-width: calc(100% - 24px);
     overflow: clip;
 }
@@ -285,7 +306,8 @@
     width: 100%;
     left: 25%;
     font-size: 75%;
-    background-color: #222222;
+    background-color: var(--second-back-color);
+    color: var(--main-fore-color);
     border: none;
     height: 20px;
     text-align: right;
@@ -315,17 +337,17 @@ textarea.input {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #222222;
+    background-color:var(--second-back-color)
 }
 
 .toggle.false .toggle_value .toggle_text {
-    color: #999999;
+    color: var(--muted-fore-color);
 }
 
 .toggle_label {
     font-size: 70%;
     padding-left: 4px;
-    color: #999999;
+    color: var(--muted-fore-color);
 }
 
 .toggle_value {
@@ -344,11 +366,11 @@ textarea.input {
 }
 
 .toggle_graphic.true {
-    color: #8899aa;
+    color: var(--toggle-on);
 }
 
 .toggle_graphic.false {
-    color: #333333;
+    color: var(--toggle-off);
 }
 
 /* Footer */
@@ -371,8 +393,8 @@ textarea.input {
     position: absolute;
     text-align: right;
     bottom:10px;
-    background-color: #ffffff66;
-    color: #353535;
+    background-color: var(--overlay-background);
+    color: var(--overlay-foreground);
     right: 10px;
     padding: 3px;
     border-radius: 4px;
@@ -387,7 +409,7 @@ textarea.input {
   /* Tooltip text */
   .tooltip .tooltiptext {
     visibility:hidden;
-    background-color: #ffffffc0;
+    background-color: #ffffff66;
     color: #353535;
     font-size: 70%;
     text-align: center;
