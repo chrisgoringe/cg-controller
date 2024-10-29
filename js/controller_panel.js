@@ -1,7 +1,7 @@
 import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js" 
 
-import { create, get_node, add_tooltip, clamp } from "./utilities.js";
+import { create, get_node, add_tooltip, clamp, classSet } from "./utilities.js";
 import { GroupManager } from "./groups.js";
 
 import { UpdateController } from "./update_controller.js";
@@ -119,12 +119,26 @@ export class ControllerPanel extends HTMLDivElement {
     static create() {
         if (document.getElementsByClassName('graph-canvas-container').length>0) {
             new ControllerPanel()
+            const comfy_menu = document.getElementsByClassName('comfyui-menu')[0]
+            var spacer = null
+            comfy_menu.childNodes.forEach((node)=>{if (node.classList.contains('flex-grow')) spacer = node})
+            if (!spacer) spacer = comfy_menu.firstChild
+            ControllerPanel.menu_button = create('i', 'pi pi-sliders-h controller-menu-button')
+            classSet(ControllerPanel.menu_button, 'showing', !ControllerPanel.instance.settings.hidden)
+            spacer.after(ControllerPanel.menu_button)
+            ControllerPanel.menu_button.addEventListener('click', ControllerPanel.toggle)
         } else {
             setTimeout(ControllerPanel.create,100)
         }
     }
 
     static redraw() { ControllerPanel.instance.redraw() }
+
+    static toggle() {
+        ControllerPanel.instance.settings.hidden = !ControllerPanel.instance.settings.hidden
+        if (ControllerPanel.menu_button) classSet(ControllerPanel.menu_button, 'showing', !ControllerPanel.instance.settings.hidden)
+        UpdateController.make_request('toggle')
+    }
 
     static can_refresh() {  // returns -1 to say "no, and don't try again", 0 to mean "go ahead!", or n to mean "wait n ms then ask again"
         if (app.configuringGraph) { Debug.trivia("configuring"); return -1 }
@@ -311,9 +325,8 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     _build_controllerPanel() {
+        classSet(this, 'hidden', this.settings.hidden)
         this.style.setProperty('--font-size',`${1.333*getSettingValue(SettingIds.FONT_SIZE, 12)}px`)
-
-        this.new_menu_position = getSettingValue('Comfy.UseNewMenu', "Disabled")
         GroupManager.setup(  )
 
         /* 

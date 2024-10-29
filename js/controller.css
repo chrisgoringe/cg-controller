@@ -1,18 +1,15 @@
 /* Menu */
 
-.controller-tab-button {
-    padding: 8px 0px 8px 0px;
-    border: 1px;
-    height: 64px;
-    width: 64px;
-    border-radius:0px;
+.controller-menu-button {
+    color: var(--p-button-text-secondary-color);
+    cursor: pointer;
+    font-size: 14pt;
+    padding-right: 4px;
 }
 
-.controller-tab-button.selected {
-    border-left: 4px solid var(--p-button-text-primary-color);
+.showing {
     color: var(--p-button-text-primary-color);
 }
-
 
 .controller {
     --font-size: 12px;
@@ -42,7 +39,7 @@
 }
 
 .header_button.collapse_button {
-    color: #60a5fa;
+    color: var(--p-button-text-primary-color);
     padding-right: 6px;
     padding-left:2px;
 }
@@ -108,7 +105,7 @@
 }
 
 .clicked {
-    color: #60a5fa;
+    color: var(--p-button-text-primary-color);
 }
 
 .being_dragged {

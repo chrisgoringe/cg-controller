@@ -9,6 +9,7 @@ const DEFAULTS = {
     "position"     : {"x" : 0, "y" : 0, "w" : 250, "h" : 180},
     "userposition" : {"x" : 0, "y" : 0, "w" : 250, "h" : 180},
     "collapsed"    : false,
+    "hidden"       : false,
 } 
 
 const KEYS = Object.keys(DEFAULTS)
