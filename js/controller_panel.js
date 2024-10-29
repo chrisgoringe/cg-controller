@@ -10,7 +10,7 @@ import { observe_resizables } from "./resize_manager.js";
 import { Debug } from "./debug.js";
 
 import { NodeInclusionManager } from "./node_inclusion.js";
-import { get_all_settings, getSettingValue, global_settings } from "./settings.js";
+import { get_all_setting_indices, getSettingValue, global_settings, new_controller_setting_index, get_settings, delete_settings } from "./settings.js";
 import { SettingIds, Timings, Texts } from "./constants.js";
 
 export class ControllerPanel extends HTMLDivElement {
@@ -18,10 +18,11 @@ export class ControllerPanel extends HTMLDivElement {
     static button = undefined
     constructor(index) {
         super()
+        if (index == null) index = new_controller_setting_index()
         if (ControllerPanel.instances[index]) { ControllerPanel.instances[index].remove() }
         ControllerPanel.instances[index] = this
         this.index = index
-        this.settings = get_all_settings()[index]
+        this.settings = get_settings(index)
         this.classList.add("controller")
         document.getElementsByClassName('graph-canvas-panel')[0].appendChild(this)
 
@@ -77,17 +78,20 @@ export class ControllerPanel extends HTMLDivElement {
 
         this.should_update_size = false
         this.addEventListener('mousedown', ()=>{this.should_update_size = true})
-        window.addEventListener('mouseup', ()=>{this.mouse_up_anywhere()})
+        
         
         new ResizeObserver((x) => this.on_size_change()).observe(this)
 
     }
 
-    mouse_up_anywhere() {
-        this.should_update_size = false; 
-        this.being_dragged = false;
-        this.classList.remove('being_dragged')
-        this.set_position(true)
+    static mouse_up_anywhere() {
+        Object.keys(ControllerPanel.instances).forEach((k)=>{
+            const t = ControllerPanel.instances[k]
+            t.should_update_size = false; 
+            t.being_dragged = false;
+            t.classList.remove('being_dragged')
+            t.set_position(true)
+        })
     }
 
     redraw() {
@@ -115,11 +119,43 @@ export class ControllerPanel extends HTMLDivElement {
         api.addEventListener('graphCleared', ControllerPanel.graph_cleared) 
         ControllerPanel.create()
         window.addEventListener("resize", ControllerPanel.onWindowResize)
+        window.addEventListener('mouseup', ControllerPanel.mouse_up_anywhere)
+
+        const original_getCanvasMenuOptions = LGraphCanvas.prototype.getCanvasMenuOptions;
+        LGraphCanvas.prototype.getCanvasMenuOptions = function () {
+            // get the basic options 
+            const options = original_getCanvasMenuOptions.apply(this, arguments);
+            options.push(null); // inserts a divider
+            options.push({
+                content: "New Controller",
+                callback: async () => {
+                    ControllerPanel.create_new()
+                }
+            })
+            return options;
+        }
+    }
+
+    static create_new() {
+        new ControllerPanel().build_controllerPanel()
+    }
+
+    static delete_latest() {
+        var x = -1
+        Object.keys(ControllerPanel.instances).forEach((k)=>{x = Math.max(x,parseInt(k))})
+        ControllerPanel.instances[x].delete_controller()
+    }
+
+    delete_controller() {
+        delete_settings(this.settings.index)
+        this.remove()
+        delete ControllerPanel.instances[this.settings.index]
     }
 
     static create() {
         if (document.getElementsByClassName('graph-canvas-panel').length>0) {
-            new ControllerPanel(0)
+            get_all_setting_indices().forEach((i)=>{new ControllerPanel(i)})
+            //new ControllerPanel(0)
             const comfy_menu = document.getElementsByClassName('comfyui-menu')[0]
             var spacer = null
             comfy_menu.childNodes.forEach((node)=>{if (node.classList.contains('flex-grow')) spacer = node})
@@ -209,8 +245,7 @@ export class ControllerPanel extends HTMLDivElement {
     on_size_change() {
         if (this.getBoundingClientRect().width>0 && this.should_update_size) {
             this.show_overlay(`${Math.round(this.getBoundingClientRect().width)} x ${Math.round(this.getBoundingClientRect().height)}px`, this)
-            this.settings.position.w = this.getBoundingClientRect().width
-            this.settings.position.h = this.getBoundingClientRect().height
+            this.settings.set_position(null,null,this.getBoundingClientRect().width,this.getBoundingClientRect().height)
         }
     }
 
@@ -270,10 +305,12 @@ export class ControllerPanel extends HTMLDivElement {
 
     check_dimensions() {
         const box = this.parentElement.getBoundingClientRect()
-        this.settings.position.x = clamp(this.settings.position.x, 0, box.width  - this.settings.position.w)
-        this.settings.position.y = clamp(this.settings.position.y, 0, box.height - this.settings.position.h)
-        this.settings.position.w = clamp(this.settings.position.w, 0, box.width  - this.settings.position.x)
-        this.settings.position.h = clamp(this.settings.position.h, 0, box.height - this.settings.position.y)
+        this.settings.set_position(
+            clamp(this.settings.position.x, 0, box.width  - this.settings.position.w),
+            clamp(this.settings.position.y, 0, box.height - this.settings.position.h),
+            clamp(this.settings.position.w, 0, box.width  - this.settings.position.x),
+            clamp(this.settings.position.h, 0, box.height - this.settings.position.y)
+        )
     }
 
     set_position(set_by_user) {
@@ -282,9 +319,9 @@ export class ControllerPanel extends HTMLDivElement {
         Otherwise, retrieve the desired positions
         */
         if (set_by_user) {
-            Object.assign(this.settings.userposition, this.settings.position)
+            this.settings.store_position()
         } else {
-            Object.assign(this.settings.position, this.settings.userposition)
+            this.settings.retreive_position()
         }
 
         this.check_dimensions()
@@ -318,8 +355,7 @@ export class ControllerPanel extends HTMLDivElement {
             }
         }
         if (e.type=='mousemove' && this.being_dragged && e.currentTarget==window) {
-            this.settings.position.x = e.x - this.offset_x
-            this.settings.position.y = e.y - this.offset_y
+            this.settings.set_position( e.x - this.offset_x, e.y - this.offset_y, null, null )
             this.set_position(true)
             this.offset_x = e.x - this.settings.position.x
             this.offset_y = e.y - this.settings.position.y
@@ -425,6 +461,11 @@ export class ControllerPanel extends HTMLDivElement {
                 e.stopPropagation()    
             })
             add_tooltip(this.refresh, `Refresh controller`)
+            this.refresh = create('i', 'pi pi-times header_button', this.header1)
+            this.refresh.addEventListener('click', (e) => {
+                this.delete_controller()    
+            })
+            add_tooltip(this.refresh, `Delete this controller`)
         }
         
         /*
