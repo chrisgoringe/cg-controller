@@ -281,10 +281,15 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     check_dimensions() {
+        if (this.being_dragged) return;
         const box = this.parentElement.getBoundingClientRect()
         this.settings.set_position(
             clamp(this.settings.position.x, 0, box.width  - this.settings.position.w),
             clamp(this.settings.position.y, 0, box.height - this.settings.position.h),
+            null, null 
+        )
+        this.settings.set_position( 
+            null, null, 
             clamp(this.settings.position.w, 0, box.width  - this.settings.position.x),
             clamp(this.settings.position.h, 0, box.height - this.settings.position.y)
         )
