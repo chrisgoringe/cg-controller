@@ -168,29 +168,30 @@ export class NodeBlock extends HTMLSpanElement {
             }
         })
 
-        if (this.image_panel) {
-            this.appendChild(this.image_panel)
-        } else {
-            if (!this.node.properties.controller_widgets['__image_panel']) this.node.properties.controller_widgets['__image_panel'] = {}
-            this.image_panel = create("div", "nodeblock_image_panel nodeblock_image_empty", this)
-            this.node._imgs = this.node.imgs
-            try {
-                delete this.node.imgs
-                Object.defineProperty(this.node, "imgs", {
-                    get : () => { return this.node._imgs },
-                    set : (v) => { 
-                        this.node._imgs = v; 
-                        this.show_image(v); 
-                        UpdateController.make_request("img changed") 
-                    }
-                })               
-            } catch { }
-            this.image_image = create('img', 'nodeblock_image', this.image_panel)
-            this.image_image.addEventListener('load', this.rescale_image.bind(this))
-            
-            make_resizable( this.image_panel, this.node.id, "__image_panel", this.node.properties.controller_widgets['__image_panel'] )
-            new ResizeObserver(this.rescale_image.bind(this)).observe(this.image_panel)
-        }
+        if (this.image_panel) this.image_panel.remove()
+
+        if (!this.node.properties.controller_widgets['__image_panel']) this.node.properties.controller_widgets['__image_panel'] = {}
+        this.image_panel = create("div", "nodeblock_image_panel nodeblock_image_empty", this)
+        this.image_image = create('img', 'nodeblock_image', this.image_panel)
+        this.image_image.addEventListener('load', this.rescale_image.bind(this))
+        
+        make_resizable( this.image_panel, this.node.id, "__image_panel", this.node.properties.controller_widgets['__image_panel'] )
+        new ResizeObserver(this.rescale_image.bind(this)).observe(this.image_panel)
+
+        this.node._imgs = this.node.imgs
+        try {
+            delete this.node.imgs
+            Object.defineProperty(this.node, "imgs", {
+                get : () => { return this.node._imgs },
+                set : (v) => { 
+                    this.node._imgs = v; 
+                    this.show_image(v); 
+                    UpdateController.make_request("img changed") 
+                }
+            })               
+        } catch { }
+
+
         if (this.node._imgs) this.show_image(this.node._imgs)
         this.valid_nodeblock = true
     }
