@@ -219,6 +219,9 @@ export class ControllerPanel extends HTMLDivElement {
             if (!app.graph._nodes_by_id[node_id]) {
                 delete this.node_blocks[node_id]
             }
+            if (app.graph._nodes_by_id[node_id] != this.node_blocks[node_id].node) {
+                delete this.node_blocks[node_id]
+            }
         })
     }
 
