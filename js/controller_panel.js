@@ -10,17 +10,18 @@ import { observe_resizables } from "./resize_manager.js";
 import { Debug } from "./debug.js";
 
 import { NodeInclusionManager } from "./node_inclusion.js";
-import { get_settings, getSettingValue } from "./settings.js";
+import { get_all_settings, getSettingValue, global_settings } from "./settings.js";
 import { SettingIds, Timings, Texts } from "./constants.js";
 
 export class ControllerPanel extends HTMLDivElement {
-    static instance = undefined
+    static instances = {}
     static button = undefined
-    constructor() {
+    constructor(index) {
         super()
-        if (ControllerPanel.instance) { ControllerPanel.instance.remove() }
-        ControllerPanel.instance = this
-        this.settings = get_settings()
+        if (ControllerPanel.instances[index]) { ControllerPanel.instances[index].remove() }
+        ControllerPanel.instances[index] = this
+        this.index = index
+        this.settings = get_all_settings()[index]
         this.classList.add("controller")
         document.getElementsByClassName('graph-canvas-panel')[0].appendChild(this)
 
@@ -29,6 +30,8 @@ export class ControllerPanel extends HTMLDivElement {
         this.footer = create('span','footer', this)
         
         this.node_blocks = {}   
+
+        //this.header.addEventListener('mousemove', (e)=>{e.preventDefault(); e.stopPropagation()})
 
         this.addEventListener('dragstart', (e) => { this.classList.add('unrefreshable'); this.reason = 'drag happening' })
         this.addEventListener('dragend',   (e) => { this.save_node_order(); this.classList.remove('unrefreshable') } )
@@ -96,12 +99,18 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     static onWindowResize() {
-        ControllerPanel.instance.set_position(false)
+        Object.keys(ControllerPanel.instances).forEach((k)=>ControllerPanel.instances[k].set_position(false))
     }
 
     static on_setup() {
         //settings.fix_backward_compatibility()
-        UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh, (node_id)=>ControllerPanel.instance?.node_blocks[node_id])
+        UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh, (node_id)=>{
+            var interest = false
+            Object.keys(ControllerPanel.instances).forEach((k)=>{
+                if (ControllerPanel.instances[k].node_blocks[node_id]) interest = true
+            })
+            return interest
+        })  
         NodeInclusionManager.node_change_callback = UpdateController.make_request
         api.addEventListener('graphCleared', ControllerPanel.graph_cleared) 
         ControllerPanel.create()
@@ -110,14 +119,14 @@ export class ControllerPanel extends HTMLDivElement {
 
     static create() {
         if (document.getElementsByClassName('graph-canvas-panel').length>0) {
-            new ControllerPanel()
+            new ControllerPanel(0)
             const comfy_menu = document.getElementsByClassName('comfyui-menu')[0]
             var spacer = null
             comfy_menu.childNodes.forEach((node)=>{if (node.classList.contains('flex-grow')) spacer = node})
             if (!spacer) spacer = comfy_menu.firstChild
             ControllerPanel.menu_button = create('i', 'pi pi-sliders-h controller-menu-button')
             add_tooltip(ControllerPanel.menu_button, 'Toggle controller')
-            classSet(ControllerPanel.menu_button, 'showing', !ControllerPanel.instance.settings.hidden)
+            classSet(ControllerPanel.menu_button, 'showing', !global_settings.hidden) 
             spacer.after(ControllerPanel.menu_button)
             ControllerPanel.menu_button.addEventListener('click', ControllerPanel.toggle)
         } else {
@@ -125,18 +134,25 @@ export class ControllerPanel extends HTMLDivElement {
         }
     }
 
-    static redraw() { ControllerPanel.instance.redraw() }
+    static redraw() { 
+        Object.keys(ControllerPanel.instances).forEach((k)=>{ControllerPanel.instances[k].redraw() })
+    }
 
     static toggle() {
-        ControllerPanel.instance.settings.hidden = !ControllerPanel.instance.settings.hidden
-        if (ControllerPanel.menu_button) classSet(ControllerPanel.menu_button, 'showing', !ControllerPanel.instance.settings.hidden)
+        global_settings.hidden = !global_settings.hidden
+        if (ControllerPanel.menu_button) classSet(ControllerPanel.menu_button, 'showing', !global_settings.hidden)
         UpdateController.make_request('toggle')
     }
 
-    static can_refresh() {  // returns -1 to say "no, and don't try again", 0 to mean "go ahead!", or n to mean "wait n ms then ask again"
+    static can_refresh() {  // returns -1 to say "no, and don't try again", 0 to mean "go ahead!", or n to mean "wait n ms then ask again" 
         if (app.configuringGraph) { Debug.trivia("configuring"); return -1 }
-        if (!ControllerPanel.instance) return -1;
-        return ControllerPanel.instance._can_refresh()
+        var response = 0
+        Object.keys(ControllerPanel.instances).forEach((k)=>{
+            const r = ControllerPanel.instances[k]._can_refresh()
+            if (r==-1 || response==-1) response = -1
+            else response = Math.max(r, response)
+        })
+        return response
     }
 
     _can_refresh() {
