@@ -1,7 +1,7 @@
 import { app } from "../../scripts/app.js";
 import { ComfyWidgets } from "../../scripts/widgets.js";
 
-import { create, darken } from "./utilities.js";
+import { create, darken, classSet } from "./utilities.js";
 import { Entry } from "./panel_entry.js"
 import { make_resizable } from "./resize_manager.js";
 import { UpdateController } from "./update_controller.js";
@@ -126,7 +126,12 @@ export class NodeBlock extends HTMLSpanElement {
             e.preventDefault(); 
             e.stopPropagation(); 
             this.node.properties.controller_details.minimised = (!!!this.node.properties.controller_details.minimised)
-            UpdateController.make_request('minimise') 
+            this.minimised = this.node.properties.controller_details.minimised
+            classSet(this, 'minimised', this.minimised)
+            if (this.minimised && this.contains(document.activeElement)) {
+                document.activeElement.blur()
+            }
+            //UpdateController.make_request('minimise') 
         })
         this.minimisedot.addEventListener("mousedown", (e)=>{ 
             e.preventDefault(); 
@@ -144,12 +149,12 @@ export class NodeBlock extends HTMLSpanElement {
             this.title_bar.classList.add("titlebar_nocolor")
         }
 
-        if (this.minimised) {
-            this.classList.add('minimised')
+        classSet(this, 'minimised', this.minimised)
+
+        /*if (this.minimised) {
             this.valid_nodeblock = true
             return
-        }
-        this.classList.remove('minimised')
+        }*/
 
         this.valid_nodeblock = false
         this.node.widgets?.forEach(w => {
