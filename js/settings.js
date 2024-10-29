@@ -13,7 +13,8 @@ const DEFAULTS = {
 const KEYS = Object.keys(DEFAULTS)
 
 const GLOBAL = {
-    "hidden" : false
+    "hidden" : false,
+    "version" : 1
 }
 const GLOBAL_KEYS = Object.keys(GLOBAL)
 
@@ -57,49 +58,45 @@ export function delete_settings(index) {
 }
 
 export function get_all_setting_indices() {
-    initialise_settings()
-    fill_blanks()
     const all_setting_indices = []
-    Object.keys(app.graph.extra.controller_panel.controllers).forEach((i)=>{all_setting_indices.push(i)})
+    Object.keys(app.graph.extra.controller_panel.controllers).forEach((i)=>{
+        if (app.graph.extra.controller_panel.controllers[i]) all_setting_indices.push(i)
+    })
     return all_setting_indices
 }
 
 export function new_controller_setting_index() {
     var i = 0
+    if (app.graph.extra.controller_panel == undefined) initialise_settings()
     while (app.graph.extra.controller_panel.controllers[i]) i += 1
-    //app.graph.extra.controller_panel.controllers[i] = {}
     return i
 }
 
-function initialise_settings() {
+export function initialise_settings() {
+    /* If there is no controller_panel */
+    if (app.graph.extra.controller_panel == undefined) {
+        app.graph.extra.controller_panel = { "controllers":{} }
+    }
+
+    /* If there is one of the old style */
+    if (app.graph.extra.controller_panel.controllers == undefined) {
+        app.graph.extra.controller_panel = { "controllers":{} }
+    }
+
+    /* Fix any missing GLOBALS */
     GLOBAL_KEYS.forEach((k)=>{
         if (app.graph.extra.controller_panel[k] == undefined) app.graph.extra.controller_panel[k] = GLOBAL[k]
     })
-    if (app.graph.extra.controller_panel?.controllers) {
-        const nc = {}
-        Object.keys(app.graph.extra.controller_panel?.controllers).forEach((k)=>{
-            if (app.graph.extra.controller_panel?.controllers[k]) nc[k] = app.graph.extra.controller_panel?.controllers[k]
-        })
-        if (nc=={}) {
-            nc[0] = {}
-            Object.assign(nc[0], DEFAULTS)
-        }
-        app.graph.extra.controller_panel.controllers = nc
-    } else if (app.graph.extra.controller_panel) {
-        app.graph.extra.controller_panel.controllers = {0:app.graph.extra.controller_panel}
-    } else {
-        const s = {}
-        Object.assign(s, DEFAULTS)
-        app.graph.extra.controller_panel = {"controllers":{0:s}}
-    }
-}
 
-function fill_blanks() {
+    /* Fix any missing DEFAULTS */
     Object.keys(app.graph.extra.controller_panel.controllers).forEach((k) => {
         const controller_settings = app.graph.extra.controller_panel.controllers[k]
-        KEYS.forEach((key)=>{
-            if (!controller_settings[key]) controller_settings[key] = DEFAULTS[key]
-        })
+        if (controller_settings) {
+            if (controller_settings.controllers) controller_settings.controllers = null
+            KEYS.forEach((key)=>{
+                if (!controller_settings[key]) controller_settings[key] = DEFAULTS[key]
+            })
+        }
     })
 }
 

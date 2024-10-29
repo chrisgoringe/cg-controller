@@ -1,12 +1,43 @@
 import { app } from "../../scripts/app.js"
+import { api } from "../../scripts/api.js" 
 import { ControllerPanel } from "./controller_panel.js"
 import { CGControllerNode } from "./controller_node.js"   
-import { create, create_deep } from "./utilities.js"
+import { create } from "./utilities.js"
 import { add_controls } from "./controller_controls.js"
 import { add_control_panel_options, NodeInclusionManager,  } from "./node_inclusion.js"
 import { UpdateController } from "./update_controller.js"
 import { Debug } from "./debug.js"
 import { BASE_PATH } from "./constants.js"
+
+
+function on_setup() {
+    UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh, (node_id)=>{
+        var interest = false
+        Object.keys(ControllerPanel.instances).forEach((k)=>{
+            if (ControllerPanel.instances[k].node_blocks[node_id]) interest = true
+        })
+        return interest
+    })  
+    NodeInclusionManager.node_change_callback = UpdateController.make_request
+    api.addEventListener('graphCleared', ControllerPanel.graph_cleared) 
+    window.addEventListener("resize", ControllerPanel.onWindowResize)
+    window.addEventListener('mouseup', ControllerPanel.mouse_up_anywhere)
+
+    const original_getCanvasMenuOptions = LGraphCanvas.prototype.getCanvasMenuOptions;
+    LGraphCanvas.prototype.getCanvasMenuOptions = function () {
+        // get the basic options 
+        const options = original_getCanvasMenuOptions.apply(this, arguments);
+        options.push(null); // inserts a divider
+        options.push({
+            content: "New Controller",
+            callback: async () => {
+                ControllerPanel.create_new()
+            }
+        })
+        return options;
+    }
+    ControllerPanel.create_menu_icon()
+}
 
 app.registerExtension({
 	name: "cg.controller",
@@ -15,6 +46,8 @@ app.registerExtension({
     async afterConfigureGraph() {
         /* This is now just for backward compatibility - we *remove* the ControllerNode and put the data in app.graph.extras */
         CGControllerNode.remove()  
+
+        ControllerPanel.new_workflow()
     },
 
     /* Called at the end of the application startup */
@@ -26,7 +59,7 @@ app.registerExtension({
             {'rel':'stylesheet', 'type':'text/css', 'href':`${BASE_PATH}/slider.css` } )
 
         // Allow our elements to do any setup they want
-        ControllerPanel.on_setup()
+        on_setup()
 
         // add to the canvas menu, and keyboard shortcuts
         add_controls()

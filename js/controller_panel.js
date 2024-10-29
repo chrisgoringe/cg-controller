@@ -1,5 +1,4 @@
 import { app } from "../../scripts/app.js";
-import { api } from "../../scripts/api.js" 
 
 import { create, get_node, add_tooltip, clamp, classSet } from "./utilities.js";
 import { GroupManager } from "./groups.js";
@@ -10,7 +9,7 @@ import { observe_resizables } from "./resize_manager.js";
 import { Debug } from "./debug.js";
 
 import { NodeInclusionManager } from "./node_inclusion.js";
-import { get_all_setting_indices, getSettingValue, global_settings, new_controller_setting_index, get_settings, delete_settings } from "./settings.js";
+import { get_all_setting_indices, getSettingValue, global_settings, new_controller_setting_index, get_settings, delete_settings, initialise_settings } from "./settings.js";
 import { SettingIds, Timings, Texts } from "./constants.js";
 
 export class ControllerPanel extends HTMLDivElement {
@@ -79,7 +78,6 @@ export class ControllerPanel extends HTMLDivElement {
         this.should_update_size = false
         this.addEventListener('mousedown', ()=>{this.should_update_size = true})
         
-        
         new ResizeObserver((x) => this.on_size_change()).observe(this)
 
     }
@@ -98,52 +96,19 @@ export class ControllerPanel extends HTMLDivElement {
         this.build_controllerPanel()
     }
 
+    static new_workflow() {
+        Object.keys(ControllerPanel.instances).forEach((k)=>{ControllerPanel.instances[k].remove()})
+        ControllerPanel.instances = {}
+        initialise_settings()
+        ControllerPanel.add_controllers()
+    }
+
     static graph_cleared() {
         UpdateController.make_request("graph_cleared")
     }
 
-    static onWindowResize() {
-        Object.keys(ControllerPanel.instances).forEach((k)=>ControllerPanel.instances[k].set_position(false))
-    }
-
-    static on_setup() {
-        //settings.fix_backward_compatibility()
-        UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh, (node_id)=>{
-            var interest = false
-            Object.keys(ControllerPanel.instances).forEach((k)=>{
-                if (ControllerPanel.instances[k].node_blocks[node_id]) interest = true
-            })
-            return interest
-        })  
-        NodeInclusionManager.node_change_callback = UpdateController.make_request
-        api.addEventListener('graphCleared', ControllerPanel.graph_cleared) 
-        ControllerPanel.create()
-        window.addEventListener("resize", ControllerPanel.onWindowResize)
-        window.addEventListener('mouseup', ControllerPanel.mouse_up_anywhere)
-
-        const original_getCanvasMenuOptions = LGraphCanvas.prototype.getCanvasMenuOptions;
-        LGraphCanvas.prototype.getCanvasMenuOptions = function () {
-            // get the basic options 
-            const options = original_getCanvasMenuOptions.apply(this, arguments);
-            options.push(null); // inserts a divider
-            options.push({
-                content: "New Controller",
-                callback: async () => {
-                    ControllerPanel.create_new()
-                }
-            })
-            return options;
-        }
-    }
-
     static create_new() {
         new ControllerPanel().build_controllerPanel()
-    }
-
-    static delete_latest() {
-        var x = -1
-        Object.keys(ControllerPanel.instances).forEach((k)=>{x = Math.max(x,parseInt(k))})
-        ControllerPanel.instances[x].delete_controller()
     }
 
     delete_controller() {
@@ -152,10 +117,18 @@ export class ControllerPanel extends HTMLDivElement {
         delete ControllerPanel.instances[this.settings.index]
     }
 
-    static create() {
+    static add_controllers() {
+        get_all_setting_indices().forEach((i)=>{
+            new ControllerPanel(i).redraw()
+        })
+    }
+
+    static onWindowResize() {
+        Object.keys(ControllerPanel.instances).forEach((k)=>ControllerPanel.instances[k].set_position(false))
+    }
+
+    static create_menu_icon() {
         if (document.getElementsByClassName('graph-canvas-panel').length>0) {
-            get_all_setting_indices().forEach((i)=>{new ControllerPanel(i)})
-            //new ControllerPanel(0)
             const comfy_menu = document.getElementsByClassName('comfyui-menu')[0]
             var spacer = null
             comfy_menu.childNodes.forEach((node)=>{if (node.classList.contains('flex-grow')) spacer = node})
@@ -166,7 +139,7 @@ export class ControllerPanel extends HTMLDivElement {
             spacer.after(ControllerPanel.menu_button)
             ControllerPanel.menu_button.addEventListener('click', ControllerPanel.toggle)
         } else {
-            setTimeout(ControllerPanel.create,100)
+            setTimeout(ControllerPanel.create_menu_icon,100)
         }
     }
 
