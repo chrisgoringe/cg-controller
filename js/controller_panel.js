@@ -22,7 +22,7 @@ export class ControllerPanel extends HTMLDivElement {
         ControllerPanel.instance = this
         this.settings = get_settings()
         this.classList.add("controller")
-        document.getElementsByClassName('graph-canvas-container')[0].appendChild(this)
+        document.getElementsByClassName('graph-canvas-panel')[0].appendChild(this)
 
         this.header = create('span','header', this)
         this.main   = create('span','main', this)
@@ -87,14 +87,6 @@ export class ControllerPanel extends HTMLDivElement {
         this.set_position(true)
     }
 
-    static overlapsWith(element) {
-        try {
-            const bb1 = element.getBoundingClientRect()
-            const bb2 = ControllerPanel.instance.getBoundingClientRect()
-            return (bb1.left < bb2.right && bb1.right > bb2.left)
-        } catch { return false }
-    }
-
     redraw() {
         this.build_controllerPanel()
     }
@@ -117,13 +109,14 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     static create() {
-        if (document.getElementsByClassName('graph-canvas-container').length>0) {
+        if (document.getElementsByClassName('graph-canvas-panel').length>0) {
             new ControllerPanel()
             const comfy_menu = document.getElementsByClassName('comfyui-menu')[0]
             var spacer = null
             comfy_menu.childNodes.forEach((node)=>{if (node.classList.contains('flex-grow')) spacer = node})
             if (!spacer) spacer = comfy_menu.firstChild
             ControllerPanel.menu_button = create('i', 'pi pi-sliders-h controller-menu-button')
+            add_tooltip(ControllerPanel.menu_button, 'Toggle controller')
             classSet(ControllerPanel.menu_button, 'showing', !ControllerPanel.instance.settings.hidden)
             spacer.after(ControllerPanel.menu_button)
             ControllerPanel.menu_button.addEventListener('click', ControllerPanel.toggle)
@@ -341,7 +334,7 @@ export class ControllerPanel extends HTMLDivElement {
             this.settings.collapsed = (!this.settings.collapsed)
             UpdateController.make_request('collapse') 
         })
-        add_tooltip(this.minimisedot, `${this.settings.collapsed?"Open":"Collapse"} controller`, true)
+        add_tooltip(this.minimisedot, `${this.settings.collapsed?"Open":"Collapse"} controller`, 'right')
         this.header_title = create('span', 'header_title', this.header1, {"innerText":"CONTROLLER"})
         this.header1.addEventListener('mousedown', (e) => this.header_mouse(e))
         window.addEventListener('mousemove', (e) => this.header_mouse(e))

@@ -90,10 +90,10 @@ export function classSet(element, name, add) {
     }
 }
 
-export function add_tooltip(element, text, right) {
+export function add_tooltip(element, text, extra_classes) {
     if (getSettingValue(SettingIds.TOOLTIPS, true)) {
         element.classList.add('tooltip')
-        if (right) element.classList.add('right')
-        create('span', 'tooltiptext', element, {"innerHTML":text.replaceAll(' ','&nbsp;')})
+        if (extra_classes) extra_classes.split(" ").forEach((s) => element.classList.add(s))
+        create('span', 'tooltiptext', element, {"innerHTML":text.replaceAll(' ','&nbsp;')}) 
     }
 }

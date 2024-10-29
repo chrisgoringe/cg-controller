@@ -30,6 +30,7 @@
     z-index:999;
     scrollbar-width: thin;
     scrollbar-color: #27262a #18171c;
+    pointer-events: all;
 }
 
 .controller.collapsed {
