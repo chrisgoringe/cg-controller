@@ -32,28 +32,3 @@ export function observe_resizables( root, change_callback ) {
     setTimeout( recursive_observe, 1000, [root] )
     recursive_observe(root)
 }
-/*
-export function get_resizable_heights( root ) {
-    const heights = []
-    function recursive_measure(element) {
-        if (element.resizable) heights.push( {
-            "height"    : element.resizable.element.style.height, 
-            "node_id"   : element.resizable.node_id, 
-            "name_list" : element.resizable.name_list
-        } )
-        
-        element.childNodes?.forEach((child) => { recursive_measure(child) })
-    }
-    recursive_measure(root)   
-    return heights 
-}
-
-export function restore_heights( node_map, heights ) {
-    heights.forEach( (h) => {
-        if (node_map[h.node_id]) {
-            var target = node_map[h.node_id]
-            h.name_list.forEach((childname) => { target = target?.[childname] })
-            if (target) target.style.height = h.height
-        }
-    })
-}*/

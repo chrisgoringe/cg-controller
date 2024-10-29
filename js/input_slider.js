@@ -3,7 +3,7 @@ import { create, step_size, check_float } from "./utilities.js"
 import { rounding, integer_rounding, clamp, classSet } from "./utilities.js"
 import { Debug } from "./debug.js"
 import { UpdateController } from "./update_controller.js"
-import { settings } from "./settings.js";
+import { getSettingValue } from "./settings.js";
 import { SettingIds } from "./constants.js";
 
 function copy_to_widget(node, widget, options) {
@@ -158,9 +158,10 @@ export class FancySlider extends HTMLSpanElement {
 
     static mouse_down_on = null
 
-    constructor(node, widget, properties) {
+    constructor(parent_controller, node, widget, properties) {
         super()
         this.classList.add("fancy_slider")
+        this.parent_controller = parent_controller
         this.node = node
         this.widget = widget
 
@@ -255,7 +256,7 @@ export class FancySlider extends HTMLSpanElement {
 
     _wheel(e) {
         if (this.displaying = "graphic") {
-            const shift_setting = settings.getSettingValue(SettingIds.SCROLL_MOVES_SLIDERS, "yes")
+            const shift_setting = getSettingValue(SettingIds.SCROLL_MOVES_SLIDERS, "yes")
             if ( shift_setting=="yes" || (shift_setting=="shift" && e.shiftKey) || (shift_setting=="ctrl" && e.ctrlKey) ) {
                 this.wheeling = true
                 const new_value =  this.value + this.options.step * (e.wheelDelta>0 ? 1 : -1)
@@ -285,7 +286,7 @@ export class FancySlider extends HTMLSpanElement {
     }
 
     _mousedown(e) { 
-        const shift_setting = settings.getSettingValue(SettingIds.EDIT_SLIDERS, "shift")
+        const shift_setting = getSettingValue(SettingIds.EDIT_SLIDERS, "shift")
         if ((e.shiftKey && shift_setting=='shift') || (e.ctrlKey && shift_setting=='ctrl')){
             this.edit_min_max(e)
             e.preventDefault()

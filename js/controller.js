@@ -6,7 +6,6 @@ import { add_controls } from "./controller_controls.js"
 import { add_control_panel_options, NodeInclusionManager,  } from "./node_inclusion.js"
 import { UpdateController } from "./update_controller.js"
 import { Debug } from "./debug.js"
-import { settings } from "./settings.js"
 import { BASE_PATH } from "./constants.js"
 
 app.registerExtension({
@@ -16,22 +15,6 @@ app.registerExtension({
     async afterConfigureGraph() {
         /* This is now just for backward compatibility - we *remove* the ControllerNode and put the data in app.graph.extras */
         CGControllerNode.remove()  
-        //new ControllerPanel()
-        //ControllerPanel.instance.hide()
-
-        /*app.graph._nodes.forEach((node)=>{
-            node.widgets?.forEach((widget)=>{
-                if (widget.type=='customtext') {
-                    const ondraw = widget.options.onDraw
-                    widget.options.onDraw = function (widget) {
-                        if (ControllerPanel.overlapsWith(widget.element)) {
-                            widget.element.style.setProperty("z-index", "auto", "important")
-                        } 
-                        ondraw?.apply(this, arguments)
-                    }
-                }
-            })
-        })*/
     },
 
     /* Called at the end of the application startup */
@@ -42,14 +25,11 @@ app.registerExtension({
         create('link', null, document.getElementsByTagName('HEAD')[0], 
             {'rel':'stylesheet', 'type':'text/css', 'href':`${BASE_PATH}/slider.css` } )
 
-       
-
         // Allow our elements to do any setup they want
         ControllerPanel.on_setup()
 
         // add to the canvas menu, and keyboard shortcuts
         add_controls()
-
     },
 
     async init() {
@@ -89,7 +69,6 @@ app.registerExtension({
             onModeChange?.apply(this,arguments)
             UpdateController.node_change(this.id)
         }
-
     },
 
     async nodeCreated(node) {

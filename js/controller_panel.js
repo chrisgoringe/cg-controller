@@ -10,7 +10,7 @@ import { observe_resizables } from "./resize_manager.js";
 import { Debug } from "./debug.js";
 
 import { NodeInclusionManager } from "./node_inclusion.js";
-import { settings } from "./settings.js";
+import { get_settings, getSettingValue } from "./settings.js";
 import { SettingIds, Timings, Texts } from "./constants.js";
 
 export class ControllerPanel extends HTMLDivElement {
@@ -20,6 +20,7 @@ export class ControllerPanel extends HTMLDivElement {
         super()
         if (ControllerPanel.instance) { ControllerPanel.instance.remove() }
         ControllerPanel.instance = this
+        this.settings = get_settings()
         this.classList.add("controller")
         document.getElementsByClassName('graph-canvas-container')[0].appendChild(this)
 
@@ -107,7 +108,7 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     static on_setup() {
-        settings.fix_backward_compatibility()
+        //settings.fix_backward_compatibility()
         UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh, (node_id)=>ControllerPanel.instance?.node_blocks[node_id])
         NodeInclusionManager.node_change_callback = UpdateController.make_request
         api.addEventListener('graphCleared', ControllerPanel.graph_cleared) 
@@ -158,7 +159,7 @@ export class ControllerPanel extends HTMLDivElement {
     maybe_create_node_block_for_node(node_or_node_id) {
         const nd = get_node(node_or_node_id)
         if (NodeInclusionManager.include_node(nd)) {
-            const node_block = new NodeBlock(nd)
+            const node_block = new NodeBlock(this, nd)
             if (node_block.valid_nodeblock) this.node_blocks[nd.id] = node_block
         }
     }
@@ -185,8 +186,8 @@ export class ControllerPanel extends HTMLDivElement {
     on_size_change() {
         if (this.getBoundingClientRect().width>0 && this.should_update_size) {
             this.show_overlay(`${Math.round(this.getBoundingClientRect().width)} x ${Math.round(this.getBoundingClientRect().height)}px`, this)
-            settings.position.w = this.getBoundingClientRect().width
-            settings.position.h = this.getBoundingClientRect().height
+            this.settings.position.w = this.getBoundingClientRect().width
+            this.settings.position.h = this.getBoundingClientRect().height
         }
     }
 
@@ -221,11 +222,11 @@ export class ControllerPanel extends HTMLDivElement {
         Object.keys(this.node_blocks).forEach((node_id) => {
             const node_block = this.node_blocks[node_id]
             if (NodeInclusionManager.include_node(node_block.node)) {
-                if (GroupManager.is_node_in(settings.group_choice, node_id) || NodeInclusionManager.node_in_all_views(node_block.node)) {
+                if (GroupManager.is_node_in(this.settings.group_choice, node_id) || NodeInclusionManager.node_in_all_views(node_block.node)) {
                     count_included += 1
                     if (NodeInclusionManager.advanced_only(node_block.node)) {
                         this.showAdvancedCheckbox = true
-                        if (settings.advanced) {
+                        if (this.settings.advanced) {
                             node_block.classList.remove('hidden')
                             count_visible += 1
                         } else node_block.classList.add('hidden')
@@ -243,10 +244,10 @@ export class ControllerPanel extends HTMLDivElement {
 
     check_dimensions() {
         const box = this.parentElement.getBoundingClientRect()
-        settings.position.x = clamp(settings.position.x, 0, box.width  - settings.position.w)
-        settings.position.y = clamp(settings.position.y, 0, box.height - settings.position.h)
-        settings.position.w = clamp(settings.position.w, 0, box.width  - settings.position.x)
-        settings.position.h = clamp(settings.position.h, 0, box.height - settings.position.y)
+        this.settings.position.x = clamp(this.settings.position.x, 0, box.width  - this.settings.position.w)
+        this.settings.position.y = clamp(this.settings.position.y, 0, box.height - this.settings.position.h)
+        this.settings.position.w = clamp(this.settings.position.w, 0, box.width  - this.settings.position.x)
+        this.settings.position.h = clamp(this.settings.position.h, 0, box.height - this.settings.position.y)
     }
 
     set_position(set_by_user) {
@@ -255,24 +256,24 @@ export class ControllerPanel extends HTMLDivElement {
         Otherwise, retrieve the desired positions
         */
         if (set_by_user) {
-            Object.assign(settings.userposition, settings.position)
+            Object.assign(this.settings.userposition, this.settings.position)
         } else {
-            Object.assign(settings.position, settings.userposition)
+            Object.assign(this.settings.position, this.settings.userposition)
         }
 
         this.check_dimensions()
 
-        if (settings.collapsed) {
-            this.style.left   = `${settings.position.x}px`
-            this.style.top    = `${settings.position.y}px`
+        if (this.settings.collapsed) {
+            this.style.left   = `${this.settings.position.x}px`
+            this.style.top    = `${this.settings.position.y}px`
             this.style.width  = ``
             this.style.height = `42px`
             this.classList.add('collapsed')
         } else {
-            this.style.left   = `${settings.position.x}px`
-            this.style.top    = `${settings.position.y}px`
-            this.style.width  = `${settings.position.w}px`
-            this.style.height = `${settings.position.h}px`
+            this.style.left   = `${this.settings.position.x}px`
+            this.style.top    = `${this.settings.position.y}px`
+            this.style.width  = `${this.settings.position.w}px`
+            this.style.height = `${this.settings.position.h}px`
             this.classList.remove('collapsed')
             this.footer.style.height = '20px'
             this.footer_height = 20
@@ -283,19 +284,19 @@ export class ControllerPanel extends HTMLDivElement {
         if (e.type=='mousedown') {
             if (e.target==this.header_title) {
                 this.being_dragged = true
-                this.offset_x = e.x - settings.position.x
-                this.offset_y = e.y - settings.position.y
+                this.offset_x = e.x - this.settings.position.x
+                this.offset_y = e.y - this.settings.position.y
                 this.classList.add('being_dragged')
                 e.preventDefault()
                 e.stopPropagation()
             }
         }
         if (e.type=='mousemove' && this.being_dragged && e.currentTarget==window) {
-            settings.position.x = e.x - this.offset_x
-            settings.position.y = e.y - this.offset_y
+            this.settings.position.x = e.x - this.offset_x
+            this.settings.position.y = e.y - this.offset_y
             this.set_position(true)
-            this.offset_x = e.x - settings.position.x
-            this.offset_y = e.y - settings.position.y
+            this.offset_x = e.x - this.settings.position.x
+            this.offset_y = e.y - this.settings.position.y
         }
     }
 
@@ -310,9 +311,9 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     _build_controllerPanel() {
-        this.style.setProperty('--font-size',`${1.333*settings.getSettingValue(SettingIds.FONT_SIZE, 12)}px`)
+        this.style.setProperty('--font-size',`${1.333*getSettingValue(SettingIds.FONT_SIZE, 12)}px`)
 
-        this.new_menu_position = settings.getSettingValue('Comfy.UseNewMenu', "Disabled")
+        this.new_menu_position = getSettingValue('Comfy.UseNewMenu', "Disabled")
         GroupManager.setup(  )
 
         /* 
@@ -324,10 +325,10 @@ export class ControllerPanel extends HTMLDivElement {
         this.minimisedot.addEventListener("click", (e)=>{ 
             e.preventDefault(); 
             e.stopPropagation(); 
-            settings.collapsed = (!settings.collapsed)
+            this.settings.collapsed = (!this.settings.collapsed)
             UpdateController.make_request('collapse') 
         })
-        add_tooltip(this.minimisedot, `${settings.collapsed?"Open":"Collapse"} controller`, true)
+        add_tooltip(this.minimisedot, `${this.settings.collapsed?"Open":"Collapse"} controller`, true)
         this.header_title = create('span', 'header_title', this.header1, {"innerText":"CONTROLLER"})
         this.header1.addEventListener('mousedown', (e) => this.header_mouse(e))
         window.addEventListener('mousemove', (e) => this.header_mouse(e))
@@ -341,13 +342,13 @@ export class ControllerPanel extends HTMLDivElement {
                 o.style.backgroundColor = GroupManager.group_color(nm)
                 this.group_select.add(o)
             })
-            try { this.group_select.value = settings.group_choice }
+            try { this.group_select.value = this.settings.group_choice }
             catch { this.group_select.value = Texts.ALL_GROUPS }
             this.group_select.style.backgroundColor = GroupManager.group_color(this.group_select.value)
             this.group_select.addEventListener('change', (e)=>{     
                 this.group_select.classList.remove('unrefreshable')     
-                if (settings.group_choice != e.target.value) {
-                    settings.group_choice = e.target.value; 
+                if (this.settings.group_choice != e.target.value) {
+                    this.settings.group_choice = e.target.value; 
                     UpdateController.make_request('group selection changed') 
                 }
                 this.group_select.classList.remove('unrefreshable')
@@ -359,15 +360,15 @@ export class ControllerPanel extends HTMLDivElement {
 
         }
 
-        settings.group_choice = GroupManager.valid_option(settings.group_choice)
+        this.settings.group_choice = GroupManager.valid_option(this.settings.group_choice)
 
         this.main.innerHTML = ""
 
         this.new_node_id_list = []
         this.remove_absent_nodes()
-        settings.node_order.forEach( (n) => {this.consider_adding_node(n)} )
+        this.settings.node_order.forEach( (n) => {this.consider_adding_node(n)} )
         app.graph._nodes.forEach( (n) => {this.consider_adding_node(n)} )
-        if (this.new_node_id_list.length>0) settings.node_order = this.new_node_id_list
+        if (this.new_node_id_list.length>0) this.settings.node_order = this.new_node_id_list
 
         const node_count = this.set_node_visibility()
         observe_resizables( this, this.on_child_height_change.bind(this) )
@@ -381,15 +382,15 @@ export class ControllerPanel extends HTMLDivElement {
         /*
         Back to the header
         */
-        if (!settings.collapsed) {
+        if (!this.settings.collapsed) {
             if (this.showAdvancedCheckbox) {
-                this.show_advanced = create('i', `pi pi-bolt header_button${settings.advanced ? " clicked":""}`, this.header1)
+                this.show_advanced = create('i', `pi pi-bolt header_button${this.settings.advanced ? " clicked":""}`, this.header1)
                 this.show_advanced.addEventListener('click', (e) => {
-                    settings.advanced = !settings.advanced
+                    this.settings.advanced = !this.settings.advanced
                     this.redraw()
                     e.stopPropagation()    
                 })
-                add_tooltip(this.show_advanced, `${settings.advanced?"Hide":"Show"} advanced controls`)
+                add_tooltip(this.show_advanced, `${this.settings.advanced?"Hide":"Show"} advanced controls`)
             }
             this.refresh = create('i', 'pi pi-sync header_button', this.header1)
             this.refresh.addEventListener('click', (e) => {
@@ -410,7 +411,7 @@ export class ControllerPanel extends HTMLDivElement {
     save_node_order() {
         const node_id_list = []
         this.main.childNodes.forEach((child)=>{if (child?.node?.id) node_id_list.push(child.node.id)})
-        settings.node_order = node_id_list
+        this.settings.node_order = node_id_list
     }
 
 }

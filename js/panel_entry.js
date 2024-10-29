@@ -23,7 +23,7 @@ export class Entry extends HTMLDivElement {
     static FULL_WIDTH = [ 'customtext', 'toggle', 'number', 'text' ]
     static firing_widget_callback = false
 
-    constructor(node, target_widget, properties) {
+    constructor(parent_controller, node, target_widget, properties) {
         super()
         if (target_widget.disabled) return
         if (target_widget.name=='control_after_generate' && !app.ui.settings.getSettingValue(SettingIds.CONTROL_AFTER_GENERATE, false)) return
@@ -31,6 +31,7 @@ export class Entry extends HTMLDivElement {
         const widget_label = target_widget.label ?? target_widget.name
 
         this.classList.add('entry')
+        this.parent_controller = parent_controller
         this.target_widget = target_widget
         this.input_element = null
         this.properties = properties
@@ -45,7 +46,7 @@ export class Entry extends HTMLDivElement {
                 make_resizable( this.input_element, node.id, target_widget.name, properties )
                 break
             case 'number':
-                this.input_element = new FancySlider(node, target_widget, properties)
+                this.input_element = new FancySlider(parent_controller, node, target_widget, properties)
                 this.is_integer = this.input_element.is_integer
                 this.input_element.addEventListener('keydown', this.keydown_callback.bind(this))
                 this.appendChild(this.input_element)

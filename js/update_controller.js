@@ -1,6 +1,5 @@
-import { Timings, SettingIds } from "./constants.js"
+import { Timings } from "./constants.js"
 import { Debug } from "./debug.js"
-import { settings } from "./settings.js"
 
 export class UpdateController {
     static callback      = ()=>{}
