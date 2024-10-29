@@ -9,7 +9,7 @@ import { observe_resizables } from "./resize_manager.js";
 import { Debug } from "./debug.js";
 
 import { NodeInclusionManager } from "./node_inclusion.js";
-import { get_all_setting_indices, getSettingValue, global_settings, new_controller_setting_index, get_settings, delete_settings, initialise_settings } from "./settings.js";
+import { get_all_setting_indices, getSettingValue, global_settings, new_controller_setting_index, get_settings, delete_settings, initialise_settings, valid_settings } from "./settings.js";
 import { SettingIds, Timings, Texts } from "./constants.js";
 
 export class ControllerPanel extends HTMLDivElement {
@@ -144,6 +144,10 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     static redraw() { 
+        if (!valid_settings()) {
+            ControllerPanel.new_workflow()
+            return
+        }
         Object.keys(ControllerPanel.instances).forEach((k)=>{ControllerPanel.instances[k].redraw() })
     }
 

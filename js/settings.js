@@ -72,6 +72,14 @@ export function new_controller_setting_index() {
     return i
 }
 
+export function valid_settings() {
+    if (app.graph.extra.controller_panel == undefined || app.graph.extra.controller_panel.hidden == undefined) {
+        initialise_settings()
+        return false
+    }
+    return true
+}
+
 export function initialise_settings() {
     /* If there is no controller_panel */
     if (app.graph.extra.controller_panel == undefined) {
