@@ -288,7 +288,7 @@
 }
 
 .entry_label.text {
-    background: var(--deep-back-color);
+    background: #00000000;
 }
 
 .entry_label.value {
