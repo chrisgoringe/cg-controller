@@ -230,13 +230,8 @@ export class NodeBlock extends HTMLSpanElement {
     }
 
     show_image(v) {
-        //if (this.minimised) return
-        if (!v) {
-            let a;
-            return;
-        }
-        classSet(this.image_panel, 'nodeblock_image_empty', v.length==0)
-        if (v.length>0 && this.image_image.src != v[0].src) {
+        classSet(this.image_panel, 'nodeblock_image_empty', !(v?.length>0))
+        if (v?.length>0 && this.image_image.src != v[0].src) {
             this.image_image.src = v[0].src
             this.image_panel.style.maxHeight = ''
         }
