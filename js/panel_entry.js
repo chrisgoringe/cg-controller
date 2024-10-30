@@ -7,7 +7,7 @@ import { UpdateController } from "./update_controller.js";
 import { Debug } from "./debug.js";
 import { SettingIds } from "./constants.js";
 import { Toggle } from "./toggle.js";
-import { WidgetChangeManager } from "./widget-change-manager.js";
+import { WidgetChangeManager } from "./widget_change_manager.js";
 
 function typecheck_number(v) {
     const vv = parseFloat(v)

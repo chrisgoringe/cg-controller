@@ -4,7 +4,7 @@ import { ComfyWidgets } from "../../scripts/widgets.js";
 import { create, darken, classSet } from "./utilities.js";
 import { Entry } from "./panel_entry.js"
 import { make_resizable } from "./resize_manager.js";
-import { WidgetChangeManager } from "./widget-change-manager.js";
+import { WidgetChangeManager } from "./widget_change_manager.js";
 
 function is_single_image(data) { return (data && data.items && data.items.length==1 && data.items[0].type.includes("image")) }
 

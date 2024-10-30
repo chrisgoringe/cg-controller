@@ -416,7 +416,6 @@ export class ControllerPanel extends HTMLDivElement {
         if (this.new_node_id_list.length>0) this.settings.node_order = this.new_node_id_list
 
         const node_count = this.set_node_visibility()
-        observe_resizables( this, this.on_child_height_change.bind(this) )
 
         if (node_count.nodes == 0) {
             const EMPTY_MESSAGE = 
@@ -461,6 +460,7 @@ export class ControllerPanel extends HTMLDivElement {
         this.main = this._main
         
         this.set_position(true)
+        observe_resizables( this, this.on_child_height_change.bind(this) )
     }
 
     save_node_order() {
