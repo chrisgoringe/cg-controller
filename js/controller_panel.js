@@ -101,6 +101,7 @@ export class ControllerPanel extends HTMLDivElement {
         ControllerPanel.instances = {}
         initialise_settings()
         ControllerPanel.add_controllers()
+        classSet(ControllerPanel.menu_button, 'showing', !global_settings.hidden) 
     }
 
     static graph_cleared() {
@@ -435,19 +436,19 @@ export class ControllerPanel extends HTMLDivElement {
                 })
                 add_tooltip(this.show_advanced, `${this.settings.advanced?"Hide":"Show"} advanced controls`)
             }
-            this.refresh = create('i', 'pi pi-sync header_button', this.header1)
-            this.refresh.addEventListener('click', (e) => {
+            this.refresh_button = create('i', 'pi pi-sync header_button', this.header1)
+            this.refresh_button.addEventListener('click', (e) => {
                 UpdateController.make_request("refresh_button");
-                this.refresh.classList.add("clicked");
-                setTimeout(()=>{this.refresh.classList.remove("clicked")}, 200);
+                this.refresh_button.classList.add("clicked");
+                setTimeout(()=>{this.refresh_button.classList.remove("clicked")}, 200);
                 e.stopPropagation()    
             })
-            add_tooltip(this.refresh, `Refresh controller`)
-            this.refresh = create('i', 'pi pi-times header_button', this.header1)
-            this.refresh.addEventListener('click', (e) => {
+            add_tooltip(this.refresh_button, `Refresh controller`)
+            this.delete_button = create('i', 'pi pi-times header_button', this.header1)
+            this.delete_button.addEventListener('click', (e) => {
                 this.delete_controller()    
             })
-            add_tooltip(this.refresh, `Delete this controller`)
+            add_tooltip(this.delete_button, `Delete this controller`)
         }
         
         /*
