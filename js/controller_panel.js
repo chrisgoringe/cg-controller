@@ -18,7 +18,7 @@ export class ControllerPanel extends HTMLDivElement {
     constructor(index) {
         super()
         if (index == null) index = new_controller_setting_index()
-        if (ControllerPanel.instances[index]) { ControllerPanel.instances[index].remove() }
+        if (ControllerPanel.instances[index]) { ControllerPanel.instances[index].remove(); Debug.essential(`removed index clash ${index}`) }
         ControllerPanel.instances[index] = this
         this.index = index
         this.settings = get_settings(index)
@@ -30,8 +30,6 @@ export class ControllerPanel extends HTMLDivElement {
         this.footer = create('span','footer', this)
         
         this.node_blocks = {}   
-
-        //this.header.addEventListener('mousemove', (e)=>{e.preventDefault(); e.stopPropagation()})
 
         this.addEventListener('dragstart', (e) => { this.classList.add('unrefreshable'); this.reason = 'drag happening' })
         this.addEventListener('dragend',   (e) => { this.save_node_order(); this.classList.remove('unrefreshable') } )
@@ -109,8 +107,10 @@ export class ControllerPanel extends HTMLDivElement {
         UpdateController.make_request("graph_cleared")
     }
 
-    static create_new() {
-        new ControllerPanel().build_controllerPanel()
+    static create_new(e) {
+        const newcp = new ControllerPanel()
+        if (e && e.x && e.y) newcp.settings.set_position(e.x,e.y,null,null)
+        newcp.build_controllerPanel()
     }
 
     delete_controller() {

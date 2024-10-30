@@ -30,8 +30,8 @@ function on_setup() {
         options.push(null); // inserts a divider
         options.push({
             content: "New Controller",
-            callback: async () => {
-                ControllerPanel.create_new()
+            callback: async (_, e) => {
+                ControllerPanel.create_new(e?.event)
             }
         })
         return options;
