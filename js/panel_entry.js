@@ -95,7 +95,7 @@ export class Entry extends HTMLDivElement {
         UpdateController.push_pause()
         try {
             const v = this.typecheck(e.target.value)
-            if (v != null) {
+            if (v != null && this.target_widget.value != v) {
                 this.target_widget.value = v
                 this.target_widget.callback?.(v)
                 app.graph.setDirtyCanvas(true,true)

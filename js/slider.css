@@ -77,6 +77,7 @@
     border-radius: 8px;
     font-size: 75%;
     padding: 6px;
+    z-index: 1000;
 }
 
 .option_setting_title {

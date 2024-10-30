@@ -210,8 +210,8 @@ export class FancySlider extends HTMLSpanElement {
                     this.redraw()
                 }
             }
-        })        
-        this.redraw()
+        })
+        setTimeout(()=>{this.redraw()}, 100)
     }
 
     enddragging(e) {
