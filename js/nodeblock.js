@@ -5,6 +5,7 @@ import { create, darken, classSet } from "./utilities.js";
 import { Entry } from "./panel_entry.js"
 import { make_resizable } from "./resize_manager.js";
 import { UpdateController } from "./update_controller.js";
+import { WidgetChangeManager } from "./widget-change-manager.js";
 
 function is_single_image(data) { return (data && data.items && data.items.length==1 && data.items[0].type.includes("image")) }
 
@@ -185,15 +186,20 @@ export class NodeBlock extends HTMLSpanElement {
                 get : () => { return this.node._imgs },
                 set : (v) => { 
                     this.node._imgs = v; 
-                    this.show_image(v); 
-                    UpdateController.make_request("img changed") 
+                    //this.show_image(v); 
+                    WidgetChangeManager.notify(this.node)
+                    //UpdateController.make_request("img changed") 
                 }
             })               
         } catch { }
-
+        WidgetChangeManager.add_listener(this.node, this)
 
         if (this.node._imgs) this.show_image(this.node._imgs)
         this.valid_nodeblock = true
+    }
+
+    wcm_manager_callback() {
+        this.show_image(this.node.imgs)
     }
 
     rescale_image() {

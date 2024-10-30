@@ -7,6 +7,7 @@ import { UpdateController } from "./update_controller.js";
 import { Debug } from "./debug.js";
 import { SettingIds } from "./constants.js";
 import { Toggle } from "./toggle.js";
+import { WidgetChangeManager } from "./widget-change-manager.js";
 
 function typecheck_number(v) {
     const vv = parseFloat(v)
@@ -15,26 +16,6 @@ function typecheck_number(v) {
 }
 
 function typecheck_other(v) { return v }
-
-class WidgetChangeManager {
-    static widget_listener_map = {}
-    static next_id = 1
-    static add_listener(widget, listener) {
-        if (!widget.wcm_id) {
-            widget.wcm_id = WidgetChangeManager.next_id
-            WidgetChangeManager.next_id += 1
-            WidgetChangeManager.widget_listener_map[widget.wcm_id] = []
-        }
-        WidgetChangeManager.widget_listener_map[widget.wcm_id].push(listener)
-    }
-    static notify(widget) {
-        if (widget.wcm_id && WidgetChangeManager.widget_listener_map[widget.wcm_id]) {
-            WidgetChangeManager.widget_listener_map[widget.wcm_id] = WidgetChangeManager.widget_listener_map[widget.wcm_id].filter((l)=>l.parentElement)
-            WidgetChangeManager.widget_listener_map[widget.wcm_id].forEach((l)=>{l.wcm_manager_callback()})
-        }
-    }
-
-}
 
 export class Entry extends HTMLDivElement {
     /*
