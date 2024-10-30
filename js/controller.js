@@ -1,7 +1,7 @@
 import { app } from "../../scripts/app.js"
 import { api } from "../../scripts/api.js" 
 import { ControllerPanel } from "./controller_panel.js"
-import { CGControllerNode } from "./controller_node.js"   
+//import { CGControllerNode } from "./controller_node.js"   
 import { create } from "./utilities.js"
 import { add_controls } from "./controller_controls.js"
 import { add_control_panel_options, NodeInclusionManager,  } from "./node_inclusion.js"
@@ -45,7 +45,7 @@ app.registerExtension({
     /* Called when the graph has been configured (page load, workflow load) */
     async afterConfigureGraph() {
         /* This is now just for backward compatibility - we *remove* the ControllerNode and put the data in app.graph.extras */
-        CGControllerNode.remove()  
+        //CGControllerNode.remove()  
 
         ControllerPanel.new_workflow()
     },
@@ -114,7 +114,7 @@ app.registerExtension({
 
     },
 
-    registerCustomNodes() {
-        LiteGraph.registerNodeType("CGControllerNode", CGControllerNode)
-    }
+    //registerCustomNodes() {
+    //    LiteGraph.registerNodeType("CGControllerNode", CGControllerNode)
+    //}
 })

@@ -338,11 +338,11 @@ export class FancySlider extends HTMLSpanElement {
         }
     }
 
-    redraw() {
-        this.redraw_with_value(this.value)
+    redraw(supress) {
+        this.redraw_with_value(this.value, supress)
     }
 
-    redraw_with_value(new_value) {
+    redraw_with_value(new_value, supress) {
         new_value = parseFloat(new_value)
         if (isNaN(new_value)) new_value = this.last_good
         this.value     = this.round_and_clip( new_value )
@@ -364,8 +364,10 @@ export class FancySlider extends HTMLSpanElement {
             }
         } finally {
             this.rendering = false
-            const e = new Event('input')
-            this.dispatchEvent(e)
+            if (!supress) {
+                const e = new Event('input')
+                this.dispatchEvent(e)
+            }
         }
     }
 

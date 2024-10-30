@@ -238,7 +238,7 @@ export class ControllerPanel extends HTMLDivElement {
                 this.maybe_create_node_block_for_node(node_id) 
             }
             if (this.node_blocks[node_id]) {             // if it now exists, add it
-                this.main.append(this.node_blocks[node_id])
+                this._main.append(this.node_blocks[node_id])
                 this.new_node_id_list.push(node_id)
             }
         }        
@@ -246,10 +246,7 @@ export class ControllerPanel extends HTMLDivElement {
 
     remove_absent_nodes() {
         Object.keys(this.node_blocks).forEach((node_id) => {
-            if (!app.graph._nodes_by_id[node_id]) {
-                delete this.node_blocks[node_id]
-            }
-            if (app.graph._nodes_by_id[node_id] != this.node_blocks[node_id].node) {
+            if (!app.graph._nodes_by_id[node_id] || (app.graph._nodes_by_id[node_id] != this.node_blocks[node_id].node)) {
                 delete this.node_blocks[node_id]
             }
         })
@@ -364,8 +361,11 @@ export class ControllerPanel extends HTMLDivElement {
         /* 
         Create the top section
         */
-        this.header.innerHTML = ""
-        this.header1 = create('span','subheader subheader1',this.header)
+        this._header = create('span','header')
+        this._main = create('span','main')
+
+        //this.header.innerHTML = ""
+        this.header1 = create('span','subheader subheader1',this._header)
         this.minimisedot = create("i", `pi pi-sliders-h header_button collapse_button`, this.header1)
         this.minimisedot.addEventListener("click", (e)=>{ 
             e.preventDefault(); 
@@ -377,7 +377,7 @@ export class ControllerPanel extends HTMLDivElement {
         this.header_title = create('span', 'header_title', this.header1, {"innerText":"CONTROLLER"})
         this.header1.addEventListener('mousedown', (e) => this.header_mouse(e))
         window.addEventListener('mousemove', (e) => this.header_mouse(e))
-        this.header2 = create('span','subheader subheader2', this.header)
+        this.header2 = create('span','subheader subheader2', this._header)
 
 
         if (GroupManager.any_groups()) {
@@ -407,7 +407,7 @@ export class ControllerPanel extends HTMLDivElement {
 
         this.settings.group_choice = GroupManager.valid_option(this.settings.group_choice)
 
-        this.main.innerHTML = ""
+        //this.main.innerHTML = ""
 
         this.new_node_id_list = []
         this.remove_absent_nodes()
@@ -421,7 +421,7 @@ export class ControllerPanel extends HTMLDivElement {
         if (node_count.nodes == 0) {
             const EMPTY_MESSAGE = 
                 "<p>Add nodes to the controller<br/>by right-clicking the node<br/>and using the Controller Panel submenu</p>"
-            create('span', 'empty_message', this.main, {"innerHTML":EMPTY_MESSAGE})
+            create('span', 'empty_message', this._main, {"innerHTML":EMPTY_MESSAGE})
         }
 
         /*
@@ -455,6 +455,11 @@ export class ControllerPanel extends HTMLDivElement {
         /*
         Finalise
         */
+        this.replaceChild(this._main, this.main)
+        this.replaceChild(this._header, this.header)
+        this.header = this._header
+        this.main = this._main
+        
         this.set_position(true)
     }
 

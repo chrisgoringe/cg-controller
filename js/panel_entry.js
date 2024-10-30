@@ -16,12 +16,30 @@ function typecheck_number(v) {
 
 function typecheck_other(v) { return v }
 
+class WidgetChangeManager {
+    static widget_listener_map = {}
+    static next_id = 1
+    static add_listener(widget, listener) {
+        if (!widget.wcm_id) {
+            widget.wcm_id = WidgetChangeManager.next_id
+            WidgetChangeManager.next_id += 1
+            WidgetChangeManager.widget_listener_map[widget.wcm_id] = []
+        }
+        WidgetChangeManager.widget_listener_map[widget.wcm_id].push(listener)
+    }
+    static notify(widget) {
+        if (widget.wcm_id && WidgetChangeManager.widget_listener_map[widget.wcm_id]) {
+            WidgetChangeManager.widget_listener_map[widget.wcm_id] = WidgetChangeManager.widget_listener_map[widget.wcm_id].filter((l)=>l.parentElement)
+            WidgetChangeManager.widget_listener_map[widget.wcm_id].forEach((l)=>{l.wcm_manager_callback()})
+        }
+    }
+
+}
+
 export class Entry extends HTMLDivElement {
     /*
     Entry represents a single widget within a NodeBlock
     */
-    static FULL_WIDTH = [ 'customtext', 'toggle', 'number', 'text' ]
-    static firing_widget_callback = false
 
     constructor(parent_controller, node, target_widget, properties) {
         super()
@@ -56,7 +74,12 @@ export class Entry extends HTMLDivElement {
                 this.entry_value = create('span','entry_label value', this, {'innerText':target_widget.value, 'draggable':false} )  
                 this.input_element = create("select", 'input', this) 
                 target_widget.options.values.forEach((o) => this.input_element.add(new Option(o,o)))
-                this.input_element.addEventListener("change", (e)=>{this.entry_value.innerText=e.target.value})
+                this.input_element.addEventListener("change", (e)=>{
+                    this.entry_value.innerText = e.target.value
+                })
+                this.input_element.redraw = () => {
+                    this.entry_value.innerText = this.input_element.value
+                }
                 break
             case 'button':
                 this.input_element = create("button", 'input', this, {"innerText":widget_label})
@@ -81,11 +104,22 @@ export class Entry extends HTMLDivElement {
 
         this.typecheck = (target_widget.type=='number') ? typecheck_number : typecheck_other
 
-        target_widget.unhijacked_callback = target_widget.unhijacked_callback ?? target_widget.callback
-        this.original_target_widget_callback = target_widget.unhijacked_callback
-        target_widget.callback = this.widget_callback_callback.bind(this)
-
+        if (target_widget.element) {
+            target_widget.element.addEventListener('input', (e)=>{WidgetChangeManager.notify(target_widget)})
+        } else {
+            if (!target_widget.original_callback) target_widget.original_callback = target_widget.callback
+            target_widget.callback = () => {
+                if (target_widget.original_callback) target_widget.original_callback(target_widget.value)
+                WidgetChangeManager.notify(target_widget)
+            }
+        }
+        WidgetChangeManager.add_listener(target_widget, this)
         this.render()
+    }
+
+    wcm_manager_callback() {
+        this.input_element.value = this.target_widget.value;
+        if (this.input_element.redraw) this.input_element.redraw(true)
     }
 
     valid() { return (this.input_element != null) }
@@ -98,6 +132,7 @@ export class Entry extends HTMLDivElement {
             if (v != null && this.target_widget.value != v) {
                 this.target_widget.value = v
                 this.target_widget.callback?.(v)
+                WidgetChangeManager.notify(this.target_widget)
                 app.graph.setDirtyCanvas(true,true)
             }
         } finally { UpdateController.pop_pause() }
@@ -119,34 +154,6 @@ export class Entry extends HTMLDivElement {
             app.graph.setDirtyCanvas(true,true); 
             UpdateController.make_request("button clicked")
         } finally { UpdateController.pop_pause() }
-    }
-
-    widget_callback_callback (v) {
-        Debug.trivia("widget_callback_callback")
-        UpdateController.push_pause()
-        try {
-            if (Entry.firing_widget_callback) return                
-            try { 
-                Entry.firing_widget_callback = true;
-                this._widget_calling_callback(v)
-            } finally { Entry.firing_widget_callback = false }
-           
-        } finally { UpdateController.pop_pause() }
-    } 
-
-    _widget_calling_callback(v) {
-        if (this.target_widget.type=="button") {
-            this.original_target_widget_callback?.(v)
-            UpdateController.make_request("target widget button clicked")
-        } else {
-            this.input_element.value = v
-            if (!this.is_integer) {
-                this.original_target_widget_callback?.apply(this.target_widget,arguments)
-            } else {
-                this.input_element.redraw_with_value(v)
-            }
-            UpdateController.make_request("target widget changed")
-        }
     }
 
     render() {
