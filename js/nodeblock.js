@@ -4,7 +4,7 @@ import { ComfyWidgets } from "../../scripts/widgets.js";
 import { create, darken, classSet } from "./utilities.js";
 import { Entry } from "./panel_entry.js"
 import { make_resizable } from "./resize_manager.js";
-import { WidgetChangeManager } from "./widget_change_manager.js";
+import { WidgetChangeManager, OnExecutedManager } from "./widget_change_manager.js";
 
 function is_single_image(data) { return (data && data.items && data.items.length==1 && data.items[0].type.includes("image")) }
 
@@ -172,25 +172,16 @@ export class NodeBlock extends HTMLSpanElement {
         make_resizable( this.image_panel, this.node.id, "__image_panel", this.node.properties.controller_widgets['__image_panel'] )
         new ResizeObserver(this.rescale_image.bind(this)).observe(this.image_panel)
 
-        this.node._imgs = this.node.imgs
-        try {
-            delete this.node.imgs
-            Object.defineProperty(this.node, "imgs", {
-                get : () => { return this.node._imgs },
-                set : (v) => { 
-                    this.node._imgs = v; 
-                    WidgetChangeManager.notify(this.node)
-                }
-            })               
-        } catch { }
-        WidgetChangeManager.add_listener(this.node, this)
+        OnExecutedManager.add_listener(this.node.id, this)
 
         if (this.node._imgs) this.show_image(this.node._imgs)
         this.valid_nodeblock = true
     }
 
-    wcm_manager_callback() {
-        this.show_image(this.node.imgs)
+    oem_manager_callback(o) {
+        if (o.images && !this.hidden) {
+            this.show_image(o.images)
+        }
     }
 
     rescale_image() {
@@ -228,7 +219,9 @@ export class NodeBlock extends HTMLSpanElement {
 
     show_image(v) {
         classSet(this.image_panel, 'nodeblock_image_empty', !(v?.length>0))
-        if (v?.length>0 && this.image_image.src != v[0].src) {
+        if (v.length==0) return
+        if (!v[0].src) v[0].src = `/api/view?filename=${v[0].filename}&subfolder=${v[0].subfolder}&type=${v[0].type}&src=${v[0].filename}&rand=${Math.random()}`
+        if (this.image_image.src != v[0].src) {
             this.image_image.src = v[0].src
             this.image_panel.style.maxHeight = ''
         }

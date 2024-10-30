@@ -16,3 +16,40 @@ export class WidgetChangeManager {
         }
     }
 }
+
+export class OnExecutedManager {
+    static node_listener_map = {}
+    static add_listener(node_id, listener) {
+        if (!OnExecutedManager.node_listener_map[node_id]) OnExecutedManager.node_listener_map[node_id] = new Set()
+        OnExecutedManager.node_listener_map[node_id].add(listener)
+    }
+
+    static send(node_id, output) {
+        if (OnExecutedManager.node_listener_map[node_id]) {
+            Array.from(OnExecutedManager.node_listener_map[node_id]).forEach((l)=>{
+                if (l.parentElement) {
+                    l.oem_manager_callback(output)
+                } else {
+                    OnExecutedManager.node_listener_map[node_id].delete(node_id)
+                }
+            })
+        }
+    }
+
+    static on_executed(e) {
+        const node_id = e.detail.node
+        const output = e.detail.output
+        OnExecutedManager.send(node_id, output)
+    }
+
+    static executing_node = null
+    static on_executing(e) {
+        OnExecutedManager.executing_node = e.detail
+    }
+
+    static on_b_preview(e) {
+        const node_id = OnExecutedManager.executing_node
+        const output = {"images":[{"src":window.URL.createObjectURL(e.detail)}]}
+        OnExecutedManager.send(node_id, output)
+    }
+}

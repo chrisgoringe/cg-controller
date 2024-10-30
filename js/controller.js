@@ -8,6 +8,7 @@ import { add_control_panel_options, NodeInclusionManager,  } from "./node_inclus
 import { UpdateController } from "./update_controller.js"
 import { Debug } from "./debug.js"
 import { BASE_PATH } from "./constants.js"
+import { OnExecutedManager } from "./widget_change_manager.js"
 
 
 function on_setup() {
@@ -20,8 +21,12 @@ function on_setup() {
     })  
     NodeInclusionManager.node_change_callback = UpdateController.make_request
     api.addEventListener('graphCleared', ControllerPanel.graph_cleared) 
+    api.addEventListener('executed', OnExecutedManager.on_executed)
+    api.addEventListener('executing', OnExecutedManager.on_executing)
+    api.addEventListener('b_preview', OnExecutedManager.on_b_preview)
     window.addEventListener("resize", ControllerPanel.onWindowResize)
     window.addEventListener('mouseup', ControllerPanel.mouse_up_anywhere)
+
 
     const original_getCanvasMenuOptions = LGraphCanvas.prototype.getCanvasMenuOptions;
     LGraphCanvas.prototype.getCanvasMenuOptions = function () {
