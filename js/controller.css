@@ -213,7 +213,7 @@
     top: 1px;
 }
 
-.nodeblock.minimised  .nodeblock_minimisedot {
+.nodeblock.minimised  .minimisedot {
     cursor: url(expand.png) 8 8, zoom-out;
 }
 

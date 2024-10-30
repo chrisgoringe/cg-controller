@@ -230,18 +230,17 @@ export class NodeBlock extends HTMLSpanElement {
     }
 
     show_image(v) {
-        if (this.minimised) return
-        if (v.length>0) {
-            this.image_panel.classList.remove('nodeblock_image_empty')
-            if (this.image_image.src != v[0].src) {
-                this.image_image.src = v[0].src
-                this.image_panel.style.maxHeight = ''
-            }
-        } else {
-            this.image_panel.classList.add('nodeblock_image_empty')
-        }    
+        //if (this.minimised) return
+        if (!v) {
+            let a;
+            return;
+        }
+        classSet(this.image_panel, 'nodeblock_image_empty', v.length==0)
+        if (v.length>0 && this.image_image.src != v[0].src) {
+            this.image_image.src = v[0].src
+            this.image_panel.style.maxHeight = ''
+        }
     }
-
 }
 
 customElements.define('cp-span', NodeBlock, {extends: 'span'})

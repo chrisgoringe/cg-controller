@@ -102,7 +102,7 @@ export class ControllerPanel extends HTMLDivElement {
         ControllerPanel.instances = {}
         initialise_settings()
         ControllerPanel.add_controllers()
-        classSet(ControllerPanel.menu_button, 'showing', !global_settings.hidden) 
+        if (ControllerPanel.menu_button) classSet(ControllerPanel.menu_button, 'showing', !global_settings.hidden) 
     }
 
     static graph_cleared() {
