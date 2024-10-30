@@ -97,6 +97,7 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     static new_workflow() {
+        Debug.extended('new_workflow')
         Object.keys(ControllerPanel.instances).forEach((k)=>{ControllerPanel.instances[k].remove()})
         ControllerPanel.instances = {}
         initialise_settings()
