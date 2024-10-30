@@ -53,7 +53,7 @@ export class NodeBlock extends HTMLSpanElement {
             e.dataTransfer.dropEffect = "move"
             e.preventDefault(); 
         }
-        if (NodeBlock.dragged && nodeblock_over!=NodeBlock.dragged) { 
+        if (NodeBlock.dragged && nodeblock_over!=NodeBlock.dragged && this.parent_controller==NodeBlock.dragged.parent_controller) { 
             if (nodeblock_over != NodeBlock.last_swap) {
                 if (nodeblock_over.drag_id=='header') {
                     NodeBlock.dragged.parentElement.insertBefore(NodeBlock.dragged, NodeBlock.dragged.parentElement.firstChild)
