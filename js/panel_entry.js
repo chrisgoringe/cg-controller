@@ -100,6 +100,7 @@ export class Entry extends HTMLDivElement {
 
     wcm_manager_callback() {
         this.input_element.value = this.target_widget.value;
+        if (this.input_element.wcm_manager_callback) this.input_element.wcm_manager_callback()
         if (this.input_element.redraw) this.input_element.redraw(true)
     }
 
@@ -114,7 +115,7 @@ export class Entry extends HTMLDivElement {
                 this.target_widget.value = v
                 this.target_widget.callback?.(v)
                 WidgetChangeManager.notify(this.target_widget)
-                app.graph.setDirtyCanvas(true,true)
+                //app.graph.setDirtyCanvas(true,true)
             }
         } finally { UpdateController.pop_pause() }
     }
