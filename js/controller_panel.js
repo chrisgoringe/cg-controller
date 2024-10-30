@@ -109,7 +109,7 @@ export class ControllerPanel extends HTMLDivElement {
 
     static create_new(e) {
         const newcp = new ControllerPanel()
-        if (e && e.x && e.y) newcp.settings.set_position(e.x,e.y,null,null)
+        if (e && e.layerX && e.layerY) newcp.settings.set_position(e.layerX,e.layerY,null,null)
         newcp.build_controllerPanel()
     }
 
