@@ -21,7 +21,7 @@ export class WidgetChangeManager {
     static set_widget_value(widget, v) {
         widget.value = v
         if (widget.original_callback) widget.original_callback(widget.value)
-        if (widget.options.min) widget.value = clamp(widget.value, widget.options.min, widget.options.max)
+        if (widget.options.min != null) widget.value = clamp(widget.value, widget.options.min, widget.options.max)
         WidgetChangeManager.notify(widget)
         app.graph.setDirtyCanvas(true,true)
     }
