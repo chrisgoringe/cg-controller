@@ -46,10 +46,16 @@ export class OnExecutedManager {
         }
     }
 
+    static last_output_map = {}
     static on_executed(e) {
         const node_id = e.detail.node
         const output = e.detail.output
+        OnExecutedManager.last_output_map[node_id] = output
         OnExecutedManager.send(node_id, output)
+    }
+
+    static resend(node_id) {
+        if (OnExecutedManager.last_output_map[node_id]) OnExecutedManager.send(node_id,OnExecutedManager.last_output_map[node_id] )
     }
 
     static executing_node = null

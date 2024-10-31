@@ -174,7 +174,9 @@ export class NodeBlock extends HTMLSpanElement {
 
         OnExecutedManager.add_listener(this.node.id, this)
 
-        if (this.node._imgs) this.show_image(this.node._imgs)
+        if (this.node.imgs) this.show_image(this.node.imgs)
+        else OnExecutedManager.resend(this.node.id)
+    
         this.valid_nodeblock = true
     }
 
