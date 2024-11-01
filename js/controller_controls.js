@@ -1,6 +1,6 @@
 import { app } from "../../scripts/app.js"
-import { ControllerPanel } from "./controller_panel.js"
 import { SettingIds } from "./constants.js";
+import { ControllerPanel } from "./controller_panel.js";
 
 export function add_controls() {
     app.ui.settings.addSetting({
@@ -13,9 +13,29 @@ export function add_controls() {
     });
 
     app.ui.settings.addSetting({
+        id: SettingIds.FONT_SIZE,
+        name: "Controller font base size:",
+        tooltip: "All font sizes will be scaled relative to this value",
+        type: "slider",
+        attrs: {
+            min: 10,
+            max: 16
+          },
+        defaultValue: 12
+    });
+
+    app.ui.settings.addSetting({
         id: SettingIds.CONTROL_AFTER_GENERATE,
         name: "Show control after generate",
         tooltip: "Allow the control_after_generate widget to be shown",
+        type: "boolean",
+        defaultValue: true
+    })
+
+    app.ui.settings.addSetting({
+        id: SettingIds.TOOLTIPS,
+        name: "Show tooltips",
+        tooltop: "Refresh controller after changing",
         type: "boolean",
         defaultValue: true
     })
@@ -55,7 +75,6 @@ export function add_controls() {
         defaultValue: "1"
     })
 
-
     window.addEventListener('keypress', (e) => {
         if (e.target.tagName=="CANVAS" || e.target.tagName=="BODY") {
             const keysetting = app.ui.settings.getSettingValue(SettingIds.KEYBOARD_TOGGLE, "C") 
@@ -67,4 +86,5 @@ export function add_controls() {
             }
         }
     })
+
 }

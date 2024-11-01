@@ -1,20 +1,21 @@
 import { app } from "../../scripts/app.js"
-import { GroupManager } from "./groups.js"
 import { Debug } from "./debug.js"
-
+import { Texts } from "./constants.js"
 
 const DEFAULTS = {
     "node_order"   : [],
     "advanced"     : false,
-    "group_choice" : GroupManager.show_all,
-    "element_width": 0,
-    "scrollbar_on" : false
-}
+    "group_choice" : Texts.ALL_GROUPS,
+    "position"     : {"x" : 0, "y" : 0, "w" : 250, "h" : 180},
+    "userposition" : {"x" : 0, "y" : 0, "w" : 250, "h" : 180},
+    "collapsed"    : false,
+    "hidden"       : false,
+} 
 
 const KEYS = Object.keys(DEFAULTS)
 
 class _Settings {
-    fix_backward_compatibility() {
+    /*fix_backward_compatibility() {
         if (!app.graph.extra.controller_panel) {
             Debug.important("When trying to fix_backward_compatibility, extras did not have controller_panel")
             return
@@ -24,7 +25,7 @@ class _Settings {
             if (app.graph.extra.controller_panel[k]==="1")       app.graph.extra.controller_panel[k] = true
             if (app.graph.extra.controller_panel[k]==="0")       app.graph.extra.controller_panel[k] = false 
         })
-    }
+    }*/
 
     get(k) {
         if (app.graph?.extra?.controller_panel?.[k] != undefined) return app.graph.extra.controller_panel[k]  // value exists - all good
@@ -62,10 +63,14 @@ class _Settings {
     }
 
     // convenience method
-    getSettingValue(comfy_key, _default) {
-        return app.ui.settings.getSettingValue(comfy_key, _default)
-    }
-
 }
 
-export const settings = new _Settings()
+const settings = new _Settings()
+
+export function getSettingValue(comfy_key, _default) {
+    return app.ui.settings.getSettingValue(comfy_key, _default)
+}
+
+export function get_settings(controller) {
+    return settings
+}

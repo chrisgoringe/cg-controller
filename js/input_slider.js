@@ -3,7 +3,7 @@ import { create, step_size, check_float } from "./utilities.js"
 import { rounding, integer_rounding, clamp, classSet } from "./utilities.js"
 import { Debug } from "./debug.js"
 import { UpdateController } from "./update_controller.js"
-import { settings } from "./settings.js";
+import { getSettingValue } from "./settings.js";
 import { SettingIds } from "./constants.js";
 
 function copy_to_widget(node, widget, options) {
@@ -156,9 +156,12 @@ export class FancySlider extends HTMLSpanElement {
 
     static in_textedit = null
 
-    constructor(node, widget, properties) {
+    static mouse_down_on = null
+
+    constructor(parent_controller, node, widget, properties) {
         super()
         this.classList.add("fancy_slider")
+        this.parent_controller = parent_controller
         this.node = node
         this.widget = widget
 
@@ -173,14 +176,14 @@ export class FancySlider extends HTMLSpanElement {
         this.graphic_fill  = create('span', 'fs_graphic_fill', this.graphic)
         this.graphic_text  = create('span', 'fs_graphic_text', this.graphic)
         this.text_edit     = create('input','fs_text_edit', this)
-        this.label         = create('span', 'fs_label', this, {"innerText":widget.name})
+        this.label         = create('span', 'fs_label', this, {"innerText":widget.label ?? widget.name})
 
         this.displaying = "graphic"
 
         this.addEventListener('mousedown',     (e) => this._mousedown(e))
         this.addEventListener('wheel',         (e) => this._wheel(e))
         this.addEventListener('mouseout',      (e) => this._mouseout(e))
-        document.addEventListener('mousemove', (e) => this._mousemove(e))
+        
         document.addEventListener('mouseup',   (e) => this.enddragging(e))
         this.addEventListener('change',        (e) => this._change(e))
         this.addEventListener('focusin',       (e) => this._focus(e))
@@ -213,6 +216,8 @@ export class FancySlider extends HTMLSpanElement {
 
     enddragging(e) {
         this.mouse_down_on_me_at = null; 
+        FancySlider.mouse_down_on = null;
+        document.removeEventListener('mousemove', handle_mouse_move)
         this.dragging = false
         this.classList.remove('can_drag')
         if (e && e.target==this) {
@@ -251,7 +256,7 @@ export class FancySlider extends HTMLSpanElement {
 
     _wheel(e) {
         if (this.displaying = "graphic") {
-            const shift_setting = settings.getSettingValue(SettingIds.SCROLL_MOVES_SLIDERS, "yes")
+            const shift_setting = getSettingValue(SettingIds.SCROLL_MOVES_SLIDERS, "yes")
             if ( shift_setting=="yes" || (shift_setting=="shift" && e.shiftKey) || (shift_setting=="ctrl" && e.ctrlKey) ) {
                 this.wheeling = true
                 const new_value =  this.value + this.options.step * (e.wheelDelta>0 ? 1 : -1)
@@ -281,7 +286,7 @@ export class FancySlider extends HTMLSpanElement {
     }
 
     _mousedown(e) { 
-        const shift_setting = settings.getSettingValue(SettingIds.EDIT_SLIDERS, "shift")
+        const shift_setting = getSettingValue(SettingIds.EDIT_SLIDERS, "shift")
         if ((e.shiftKey && shift_setting=='shift') || (e.ctrlKey && shift_setting=='ctrl')){
             this.edit_min_max(e)
             e.preventDefault()
@@ -295,25 +300,25 @@ export class FancySlider extends HTMLSpanElement {
             } else {
                 this.classList.add('can_drag')
                 this.mouse_down_on_me_at = e.x;
+                FancySlider.mouse_down_on = this
+                document.addEventListener('mousemove', handle_mouse_move)
                 e.stopPropagation()
             }
         }
     }
 
     _mousemove(e) { 
-        if (this.mouse_down_on_me_at) {
-            if (!this.dragging && (Math.abs(e.x-this.mouse_down_on_me_at)>6 || Math.abs(e.movementX)>4)) {
-                this.dragging = true 
-            }
-            if (this.dragging) {
-                const box = this.getBoundingClientRect()
-                const f =  clamp(( e.x - box.x ) / box.width, 0, 1)
-                var new_value = this.options.min + f * (this.options.max - this.options.min)
-                if (this.is_integer) new_value = parseInt(new_value)
-                this.redraw_with_value(new_value)
-                e.preventDefault()
-                e.stopPropagation() 
-            }
+        if (!this.dragging && (Math.abs(e.x-this.mouse_down_on_me_at)>6 || Math.abs(e.movementX)>4)) {
+            this.dragging = true 
+        }
+        if (this.dragging) {
+            const box = this.getBoundingClientRect()
+            const f =  clamp(( e.x - box.x ) / box.width, 0, 1)
+            var new_value = this.options.min + f * (this.options.max - this.options.min)
+            if (this.is_integer) new_value = parseInt(new_value)
+            this.redraw_with_value(new_value)
+            e.preventDefault()
+            e.stopPropagation() 
         }
     }
 
@@ -364,6 +369,10 @@ export class FancySlider extends HTMLSpanElement {
         }
     }
 
+}
+
+function handle_mouse_move(e) {
+    if (FancySlider.mouse_down_on) FancySlider.mouse_down_on._mousemove.bind(FancySlider.mouse_down_on)(e)
 }
 
 customElements.define('cp-fslider', FancySlider, {extends: 'span'})

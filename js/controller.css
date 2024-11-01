@@ -1,36 +1,52 @@
 /* Menu */
 
-.controller-tab-button {
-    padding: 8px 0px 8px 0px;
-    border: 1px;
-    height: 64px;
-    width: 64px;
-    border-radius:0px;
+.controller-menu-button {
+    color: var(--p-button-text-secondary-color);
+    cursor: pointer;
+    font-size: 14pt;
+    padding-right: 4px;
 }
 
-.controller-tab-button.selected {
-    border-left: 4px solid var(--p-button-text-primary-color);
+.showing {
     color: var(--p-button-text-primary-color);
 }
 
-
 .controller {
+    --font-size: 12px;
+    font-size: var(--font-size);
     height:100%;
+    min-height: 42px;
     background: #1c1c1cee;
-    padding: 0 0 0 5px;
+    padding: 0 0 0 2px;
     position: absolute;
-    --element_width: 340px;
-    min-width: 150px;
+    --element_width: 100%;
+    min-width: 185px;
     overflow: clip scroll;
-    border-width: 0px 5px 0px 0px;
+    border-width: 4px;
     border-style: solid;
-    border-color: rgb(53, 53, 53);
-    border-image: initial;
-    border-radius: 0px;
-    resize: horizontal;
-    z-index:auto;
+    border-color: rgb(83 83 83);
+    border-radius: 4px;
+    resize: both;
+    z-index:999;
     scrollbar-width: thin;
     scrollbar-color: #27262a #18171c;
+    pointer-events: all;
+}
+
+.controller.collapsed {
+    overflow: clip;
+    min-width: 0px;
+    width: 128px;
+}
+
+.header_button.collapse_button {
+    color: var(--p-button-text-primary-color);
+    padding-right: 6px;
+    padding-left:2px;
+}
+
+.controller.collapsed .header_button.collapse_button {
+    color: #dadada;
 }
 
 /* Header */
@@ -39,7 +55,6 @@
     position: sticky;
     top: 0px;
     z-index: 40000;
-    padding: 5px 0px 5px 0px;
     background: #222222;
     display: flex;
     width: var(--element_width);
@@ -50,34 +65,48 @@
     z-index:1;
 }
 
-.header1 {
+.subheader {
     width: 100%;
     display: flex;
-    justify-content: space-between;
     border-bottom: 1px solid #353535;
+    padding: 8px 4px 8px 4px;
+    justify-content: flex-end;
     align-items: center;
 }
 
-.header2 {
-    width: 100%;
-    display: flex;
-    justify-content: flex-end;
-    padding-top:4px;
-    align-items: center;
+.subheader1 {
+    cursor:grab;
+}
+
+.controller.being_dragged .subheader1 {
+    cursor:grabbing;
+}
+
+.subheader2 {
+
 }
 
 .header_title {
     font-family: Arial, sans-serif;
     font-size:13px;
+    flex-grow:1;
+    text-align: center;
  }
 
 .header_select {
     max-width: var(--element_width);
  }
 
-.refresh_button {
+.header_button {
     cursor: pointer;
+    font-size: 12pt;
+    color: #dadada;
+    padding-left: 6px;
     padding-right: 2px;
+}
+
+.clicked {
+    color: var(--p-button-text-primary-color);
 }
 
 .being_dragged {
@@ -85,7 +114,7 @@
 }
 
 .extra_controls {
-
+    height: 15px;
 }
 
 .advanced_controls {
@@ -95,7 +124,6 @@
     display: flex;
     justify-content: center;
     background-color: #C0808060;
-    /*width: calc(var(--element_width) - 4px);*/
 }
 
 .advanced_label {
@@ -132,7 +160,7 @@
 /* Node block */
 
 .nodeblock {
-    margin: 0px 5px 5px 0px;
+    margin: 0px 0px 5px 0px;
     position: relative;
     width: var(--element_width);
     min-height: 40px;
@@ -143,6 +171,8 @@
 .nodeblock.minimised {
     min-height: 20px;
     padding-bottom: 0px;
+    height: 20px;
+    overflow: hidden;
 }
 
 .nodeblock_titlebar {
@@ -152,7 +182,7 @@
     color: #b3b3b3;
 }
 
-.nodeblock_minimisedot {
+.minimisedot {
     padding: 0px 4px 0px 0px;
     cursor: url(collapse.png) 8 8, zoom-out;
     position: relative;
@@ -223,9 +253,8 @@
 
 .entry_label {
     position: absolute;
-    height: 18px;
-    top: 5px;
-    padding-top: 3px;
+    height: calc(var(--font-size) - 2px);
+    top: 9px;
     padding-right: 6px;
     background: rgb(34 34 34);
     color: #c5c5c5;
@@ -242,9 +271,13 @@
 
 .entry_label.value {
     right: 20px;
+    height: calc(var(--font-size) - 2px);
+    top: 9px;
     left: unset;
-    width:unset;
-    color:white;
+    width: unset;
+    color: white;
+    max-width: calc(100% - 24px);
+    overflow: clip;
 }
 
 .input {
@@ -255,6 +288,9 @@
     border: none;
     height: 20px;
     text-align: right;
+}
+select.input {
+    height: calc(var(--font-size) + 4px)
 }
 
 button.input {
@@ -279,6 +315,10 @@ textarea.input {
     justify-content: space-between;
     align-items: center;
     background-color: #222222;
+}
+
+.toggle.false .toggle_value .toggle_text {
+    color: #999999;
 }
 
 .toggle_label {
@@ -346,7 +386,6 @@ textarea.input {
   /* Tooltip text */
   .tooltip .tooltiptext {
     visibility:hidden;
-    max-width: var(--element_width);
     background-color: #ffffffc0;
     color: #353535;
     font-size: 70%;
@@ -356,6 +395,15 @@ textarea.input {
     position: absolute;
     right: 0px;
     top: 20px;
+  }
+
+  .tooltip.right .tooltiptext {
+    right: unset;
+    left: 0px;
+  }
+
+  .controller.collapsed .tooltiptext {
+    top:0px;
   }
   
   /* Show the tooltip text when you mouse over the tooltip container */

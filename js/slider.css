@@ -2,7 +2,7 @@
 .fancy_slider {
     display:block;
     --full-height: 20px;
-    --full-width: calc(var(--element_width) - 8px);
+    --full-width: 100%;
     height: var(--full-height);
     width: var(--full-width);
     border:0;

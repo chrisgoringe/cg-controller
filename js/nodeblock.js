@@ -1,10 +1,9 @@
 import { app } from "../../scripts/app.js";
 import { ComfyWidgets } from "../../scripts/widgets.js";
 
-import { create, darken } from "./utilities.js";
+import { create, darken, classSet } from "./utilities.js";
 import { Entry } from "./panel_entry.js"
 import { make_resizable } from "./resize_manager.js";
-import { settings } from "./settings.js";
 import { UpdateController } from "./update_controller.js";
 
 function is_single_image(data) { return (data && data.items && data.items.length==1 && data.items[0].type.includes("image")) }
@@ -14,8 +13,9 @@ export class NodeBlock extends HTMLSpanElement {
     NodeBlock represents a single node - zero or more Entry children, and zero or one images.
     If neither Entry nor images, it is not 'valid' (ie should not be included)
     */
-    constructor(node) { 
+    constructor(parent_controller, node) { 
         super()
+        this.parent_controller = parent_controller
         this.node = node
         if (!this.node.properties.controller_details) {
             this.node.properties.controller_details = {}
@@ -121,12 +121,17 @@ export class NodeBlock extends HTMLSpanElement {
 
         this.minimised = this.node.properties.controller_details.minimised
 
-        this.minimisedot = create("span", 'nodeblock_minimisedot', this.title_bar, { "innerHTML":"&#x25FC;"})
+        this.minimisedot = create("span", 'minimisedot', this.title_bar, { "innerHTML":"&#x25FC;"})
         this.minimisedot.addEventListener("click", (e)=>{ 
             e.preventDefault(); 
             e.stopPropagation(); 
             this.node.properties.controller_details.minimised = (!!!this.node.properties.controller_details.minimised)
-            UpdateController.make_request('minimise') 
+            this.minimised = this.node.properties.controller_details.minimised
+            classSet(this, 'minimised', this.minimised)
+            if (this.minimised && this.contains(document.activeElement)) {
+                document.activeElement.blur()
+            }
+            //UpdateController.make_request('minimise') 
         })
         this.minimisedot.addEventListener("mousedown", (e)=>{ 
             e.preventDefault(); 
@@ -144,18 +149,18 @@ export class NodeBlock extends HTMLSpanElement {
             this.title_bar.classList.add("titlebar_nocolor")
         }
 
-        if (this.minimised) {
-            this.classList.add('minimised')
+        classSet(this, 'minimised', this.minimised)
+
+        /*if (this.minimised) {
             this.valid_nodeblock = true
             return
-        }
-        this.classList.remove('minimised')
+        }*/
 
         this.valid_nodeblock = false
         this.node.widgets?.forEach(w => {
             if (!this.node.properties.controller_widgets[w.name]) this.node.properties.controller_widgets[w.name] = {}
             const properties = this.node.properties.controller_widgets[w.name]
-            const e = new Entry(this.node, w, properties)
+            const e = new Entry(this.parent_controller, this.node, w, properties)
             if (e.valid()) {
                 this.appendChild(e)
                 this[w.name] = e
@@ -192,6 +197,7 @@ export class NodeBlock extends HTMLSpanElement {
 
     rescale_image() {
         if (this.rescaling) return
+        if (this.parent_controller.settings.collapsed) return
         this.rescaling = true
         if (this.image_image) {
             const box = this.image_panel.getBoundingClientRect()
