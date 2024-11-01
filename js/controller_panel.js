@@ -391,10 +391,14 @@ export class ControllerPanel extends HTMLDivElement {
 
         this.settings.group_choice = GroupManager.valid_option(this.settings.group_choice)
 
+        var order = 1000
         GroupManager.list_group_names().forEach((nm) => {
             const tab = create('span','tab',this.header_tabs,{"innerText":nm})
             classSet(tab,'selected',(this.settings.group_choice == nm))
-            tab.style.backgroundColor = GroupManager.group_color(nm)
+            tab.style.order = (this.settings.group_choice == nm) ? 1001 : order
+            order -= 1
+            //tab.style.backgroundColor = GroupManager.group_color(nm)
+            tab.style.setProperty('--base-color', GroupManager.group_color(nm))
             tab.addEventListener('mousedown', (e) => {
                 tab.mouse_down_at_x = e.x
                 tab.mouse_down_at_y = e.y
