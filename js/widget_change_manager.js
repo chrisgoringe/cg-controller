@@ -15,15 +15,14 @@ export class WidgetChangeManager {
     static notify(widget) {
         if (widget.wcm_id && WidgetChangeManager.widget_listener_map[widget.wcm_id]) {
             WidgetChangeManager.widget_listener_map[widget.wcm_id] = WidgetChangeManager.widget_listener_map[widget.wcm_id].filter((l)=>l.wcm_manager_callback())
-            //WidgetChangeManager.widget_listener_map[widget.wcm_id].forEach((l)=>{l.wcm_manager_callback()})
         }
+        app.graph.setDirtyCanvas(true,true)
     }
     static set_widget_value(widget, v) {
         widget.value = v
         if (widget.original_callback) widget.original_callback(widget.value)
         if (widget.options.min != null) widget.value = clamp(widget.value, widget.options.min, widget.options.max)
         WidgetChangeManager.notify(widget)
-        app.graph.setDirtyCanvas(true,true)
     }
 }
 
