@@ -174,8 +174,7 @@ export class ControllerPanel extends HTMLDivElement {
         try {        
             //if (!this.showing) { return -1 }
             if (this.classList.contains('unrefreshable')) { Debug.trivia("already refreshing"); return -1 }
-            if (this.contains(document.activeElement) && document.activeElement != this.group_select &&
-                        document.activeElement.tagName != "BUTTON" ) { Debug.trivia("delay refresh because active element"); return 1 }
+            if (this.contains(document.activeElement) && !document.activeElement.doesntBlockRefresh) { Debug.trivia("delay refresh because active element"); return 1 }
          
             const unrefreshables = this.getElementsByClassName('unrefreshable')
             if (unrefreshables.length > 0) {
@@ -381,7 +380,7 @@ export class ControllerPanel extends HTMLDivElement {
 
 
         if (GroupManager.any_groups()) {
-            this.group_select = create("select", 'header_select', this.header2) 
+            this.group_select = create("select", 'header_select', this.header2, {"doesntBlockRefresh":true}) 
             GroupManager.list_group_names().forEach((nm) => {
                 const o = new Option(nm,nm)
                 o.style.backgroundColor = GroupManager.group_color(nm)

@@ -9,6 +9,7 @@ import { UpdateController } from "./update_controller.js"
 import { Debug } from "./debug.js"
 import { BASE_PATH } from "./constants.js"
 import { OnExecutedManager } from "./widget_change_manager.js"
+import { global_settings } from "./settings.js"
 
 
 function on_setup() {
@@ -32,13 +33,15 @@ function on_setup() {
     LGraphCanvas.prototype.getCanvasMenuOptions = function () {
         // get the basic options 
         const options = original_getCanvasMenuOptions.apply(this, arguments);
-        options.push(null); // inserts a divider
-        options.push({
-            content: "New Controller",
-            callback: async (_, e) => {
-                ControllerPanel.create_new(e?.event)
-            }
-        })
+        if (!global_settings.hidden) {
+            options.push(null); // inserts a divider
+            options.push({
+                content: "New Controller",
+                callback: async (_, e) => {
+                    ControllerPanel.create_new(e?.event)
+                }
+            })
+        }
         return options;
     }
     ControllerPanel.create_menu_icon()
@@ -116,6 +119,12 @@ app.registerExtension({
             onRemoved?.apply(this, arguments)
             UpdateController.make_request("node_removed", 20)
         }
+
+        node._imgs = node.imgs
+        Object.defineProperty(node, 'imgs', {
+            get: () => { return node._imgs },
+            set: (v) => { node._imgs = v; UpdateController.make_request('imgs', 100)}
+        })
 
     },
 

@@ -14,8 +14,8 @@ export class WidgetChangeManager {
     }
     static notify(widget) {
         if (widget.wcm_id && WidgetChangeManager.widget_listener_map[widget.wcm_id]) {
-            WidgetChangeManager.widget_listener_map[widget.wcm_id] = WidgetChangeManager.widget_listener_map[widget.wcm_id].filter((l)=>l.parentElement)
-            WidgetChangeManager.widget_listener_map[widget.wcm_id].forEach((l)=>{l.wcm_manager_callback()})
+            WidgetChangeManager.widget_listener_map[widget.wcm_id] = WidgetChangeManager.widget_listener_map[widget.wcm_id].filter((l)=>l.wcm_manager_callback())
+            //WidgetChangeManager.widget_listener_map[widget.wcm_id].forEach((l)=>{l.wcm_manager_callback()})
         }
     }
     static set_widget_value(widget, v) {
@@ -37,11 +37,7 @@ export class OnExecutedManager {
     static send(node_id, output) {
         if (OnExecutedManager.node_listener_map[node_id]) {
             Array.from(OnExecutedManager.node_listener_map[node_id]).forEach((l)=>{
-                if (l.parentElement) {
-                    l.oem_manager_callback(output)
-                } else {
-                    OnExecutedManager.node_listener_map[node_id].delete(node_id)
-                }
+                if (!l.oem_manager_callback(output)) OnExecutedManager.node_listener_map[node_id].delete(node_id)
             })
         }
     }

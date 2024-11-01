@@ -22,7 +22,7 @@ export class Entry extends HTMLDivElement {
     Entry represents a single widget within a NodeBlock
     */
 
-    constructor(parent_controller, node, target_widget, properties) {
+    constructor(parent_controller, parent_nodeblock, node, target_widget, properties) {
         super()
         if (target_widget.disabled) return
         if (target_widget.name=='control_after_generate' && !app.ui.settings.getSettingValue(SettingIds.CONTROL_AFTER_GENERATE, false)) return
@@ -31,6 +31,7 @@ export class Entry extends HTMLDivElement {
 
         this.classList.add('entry')
         this.parent_controller = parent_controller
+        this.parent_nodeblock = parent_nodeblock
         this.target_widget = target_widget
         this.input_element = null
         this.properties = properties
@@ -53,7 +54,7 @@ export class Entry extends HTMLDivElement {
             case 'combo':
                 this.entry_label = create('span','entry_label', this, {'innerText':widget_label, 'draggable':false} )  
                 this.entry_value = create('span','entry_label value', this, {'innerText':target_widget.value, 'draggable':false} )  
-                this.input_element = create("select", 'input', this) 
+                this.input_element = create("select", 'input', this, {"doesntBlockRefresh":true}) 
                 target_widget.options.values.forEach((o) => this.input_element.add(new Option(o,o)))
                 this.input_element.addEventListener("change", (e)=>{
                     this.entry_value.innerText = e.target.value
@@ -63,7 +64,7 @@ export class Entry extends HTMLDivElement {
                 }
                 break
             case 'button':
-                this.input_element = create("button", 'input', this, {"innerText":widget_label})
+                this.input_element = create("button", 'input', this, {"innerText":widget_label, "doesntBlockRefresh":true})
                 break
             case 'toggle':
                 this.input_element = new Toggle(target_widget.value, widget_label)
@@ -90,18 +91,32 @@ export class Entry extends HTMLDivElement {
         } else {
             if (!target_widget.original_callback) target_widget.original_callback = target_widget.callback
             target_widget.callback = () => {
-                if (target_widget.original_callback) target_widget.original_callback(target_widget.value)
+                if (target_widget.original_callback) {
+                    target_widget.original_callback(target_widget.value)
+                }
                 WidgetChangeManager.notify(target_widget)
             }
         }
+
+        const onRemove = target_widget.onRemove
+        target_widget.onRemove = function () {
+            onRemove.apply(target_widget, arguments)
+            UpdateController.make_request('widget removed')
+        }
+
         WidgetChangeManager.add_listener(target_widget, this)
         this.render()
     }
 
     wcm_manager_callback() {
+        if (!this.parent_controller.contains(this)) return false;
         this.input_element.value = this.target_widget.value;
         if (this.input_element.wcm_manager_callback) this.input_element.wcm_manager_callback()
         if (this.input_element.redraw) this.input_element.redraw(true)
+        if (this.target_widget.name=='image' && this.target_widget._real_value && this.target_widget.type=="combo") {
+            this.parent_nodeblock.show_image(this.target_widget.value)
+        }
+        return true;
     }
 
     valid() { return (this.input_element != null) }
