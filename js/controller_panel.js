@@ -240,6 +240,7 @@ export class ControllerPanel extends HTMLDivElement {
             this.show_overlay(`${Math.round(this.getBoundingClientRect().width)} x ${Math.round(this.getBoundingClientRect().height)}px`, this)
             this.settings.set_position(null,null,this.getBoundingClientRect().width,this.getBoundingClientRect().height)
         }
+        if (this.getBoundingClientRect().width>0) this.are_tabs_wrapped()
     }
 
     consider_adding_node(node_or_node_id) {
@@ -360,6 +361,24 @@ export class ControllerPanel extends HTMLDivElement {
         }
     }
 
+    are_tabs_wrapped() {
+        const old_value = this.header_tabs_wrapped
+        this.header_tabs_wrapped = false
+        if (this.header_tabs?.childNodes?.length > 1) {
+            var tp = null;
+            Array.from(this.header_tabs.childNodes).forEach((n)=>{
+                if (!tp) {
+                    tp = n.getBoundingClientRect().top
+                } else {
+                    if (tp != n.getBoundingClientRect().top) this.header_tabs_wrapped = true
+                }
+            })
+        }
+        if (old_value!==this.header_tabs_wrapped) {
+            UpdateController.make_request("Change in tab wrap")
+        }
+    }
+
     build_controllerPanel() { 
         this.classList.add('unrefreshable')
         this.reason = 'already refreshing'
@@ -382,22 +401,18 @@ export class ControllerPanel extends HTMLDivElement {
         this._main = create('span','main')
         this.header1 = create('span','subheader subheader1',this._header)
 
-
-
         this.header_tabs = create('span', 'tabs group', this.header1)
         this.header1.addEventListener('mousedown', (e) => this.header_mouse(e))
         window.addEventListener('mousemove', (e) => this.header_mouse(e))
 
-
         this.settings.group_choice = GroupManager.valid_option(this.settings.group_choice)
 
-        var order = 1000
         GroupManager.list_group_names().forEach((nm) => {
             const tab = create('span','tab',this.header_tabs,{"innerText":nm})
             classSet(tab,'selected',(this.settings.group_choice == nm))
-            tab.style.order = (this.settings.group_choice == nm) ? 1001 : order
-            order -= 1
-            //tab.style.backgroundColor = GroupManager.group_color(nm)
+            if (this.header_tabs_wrapped && this.settings.group_choice == nm) tab.style.order = 1
+            //tab.style.order = (this.settings.group_choice == nm) ? 0 : 1
+            //order -= 1
             tab.style.setProperty('--base-color', GroupManager.group_color(nm))
             tab.addEventListener('mousedown', (e) => {
                 tab.mouse_down_at_x = e.x
@@ -420,12 +435,7 @@ export class ControllerPanel extends HTMLDivElement {
                 this.header_tabs.mouse_down_on = null
             })
         })
-
         this.header1.style.borderBottomColor = GroupManager.group_color(this.settings.group_choice)
-
-
-
-        //this.main.innerHTML = ""
 
         this.new_node_id_list = []
         this.remove_absent_nodes()
@@ -483,6 +493,7 @@ export class ControllerPanel extends HTMLDivElement {
         
         this.set_position(true)
         observe_resizables( this, this.on_child_height_change.bind(this) )
+        setTimeout(this.are_tabs_wrapped.bind(this), 20)
     }
 
     save_node_order() {
