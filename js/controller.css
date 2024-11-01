@@ -112,8 +112,7 @@
 }
 .tab { 
     --base-color: black;
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px; 
+    border-radius: 6px;
     padding: 2px 6px;
     border: 1px solid var(--deep-back-color);
     background-color: color-mix(in srgb, var(--base-color), transparent);
@@ -122,11 +121,16 @@
     cursor: pointer;
     flex-grow: 1;
     text-align: center;
+    margin: 0px 1px 1px 1px;
+    text-overflow: ellipsis;
 }
 .tab.selected {
     border-bottom: none; 
     color: var(--main-fore-color);
     background-color: var(--base-color);
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+    margin-bottom:0px;
 }
 
 .controller.grabbed .tab {
