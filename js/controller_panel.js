@@ -82,12 +82,16 @@ export class ControllerPanel extends HTMLDivElement {
 
     static mouse_up_anywhere() {
         Object.keys(ControllerPanel.instances).forEach((k)=>{
-            const t = ControllerPanel.instances[k]
-            t.should_update_size = false; 
-            t.being_dragged = false;
-            t.classList.remove('being_dragged')
-            t.set_position(true)
+            ControllerPanel.instances[k].mouse_up()
         })
+    }
+
+    mouse_up() {
+        this.should_update_size = false; 
+        this.being_dragged = false;
+        this.classList.remove('being_dragged')
+        this.classList.remove('grabbed')
+        this.set_position(true)
     }
 
     redraw() {
@@ -135,11 +139,22 @@ export class ControllerPanel extends HTMLDivElement {
             var spacer = null
             comfy_menu.childNodes.forEach((node)=>{if (node.classList.contains('flex-grow')) spacer = node})
             if (!spacer) spacer = comfy_menu.firstChild
-            ControllerPanel.menu_button = create('i', 'pi pi-sliders-h controller-menu-button')
-            add_tooltip(ControllerPanel.menu_button, 'Toggle controller')
+            const buttons = create('span', 'controller_menu_buttons')
+            spacer.after(buttons)
+
+            ControllerPanel.menu_button = create('i', 'pi pi-sliders-h controller_menu_button', buttons)
+            add_tooltip(ControllerPanel.menu_button, 'Toggle controllers')
             classSet(ControllerPanel.menu_button, 'showing', !global_settings.hidden) 
-            spacer.after(ControllerPanel.menu_button)
             ControllerPanel.menu_button.addEventListener('click', ControllerPanel.toggle)
+
+            ControllerPanel.refresh_button = create('i', 'pi pi-sync controller_menu_button', buttons)
+            add_tooltip(ControllerPanel.refresh_button, `Refresh controllers`)
+            ControllerPanel.refresh_button.addEventListener('click', (e) => {
+                UpdateController.make_request("refresh_button");
+                ControllerPanel.refresh_button.classList.add("clicked");
+                setTimeout(()=>{ControllerPanel.refresh_button.classList.remove("clicked")}, 200);
+            })
+            
         } else {
             setTimeout(ControllerPanel.create_menu_icon,100)
         }
@@ -325,20 +340,23 @@ export class ControllerPanel extends HTMLDivElement {
 
     header_mouse(e) {
         if (e.type=='mousedown') {
-            if (e.target==this.header_title) {
+            if (e.target==this.header_tabs || e.target.parentElement==this.header_tabs) {
                 this.being_dragged = true
+                this.classList.add('grabbed')
                 this.offset_x = e.x - this.settings.position.x
                 this.offset_y = e.y - this.settings.position.y
-                this.classList.add('being_dragged')
                 e.preventDefault()
                 e.stopPropagation()
             }
         }
-        if (e.type=='mousemove' && this.being_dragged && e.currentTarget==window) {
-            this.settings.set_position( e.x - this.offset_x, e.y - this.offset_y, null, null )
-            this.set_position(true)
-            this.offset_x = e.x - this.settings.position.x
-            this.offset_y = e.y - this.settings.position.y
+        if (this.being_dragged) {
+            if (e.type=='mousemove' && e.currentTarget==window) {
+                this.classList.add('being_dragged')
+                this.settings.set_position( e.x - this.offset_x, e.y - this.offset_y, null, null )
+                this.set_position(true)
+                this.offset_x = e.x - this.settings.position.x
+                this.offset_y = e.y - this.settings.position.y
+            }
         }
     }
 
@@ -362,49 +380,46 @@ export class ControllerPanel extends HTMLDivElement {
         */
         this._header = create('span','header')
         this._main = create('span','main')
-
-        //this.header.innerHTML = ""
         this.header1 = create('span','subheader subheader1',this._header)
-        this.minimisedot = create("i", `pi pi-sliders-h header_button collapse_button`, this.header1)
-        this.minimisedot.addEventListener("click", (e)=>{ 
-            e.preventDefault(); 
-            e.stopPropagation(); 
-            this.settings.collapsed = (!this.settings.collapsed)
-            UpdateController.make_request('collapse') 
-        })
-        add_tooltip(this.minimisedot, `${this.settings.collapsed?"Open":"Collapse"} controller`, 'right')
-        this.header_title = create('span', 'header_title', this.header1, {"innerText":"CONTROLLER"})
+
+
+
+        this.header_tabs = create('span', 'tabs group', this.header1)
         this.header1.addEventListener('mousedown', (e) => this.header_mouse(e))
         window.addEventListener('mousemove', (e) => this.header_mouse(e))
-        this.header2 = create('span','subheader subheader2', this._header)
 
-
-        if (GroupManager.any_groups()) {
-            this.group_select = create("select", 'header_select', this.header2, {"doesntBlockRefresh":true}) 
-            GroupManager.list_group_names().forEach((nm) => {
-                const o = new Option(nm,nm)
-                o.style.backgroundColor = GroupManager.group_color(nm)
-                this.group_select.add(o)
-            })
-            try { this.group_select.value = this.settings.group_choice }
-            catch { this.group_select.value = Texts.ALL_GROUPS }
-            this.group_select.style.backgroundColor = GroupManager.group_color(this.group_select.value)
-            this.group_select.addEventListener('change', (e)=>{     
-                this.group_select.classList.remove('unrefreshable')     
-                if (this.settings.group_choice != e.target.value) {
-                    this.settings.group_choice = e.target.value; 
-                    UpdateController.make_request('group selection changed') 
-                }
-                this.group_select.classList.remove('unrefreshable')
-            })
-            this.group_select.addEventListener('mousedown', (e) => {
-                this.group_select.classList.add('unrefreshable')
-                setTimeout(()=>{this.group_select.classList.remove('unrefreshable')}, Timings.GROUP_SELECT_NOSELECT_WAIT)
-            })
-
-        }
 
         this.settings.group_choice = GroupManager.valid_option(this.settings.group_choice)
+
+        GroupManager.list_group_names().forEach((nm) => {
+            const tab = create('span','tab',this.header_tabs,{"innerText":nm})
+            classSet(tab,'selected',(this.settings.group_choice == nm))
+            tab.style.backgroundColor = GroupManager.group_color(nm)
+            tab.addEventListener('mousedown', (e) => {
+                tab.mouse_down_at_x = e.x
+                tab.mouse_down_at_y = e.y
+                this.header_tabs.mouse_down_on = tab
+            })
+            tab.addEventListener('mouseup', (e) => {
+                if (this.header_tabs.mouse_down_on == tab && Math.abs(tab.mouse_down_at_x - e.x) < 2 && Math.abs(tab.mouse_down_at_y - e.y) < 2) {
+                    if (this.settings.collapsed) {
+                        this.settings.collapsed = false;
+                        UpdateController.make_request('uncollapse') 
+                    } else {
+                        this.settings.group_choice = nm
+                        UpdateController.make_request('group selection changed') 
+                    }
+                    this.mouse_up()
+                    e.preventDefault()
+                    e.stopPropagation()
+                }
+                this.header_tabs.mouse_down_on = null
+            })
+        })
+
+        this.header1.style.borderBottomColor = GroupManager.group_color(this.settings.group_choice)
+
+
 
         //this.main.innerHTML = ""
 
@@ -426,8 +441,10 @@ export class ControllerPanel extends HTMLDivElement {
         Back to the header
         */
         if (!this.settings.collapsed) {
+            this.buttons = create('span', 'header_buttons', this.header1)
+
             if (this.showAdvancedCheckbox) {
-                this.show_advanced = create('i', `pi pi-bolt header_button${this.settings.advanced ? " clicked":""}`, this.header1)
+                this.show_advanced = create('i', `pi pi-bolt header_button${this.settings.advanced ? " clicked":""}`, this.buttons)
                 this.show_advanced.addEventListener('click', (e) => {
                     this.settings.advanced = !this.settings.advanced
                     this.redraw()
@@ -435,15 +452,17 @@ export class ControllerPanel extends HTMLDivElement {
                 })
                 add_tooltip(this.show_advanced, `${this.settings.advanced?"Hide":"Show"} advanced controls`)
             }
-            this.refresh_button = create('i', 'pi pi-sync header_button', this.header1)
-            this.refresh_button.addEventListener('click', (e) => {
-                UpdateController.make_request("refresh_button");
-                this.refresh_button.classList.add("clicked");
-                setTimeout(()=>{this.refresh_button.classList.remove("clicked")}, 200);
-                e.stopPropagation()    
+            
+            this.minimisedot = create("i", `pi pi-minus header_button collapse_button`, this.buttons)
+            this.minimisedot.addEventListener("click", (e)=>{ 
+                e.preventDefault(); 
+                e.stopPropagation(); 
+                this.settings.collapsed = (!this.settings.collapsed)
+                UpdateController.make_request('collapse') 
             })
-            add_tooltip(this.refresh_button, `Refresh controller`)
-            this.delete_button = create('i', 'pi pi-times header_button', this.header1)
+            add_tooltip(this.minimisedot, 'Minimise')
+
+            this.delete_button = create('i', 'pi pi-times header_button', this.buttons)
             this.delete_button.addEventListener('click', (e) => {
                 this.delete_controller()    
             })

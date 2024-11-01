@@ -65,7 +65,8 @@ app.registerExtension({
             {'rel':'stylesheet', 'type':'text/css', 'href':`${BASE_PATH}/controller.css` } )
         create('link', null, document.getElementsByTagName('HEAD')[0], 
             {'rel':'stylesheet', 'type':'text/css', 'href':`${BASE_PATH}/slider.css` } )
-
+        create('link', null, document.getElementsByTagName('HEAD')[0], 
+            {'rel':'stylesheet', 'type':'text/css', 'href':`${BASE_PATH}/tabs.css` } )
         // Allow our elements to do any setup they want
         on_setup()
 
