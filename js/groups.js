@@ -44,13 +44,8 @@ export class GroupManager {
 
     static is_node_in(group_name, node_id) {
         if (group_name==Texts.ALL_GROUPS) return true
-        return (GroupManager.instance.groups[group_name] && GroupManager.instance.groups[group_name].has(parseInt(node_id)))
+        return (GroupManager.instance.groups?.[group_name] && GroupManager.instance.groups[group_name].has(parseInt(node_id)))
     }
 
     static any_groups() { return (Object.keys(GroupManager.instance.groups).length > 0) }
-
-    static valid_option(group_name) {
-        if (group_name && GroupManager.instance.groups[group_name]) return group_name
-        return Texts.ALL_GROUPS
-    }
 }

@@ -5,6 +5,7 @@ import { Texts } from "./constants.js"
 const DEFAULTS = {
     "node_order"   : [],
     "advanced"     : false,
+    "groups"       : [],
     "group_choice" : Texts.ALL_GROUPS,
     "position"     : {"x" : 0, "y" : 0, "w" : 250, "h" : 180},
     "userposition" : {"x" : 0, "y" : 0, "w" : 250, "h" : 180},

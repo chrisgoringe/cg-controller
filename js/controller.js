@@ -27,6 +27,7 @@ function on_setup() {
     api.addEventListener('b_preview', OnExecutedManager.on_b_preview)
     window.addEventListener("resize", ControllerPanel.onWindowResize)
     window.addEventListener('mouseup', ControllerPanel.mouse_up_anywhere)
+    window.addEventListener('mousemove', ControllerPanel.mouse_move_anywhere)
 
 
     const original_getCanvasMenuOptions = LGraphCanvas.prototype.getCanvasMenuOptions;
@@ -129,7 +130,4 @@ app.registerExtension({
 
     },
 
-    //registerCustomNodes() {
-    //    LiteGraph.registerNodeType("CGControllerNode", CGControllerNode)
-    //}
 })
