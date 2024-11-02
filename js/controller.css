@@ -268,7 +268,7 @@
 }
 
 .titlebar_nocolor {
-    border-bottom: 2px solid var(--second-back-color);
+    border-bottom: 1px solid var(--second-back-color);
     padding-bottom: 1px;
     background-color: var(--third-back-color)
 }
