@@ -32,6 +32,9 @@
     --overlay-background:  #ffffff66;
     --overlay-foreground: #353535;
 
+    --bypass-button-color: #d179ff;
+    --bypass-overlay-color: #d179ff80;
+
     --toggle-on: #8899aa;
     --toggle-off: #333333;
 
@@ -192,6 +195,15 @@
     padding-top: 8px;
 }
 
+.header_button.none_bypassed {
+
+}
+.header_button.some_bypassed {
+
+}
+.header_button.all_bypassed {
+    color: var(--bypass-button-color)
+}
 
 .clicked {
     color: var(--p-button-text-primary-color);
@@ -304,6 +316,17 @@
     height: 10px;
     border: none;
     display:none;
+}
+
+.nodeblock.bypassed {
+    opacity: 0.5;
+}
+
+.bypass_overlay {
+    position:absolute;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bypass-overlay-color);
 }
 
 /* Entry (widget) */

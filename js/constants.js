@@ -8,6 +8,15 @@ export class SettingIds {
     static TOOLTIPS = "Controller.options.tooltips"
 }
 
+export class InclusionOptions {
+    static EXCLUDE   = "Don't include this node"
+    static INCLUDE   = "Include this node"
+    static ADVANCED  = "Include this node as advanced control"
+    static EXCLUDES  =  InclusionOptions.EXCLUDE.replace('this node', 'these nodes')
+    static INCLUDES  = InclusionOptions.INCLUDE.replace('this node', 'these nodes')
+    static ADVANCEDS = InclusionOptions.ADVANCED.replace('this node', 'these nodes')
+}
+
 export class Timings { // ms
     static RESIZE_DELAY_BEFORE_REDRAW = 200
     static SETTINGS_TRY_RELOAD = 1000
@@ -22,11 +31,13 @@ export class Timings { // ms
 
 export class Colors {
     static DARK_BACKGROUND = '#222222'
+    static MENU_HIGHLIGHT = '#C08080'
 }
 
 export class Texts {
     static ALL_GROUPS = "All"
     static UNGROUPED = "Ungrouped"
+    static CONTEXT_MENU = "Controller Panel"
 }
 
 export const BASE_PATH = "extensions/cg-controller"

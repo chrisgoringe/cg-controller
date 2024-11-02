@@ -24,9 +24,19 @@ export class NodeBlock extends HTMLSpanElement {
             this.node.properties.controller_widgets = {}
         }
         this.classList.add("nodeblock")
+        this.bypassed = (this.node.mode!=0)
+        if (this.bypassed) {
+            create('span', 'bypass_overlay', this)
+        }
+        classSet(this, 'bypassed', this.bypassed)
         this.main = create("span",null,this)
         this.build_nodeblock()
         this.add_block_drag_handlers()
+    }
+
+    can_reuse() {
+        if (this.bypassed != (this.node.mode!=0)) return false
+        return true
     }
 
     add_block_drag_handlers() {
