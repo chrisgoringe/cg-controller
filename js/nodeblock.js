@@ -7,8 +7,14 @@ import { Entry } from "./panel_entry.js"
 import { make_resizable } from "./resize_manager.js";
 import { WidgetChangeManager, OnExecutedManager } from "./widget_change_manager.js";
 import { UpdateController } from "./update_controller.js";
+import { Debug } from "./debug.js";
 
 function is_single_image(data) { return (data && data.items && data.items.length==1 && data.items[0].type.includes("image")) }
+
+function isImageNode(node) {
+    if (node.type=="SaveImage" || node.type=="PreviewImage") return true
+    return false
+}
 
 export class NodeBlock extends HTMLSpanElement {
     /*
@@ -188,6 +194,23 @@ export class NodeBlock extends HTMLSpanElement {
         new ResizeObserver(this.rescale_image.bind(this)).observe(this.image_panel)
 
         OnExecutedManager.add_listener(this.node.id, this)
+
+        if (isImageNode(this.node)) {
+            const add_upstream = (nd) => {
+                if (nd==this.node || !isImageNode(nd)) {
+                    OnExecutedManager.add_listener(nd.id, this)
+                    //Debug.trivia(`${this.node.id} listening to ${nd.id}`)
+                    nd.inputs.forEach((i)=>{
+                        if (i.type=="IMAGE" || i.type=="LATENT") {
+                            const lk = i.link
+                            const upstream_id = lk ? app.graph.links[lk]?.origin_id : null
+                            if (upstream_id) add_upstream(app.graph._nodes_by_id[upstream_id])
+                        }
+                    })
+                }
+            }
+            add_upstream(this.node)
+        }
 
         this.replaceChild(new_main, this.main)
         this.main = new_main
