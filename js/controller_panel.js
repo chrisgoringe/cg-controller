@@ -480,6 +480,7 @@ export class ControllerPanel extends HTMLDivElement {
                 this.mouse_down_at_x = e.x
                 this.mouse_down_at_y = e.y
                 this.mouse_down_on = tab
+                if (document.activeElement) document.activeElement.blur()
             })
             tab.addEventListener('mouseup', (e) => {
                 if (this.mouse_down_on == tab && Math.abs(this.mouse_down_at_x - e.x) < 2 && Math.abs(this.mouse_down_at_y - e.y) < 2) {
