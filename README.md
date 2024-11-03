@@ -23,6 +23,9 @@ To create a Controller window, right click on the background and select "New Con
 
 At first, the Controller will be empty. To add nodes to it, right-click on the node and in the Controller Panel menu select "Include this node".
 
+The button next to the Controller toggle is the refresh. Not all changes in the workflow are automatically picked up by the controller, 
+so sometimes after you make a change you will need to click this.
+
 ![menu](images/menu.png)
 
 When you include a node, it appears on the Controller panel, and it also gains a coloured dot in the top-right hand corner, 
