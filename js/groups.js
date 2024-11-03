@@ -27,7 +27,7 @@ export class GroupManager {
                 }
             })
         })
-        if (ungrouped.length>0) this.groups[Texts.UNGROUPED] = ungrouped
+        if (ungrouped.size>0) this.groups[Texts.UNGROUPED] = ungrouped
     }
 
     static setup() { GroupManager.instance = new GroupManager() }
