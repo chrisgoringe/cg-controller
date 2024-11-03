@@ -5,16 +5,11 @@ import { ComfyWidgets } from "../../scripts/widgets.js";
 import { create, darken, classSet } from "./utilities.js";
 import { Entry } from "./panel_entry.js"
 import { make_resizable } from "./resize_manager.js";
-import { ImageManager } from "./image_manager.js";
+import { ImageManager, is_image_upload_node, isImageNode } from "./image_manager.js";
 import { UpdateController } from "./update_controller.js";
 import { Debug } from "./debug.js";
 
 function is_single_image(data) { return (data && data.items && data.items.length==1 && data.items[0].type.includes("image")) }
-
-function isImageNode(node) {
-    if (node.type=="SaveImage" || node.type=="PreviewImage") return true
-    return false
-}
 
 export class NodeBlock extends HTMLSpanElement {
     /*
@@ -90,7 +85,7 @@ export class NodeBlock extends HTMLSpanElement {
         }
 
         if (e.dataTransfer.types.includes('Files')) {
-            if (nodeblock_over?.is_image_upload_node?.() && is_single_image(e.dataTransfer)) {
+            if (is_image_upload_node(nodeblock_over?.node) && is_single_image(e.dataTransfer)) {
                 e.dataTransfer.dropEffect = "move"    
                 e.stopPropagation()        
             } else {
@@ -104,7 +99,7 @@ export class NodeBlock extends HTMLSpanElement {
         if (NodeBlock.dragged) {
             e.preventDefault(); 
         } else if (e.dataTransfer.types.includes('Files')) {
-            if (e.currentTarget.is_image_upload_node?.() && is_single_image(e.dataTransfer)) {
+            if (is_image_upload_node(e.currentTarget?.node) && is_single_image(e.dataTransfer)) {
                 const node = e.currentTarget.node
                 e.preventDefault(); 
                 e.stopImmediatePropagation()
@@ -171,6 +166,9 @@ export class NodeBlock extends HTMLSpanElement {
 
         classSet(this, 'minimised', this.minimised)
 
+        if (this.image_panel) this.image_panel.remove()
+        this.image_panel = create("div", "nodeblock_image_panel nodeblock_image_empty", new_main)
+
         this.valid_nodeblock = false
         this.node.widgets?.forEach(w => {
             if (!this.node.properties.controller_widgets[w.name]) this.node.properties.controller_widgets[w.name] = {}
@@ -183,10 +181,8 @@ export class NodeBlock extends HTMLSpanElement {
             }
         })
 
-        if (this.image_panel) this.image_panel.remove()
-
         if (!this.node.properties.controller_widgets['__image_panel']) this.node.properties.controller_widgets['__image_panel'] = {}
-        this.image_panel = create("div", "nodeblock_image_panel nodeblock_image_empty", new_main)
+        
         this.image_image = create('img', 'nodeblock_image', this.image_panel)
         this.image_image.addEventListener('load', this.rescale_image.bind(this))
         
@@ -195,7 +191,7 @@ export class NodeBlock extends HTMLSpanElement {
 
         if (isImageNode(this.node)) {
             const add_upstream = (nd) => {
-                if (nd==this.node || !isImageNode(nd)) {
+                if (nd==this.node || (!isImageNode(nd) && !is_image_upload_node(nd))) {
                     ImageManager.add_listener(nd.id, this)
                     //Debug.trivia(`${this.node.id} listening to ${nd.id}`)
                     nd.inputs.forEach((i)=>{
@@ -215,7 +211,7 @@ export class NodeBlock extends HTMLSpanElement {
         this.main = new_main
 
         if (this.node.imgs && this.node.imgs.length>0) {
-            ImageManager.node_has_img(this.node.id, this.node.imgs[0])
+            ImageManager.node_has_img(this.node, this.node.imgs[0])
         } 
 
         this.valid_nodeblock = true
@@ -223,7 +219,7 @@ export class NodeBlock extends HTMLSpanElement {
 
     manage_image(url) {
         if (!this.parentElement) return false
-        this.show_image(url)
+        if (!(this.bypassed || this.hidden)) this.show_image(url)
         return true
     }
 
@@ -254,10 +250,6 @@ export class NodeBlock extends HTMLSpanElement {
             } 
         }
         this.rescaling = false
-    }
-
-    is_image_upload_node() {
-        return ( this.node.pasteFile != undefined )
     }
 
     show_image(url) {

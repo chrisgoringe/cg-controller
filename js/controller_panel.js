@@ -309,6 +309,7 @@ export class ControllerPanel extends HTMLDivElement {
                     } 
                 } 
                 classSet(node_block, 'hidden', (!show))
+                node_block.is_hidden = (!show)
             }
         })
     }

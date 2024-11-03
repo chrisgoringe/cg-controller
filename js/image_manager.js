@@ -1,6 +1,15 @@
 import { api } from "../../scripts/api.js";
 import { Debug } from "./debug.js";
 
+export function is_image_upload_node(node) {
+    return ( node?.pasteFile != undefined )
+}
+
+export function isImageNode(node) {
+    if (node.type=="SaveImage" || node.type=="PreviewImage") return true
+    return false
+}
+
 export class ImageManager {
     /*
     node_listener_map is a map from node_id to a Set of listeners.
@@ -36,12 +45,12 @@ export class ImageManager {
     }
 
     /* called by a nodeblock if it has an imgs value. If we're running, we ignore this */
-    static node_has_img(node_id, v) {
-        if (ImageManager.executing_node==null) {
+    static node_has_img(node, v) {
+        if (ImageManager.executing_node==null || is_image_upload_node(node)) {
             var src = v.src ?? api.apiURL(
                 `/view?filename=${encodeURIComponent(v.filename ?? v)}&type=${v.type ?? "input"}&subfolder=${v.subfolder ?? ""}`
             )
-            ImageManager._set_source(node_id, src)
+            ImageManager._set_source(node.id, src)
         }
     }
 

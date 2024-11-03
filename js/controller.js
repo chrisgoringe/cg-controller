@@ -128,7 +128,10 @@ app.registerExtension({
         node._imgs = node.imgs
         Object.defineProperty(node, 'imgs', {
             get: () => { return node._imgs },
-            set: (v) => { node._imgs = v; UpdateController.make_request('imgs', 100)}
+            set: (v) => { 
+                node._imgs = v; 
+                if (v && v.length>0) ImageManager.node_has_img(node, v[0])
+            }
         })
 
     },
