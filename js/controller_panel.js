@@ -473,7 +473,7 @@ export class ControllerPanel extends HTMLDivElement {
 
     add_tabs() {
         this.settings.groups.forEach((nm) => {
-            const tab = create('span','tab',this.header1_left,{"innerText":nm})
+            const tab = create('span','tab',this.header1_left,{"innerHTML":nm.replaceAll(' ','&nbsp;')})
             classSet(tab,'selected',(this.settings.group_choice == nm))
             tab.style.setProperty('--base-color', GroupManager.group_color(nm))
             tab.addEventListener('mousedown', (e) => {
@@ -543,7 +543,7 @@ export class ControllerPanel extends HTMLDivElement {
             })
             add_tooltip(this.bypass_group_button, `Toggle group bypass`, 'right')
             const bypass = GroupManager.bypassed(this.settings.group_choice)
-            classSet(this.bypass_group_button, 'all_bypassed', bypass.all)
+            classSet(this.bypass_group_button, 'all_bypassed', bypass.any && bypass.all)
             classSet(this.bypass_group_button, 'some_bypassed', bypass.any && !bypass.all)
             classSet(this.bypass_group_button, 'none_bypassed', !bypass.any)
         }
