@@ -8,7 +8,7 @@ import { add_control_panel_options, NodeInclusionManager,  } from "./node_inclus
 import { UpdateController } from "./update_controller.js"
 import { Debug } from "./debug.js"
 import { BASE_PATH } from "./constants.js"
-import { OnExecutedManager } from "./widget_change_manager.js"
+import { ImageManager } from "./image_manager.js"
 import { global_settings } from "./settings.js"
 
 
@@ -22,9 +22,12 @@ function on_setup() {
     })  
     NodeInclusionManager.node_change_callback = UpdateController.make_request
     api.addEventListener('graphCleared', ControllerPanel.graph_cleared) 
-    api.addEventListener('executed', OnExecutedManager.on_executed)
-    api.addEventListener('executing', OnExecutedManager.on_executing)
-    api.addEventListener('b_preview', OnExecutedManager.on_b_preview)
+
+    api.addEventListener('executed', ImageManager.on_executed)
+    api.addEventListener('execution_start', ImageManager.on_execution_start)
+    api.addEventListener('executing', ImageManager.on_executing)
+    api.addEventListener('b_preview', ImageManager.on_b_preview)
+
     window.addEventListener("resize", ControllerPanel.onWindowResize)
     window.addEventListener('mouseup', ControllerPanel.mouse_up_anywhere)
     window.addEventListener('mousemove', ControllerPanel.mouse_move_anywhere)

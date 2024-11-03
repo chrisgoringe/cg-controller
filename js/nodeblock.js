@@ -1,11 +1,11 @@
 import { app } from "../../scripts/app.js";
-import { api } from "../../scripts/api.js";
+
 import { ComfyWidgets } from "../../scripts/widgets.js";
 
 import { create, darken, classSet } from "./utilities.js";
 import { Entry } from "./panel_entry.js"
 import { make_resizable } from "./resize_manager.js";
-import { WidgetChangeManager, OnExecutedManager } from "./widget_change_manager.js";
+import { ImageManager } from "./image_manager.js";
 import { UpdateController } from "./update_controller.js";
 import { Debug } from "./debug.js";
 
@@ -193,12 +193,10 @@ export class NodeBlock extends HTMLSpanElement {
         make_resizable( this.image_panel, this.node.id, "__image_panel", this.node.properties.controller_widgets['__image_panel'] )
         new ResizeObserver(this.rescale_image.bind(this)).observe(this.image_panel)
 
-        OnExecutedManager.add_listener(this.node.id, this)
-
         if (isImageNode(this.node)) {
             const add_upstream = (nd) => {
                 if (nd==this.node || !isImageNode(nd)) {
-                    OnExecutedManager.add_listener(nd.id, this)
+                    ImageManager.add_listener(nd.id, this)
                     //Debug.trivia(`${this.node.id} listening to ${nd.id}`)
                     nd.inputs.forEach((i)=>{
                         if (i.type=="IMAGE" || i.type=="LATENT") {
@@ -211,21 +209,21 @@ export class NodeBlock extends HTMLSpanElement {
             }
             add_upstream(this.node)
         }
+        ImageManager.add_listener(this.node.id, this) // add ourself last to take priority
 
         this.replaceChild(new_main, this.main)
         this.main = new_main
 
-        if (this.node.imgs) this.show_image(this.node.imgs)
-        else OnExecutedManager.resend(this.node.id)
-    
+        if (this.node.imgs && this.node.imgs.length>0) {
+            ImageManager.node_has_img(this.node.id, this.node.imgs[0])
+        } 
+
         this.valid_nodeblock = true
     }
 
-    oem_manager_callback(o) {
+    manage_image(url) {
         if (!this.parentElement) return false
-        if (o && o.images && !this.hidden) {
-            this.show_image(o.images)
-        }
+        this.show_image(url)
         return true
     }
 
@@ -262,14 +260,11 @@ export class NodeBlock extends HTMLSpanElement {
         return ( this.node.pasteFile != undefined )
     }
 
-    show_image(v) {
-        classSet(this.image_panel, 'nodeblock_image_empty', !(v?.length>0))
-        if (v.length==0) return
-        var src = v[0].src ?? api.apiURL(
-            `/view?filename=${encodeURIComponent(v[0].filename ?? v)}&type=${v[0].type ?? "input"}&subfolder=${v[0].subfolder ?? ""}`
-          )
-        if (this.image_image.src != src) {
-            this.image_image.src = src
+    show_image(url) {
+        classSet(this.image_panel, 'nodeblock_image_empty', !url)
+
+        if (this.image_image.src != url) {
+            this.image_image.src = url
             this.image_panel.style.maxHeight = ''
         }
     }
