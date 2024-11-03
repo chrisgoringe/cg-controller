@@ -128,7 +128,7 @@
     display: flex;
     justify-content: flex-start;
     flex-direction: row;
-
+    align-items: center;
     /* allow the group to shirnk */
     min-width: 0px;
     flex-shrink: 1;
@@ -167,6 +167,8 @@
 
 .collapsed .tab {
     display: none;
+    margin-bottom: 0px;
+    margin-left:4px;
 }
 .collapsed .tab.selected {
     display: block;
