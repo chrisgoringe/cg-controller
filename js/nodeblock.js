@@ -1,9 +1,11 @@
 import { app } from "../../scripts/app.js";
+import { api } from "../../scripts/api.js";
 import { ComfyWidgets } from "../../scripts/widgets.js";
 
 import { create, darken, classSet } from "./utilities.js";
 import { Entry } from "./panel_entry.js"
 import { make_resizable } from "./resize_manager.js";
+import { WidgetChangeManager, OnExecutedManager } from "./widget_change_manager.js";
 import { UpdateController } from "./update_controller.js";
 
 function is_single_image(data) { return (data && data.items && data.items.length==1 && data.items[0].type.includes("image")) }
@@ -22,6 +24,7 @@ export class NodeBlock extends HTMLSpanElement {
             this.node.properties.controller_widgets = {}
         }
         this.classList.add("nodeblock")
+        this.main = create("span",null,this)
         this.build_nodeblock()
         this.add_block_drag_handlers()
     }
@@ -53,7 +56,7 @@ export class NodeBlock extends HTMLSpanElement {
             e.dataTransfer.dropEffect = "move"
             e.preventDefault(); 
         }
-        if (NodeBlock.dragged && nodeblock_over!=NodeBlock.dragged) { 
+        if (NodeBlock.dragged && nodeblock_over!=NodeBlock.dragged && nodeblock_over.parent_controller==NodeBlock.dragged.parent_controller) { 
             if (nodeblock_over != NodeBlock.last_swap) {
                 if (nodeblock_over.drag_id=='header') {
                     NodeBlock.dragged.parentElement.insertBefore(NodeBlock.dragged, NodeBlock.dragged.parentElement.firstChild)
@@ -103,6 +106,7 @@ export class NodeBlock extends HTMLSpanElement {
                 document.body.lastChild.remove()
 
                 node.setSizeForImage()
+                UpdateController.make_request('image_upload', 100)
             }
         }
     }
@@ -114,8 +118,9 @@ export class NodeBlock extends HTMLSpanElement {
     }
 
     build_nodeblock() {
-        this.innerHTML = ""
-        this.title_bar = create("span", 'nodeblock_titlebar', this)
+        const new_main = create("span")
+
+        this.title_bar = create("span", 'nodeblock_titlebar', new_main)
         this.draghandle = create("span", 'nodeblock_draghandle', this.title_bar, { })
         this.add_handle_drag_handlers(this.draghandle)
 
@@ -131,7 +136,6 @@ export class NodeBlock extends HTMLSpanElement {
             if (this.minimised && this.contains(document.activeElement)) {
                 document.activeElement.blur()
             }
-            //UpdateController.make_request('minimise') 
         })
         this.minimisedot.addEventListener("mousedown", (e)=>{ 
             e.preventDefault(); 
@@ -151,48 +155,45 @@ export class NodeBlock extends HTMLSpanElement {
 
         classSet(this, 'minimised', this.minimised)
 
-        /*if (this.minimised) {
-            this.valid_nodeblock = true
-            return
-        }*/
-
         this.valid_nodeblock = false
         this.node.widgets?.forEach(w => {
             if (!this.node.properties.controller_widgets[w.name]) this.node.properties.controller_widgets[w.name] = {}
             const properties = this.node.properties.controller_widgets[w.name]
-            const e = new Entry(this.parent_controller, this.node, w, properties)
+            const e = new Entry(this.parent_controller, this, this.node, w, properties)
             if (e.valid()) {
-                this.appendChild(e)
+                new_main.appendChild(e)
                 this[w.name] = e
                 this.valid_nodeblock = true                    
             }
         })
 
-        if (this.image_panel) {
-            this.appendChild(this.image_panel)
-        } else {
-            if (!this.node.properties.controller_widgets['__image_panel']) this.node.properties.controller_widgets['__image_panel'] = {}
-            this.image_panel = create("div", "nodeblock_image_panel nodeblock_image_empty", this)
-            this.node._imgs = this.node.imgs
-            try {
-                delete this.node.imgs
-                Object.defineProperty(this.node, "imgs", {
-                    get : () => { return this.node._imgs },
-                    set : (v) => { 
-                        this.node._imgs = v; 
-                        this.show_image(v); 
-                        UpdateController.make_request("img changed") 
-                    }
-                })               
-            } catch { }
-            this.image_image = create('img', 'nodeblock_image', this.image_panel)
-            this.image_image.addEventListener('load', this.rescale_image.bind(this))
-            
-            make_resizable( this.image_panel, this.node.id, "__image_panel", this.node.properties.controller_widgets['__image_panel'] )
-            new ResizeObserver(this.rescale_image.bind(this)).observe(this.image_panel)
-        }
-        if (this.node._imgs) this.show_image(this.node._imgs)
+        if (this.image_panel) this.image_panel.remove()
+
+        if (!this.node.properties.controller_widgets['__image_panel']) this.node.properties.controller_widgets['__image_panel'] = {}
+        this.image_panel = create("div", "nodeblock_image_panel nodeblock_image_empty", new_main)
+        this.image_image = create('img', 'nodeblock_image', this.image_panel)
+        this.image_image.addEventListener('load', this.rescale_image.bind(this))
+        
+        make_resizable( this.image_panel, this.node.id, "__image_panel", this.node.properties.controller_widgets['__image_panel'] )
+        new ResizeObserver(this.rescale_image.bind(this)).observe(this.image_panel)
+
+        OnExecutedManager.add_listener(this.node.id, this)
+
+        this.replaceChild(new_main, this.main)
+        this.main = new_main
+
+        if (this.node.imgs) this.show_image(this.node.imgs)
+        else OnExecutedManager.resend(this.node.id)
+    
         this.valid_nodeblock = true
+    }
+
+    oem_manager_callback(o) {
+        if (!this.parentElement) return false
+        if (o && o.images && !this.hidden) {
+            this.show_image(o.images)
+        }
+        return true
     }
 
     rescale_image() {
@@ -229,18 +230,18 @@ export class NodeBlock extends HTMLSpanElement {
     }
 
     show_image(v) {
-        if (this.minimised) return
-        if (v.length>0) {
-            this.image_panel.classList.remove('nodeblock_image_empty')
-            if (this.image_image.src != v[0].src) {
-                this.image_image.src = v[0].src
-                this.image_panel.style.maxHeight = ''
-            }
-        } else {
-            this.image_panel.classList.add('nodeblock_image_empty')
-        }    
+        classSet(this.image_panel, 'nodeblock_image_empty', !(v?.length>0))
+        if (v.length==0) return
+        var src = v[0].src ?? api.apiURL(
+            `/view?filename=${encodeURIComponent(v[0].filename ?? v)}&type=${v[0].type ?? "input"}&subfolder=${v[0].subfolder ?? ""}`
+          )
+        if (this.image_image.src != src) {
+            this.image_image.src = src
+            this.image_panel.style.maxHeight = ''
+        }
     }
-
 }
+
+
 
 customElements.define('cp-span', NodeBlock, {extends: 'span'})

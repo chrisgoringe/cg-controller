@@ -25,7 +25,8 @@ export class Colors {
 }
 
 export class Texts {
-    static ALL_GROUPS = "All Groups"
+    static ALL_GROUPS = "All"
+    static UNGROUPED = "Ungrouped"
 }
 
 export const BASE_PATH = "extensions/cg-controller"

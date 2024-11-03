@@ -1,10 +1,10 @@
 import { app } from "../../scripts/app.js";
 import { create, step_size, check_float } from "./utilities.js"
-import { rounding, integer_rounding, clamp, classSet } from "./utilities.js"
+import { clamp, classSet } from "./utilities.js"
 import { Debug } from "./debug.js"
-import { UpdateController } from "./update_controller.js"
 import { getSettingValue } from "./settings.js";
 import { SettingIds } from "./constants.js";
+import { WidgetChangeManager } from "./widget_change_manager.js";
 
 function copy_to_widget(node, widget, options) {
     const opt = {
@@ -13,14 +13,16 @@ function copy_to_widget(node, widget, options) {
     Object.assign(widget.options, opt)
     widget.options.step *= 10 // clicking the arrows moves a widget by 0.1 * step ????
     node.properties.controller_widgets[widget.name] = opt
+    WidgetChangeManager.set_widget_value(widget, widget.value, widget.o)
 }
 
 class SliderOptions {
     static KEYS = [ "min", "max", "step", "precision", "round" ]
-    constructor(widget_options, saved_values) {
+    constructor(widget_options, saved_values, is_integer) {
         const options = {}
         Object.assign(options, widget_options)
-        Object.assign(options, saved_values)
+        if (saved_values) Object.assign(options, saved_values)
+        if (is_integer && options.max > Number.MAX_SAFE_INTEGER) options.max = Number.MAX_SAFE_INTEGER
         this.min       = options.min
         this.max       = options.max
         this.precision = options.precision
@@ -116,8 +118,6 @@ class SliderOptionEditor extends HTMLSpanElement {
         }
 
         this.close()
-        UpdateController.make_request('slider options changed')
-        app.graph.setDirtyCanvas(true,true)
     }
 
     maybe_save() {
@@ -165,10 +165,10 @@ export class FancySlider extends HTMLSpanElement {
         this.node = node
         this.widget = widget
 
-        this.options   = new SliderOptions(widget.options, node.properties.controller_widgets[widget.name])
         this.is_integer = (this.widget.options.precision == 0)
+        this.options   = new SliderOptions(widget.options, node.properties.controller_widgets[widget.name], this.is_integer)
+        
         copy_to_widget(this.node, this.widget, this.options)
-        app.graph.setDirtyCanvas(true,true)
         this.value     = widget.value
         this.last_good = this.value
 
@@ -210,8 +210,9 @@ export class FancySlider extends HTMLSpanElement {
                     this.redraw()
                 }
             }
-        })        
+        })
         this.redraw()
+        setTimeout(()=>{this.redraw()}, 100)
     }
 
     enddragging(e) {
@@ -234,17 +235,12 @@ export class FancySlider extends HTMLSpanElement {
         this.classList.add('unrefreshable')
         this.reason = "slider in text edit mode"
         this.redraw()
-        setTimeout(()=>{this.please_focus()},100)
-    }
-
-    please_focus() {
-        this.text_edit.focus()
+        setTimeout(this.text_edit.focus,100)
     }
 
     switch_to_graphicaledit() {
         if (FancySlider.in_textedit == this) FancySlider.in_textedit = null
         this.displaying = "graphic"
-        this.redraw_with_value(this.text_edit.value)
     }
 
     edit_min_max(e) {
@@ -260,7 +256,7 @@ export class FancySlider extends HTMLSpanElement {
             if ( shift_setting=="yes" || (shift_setting=="shift" && e.shiftKey) || (shift_setting=="ctrl" && e.ctrlKey) ) {
                 this.wheeling = true
                 const new_value =  this.value + this.options.step * (e.wheelDelta>0 ? 1 : -1)
-                this.redraw_with_value(new_value)
+                WidgetChangeManager.set_widget_value(this.widget, new_value)
                 e.preventDefault()
                 e.stopPropagation() 
             }
@@ -316,18 +312,18 @@ export class FancySlider extends HTMLSpanElement {
             const f =  clamp(( e.x - box.x ) / box.width, 0, 1)
             var new_value = this.options.min + f * (this.options.max - this.options.min)
             if (this.is_integer) new_value = parseInt(new_value)
-            this.redraw_with_value(new_value)
+
+            WidgetChangeManager.set_widget_value(this.widget,new_value)
+
             e.preventDefault()
             e.stopPropagation() 
         }
     }
 
-    round_and_clip(v) {
-        //if (this.is_integer) {
-        //    return integer_rounding( clamp(v,this.options.min,this.options.max), this.options )
-        //} else {
-            return clamp(rounding( clamp(v,this.options.min,this.options.max), this.options ), this.options.min,this.options.max)
-        //}
+    set_widget_value(v) {
+        this.widget.value = v
+        if (this.widget.original_callback) this.widget.original_callback(this.widget.value)
+        WidgetChangeManager.notify(this.widget)
     }
 
     format_for_display(v)  { 
@@ -338,35 +334,24 @@ export class FancySlider extends HTMLSpanElement {
         }
     }
 
-    redraw() {
-        this.redraw_with_value(this.value)
+    wcm_manager_callback() {
+        this.options = new SliderOptions(this.widget.options)
     }
 
-    redraw_with_value(new_value) {
-        new_value = parseFloat(new_value)
+    redraw() {
+        var new_value = parseFloat(this.value) 
         if (isNaN(new_value)) new_value = this.last_good
-        this.value     = this.round_and_clip( new_value )
+        this.value     = new_value 
         this.last_good = this.value  
 
-        if (this.rendering) return
-        this.rendering = true
-        try {
-            if (this.displaying=="graphic") {
-                this.graphic.classList.remove("hidden")
-                this.text_edit.classList.add("hidden")
-                const f = (this.value - this.options.min) / (this.options.max - this.options.min)
-                this.graphic_fill.style.width = `${100*f}%`
-                this.graphic_text.innerHTML   = this.format_for_display(this.value)
-            } else {
-                this.graphic.classList.add("hidden")
-                this.text_edit.classList.remove("hidden")
-                this.text_edit.value = this.format_for_display(this.value)        
-            }
-        } finally {
-            this.rendering = false
-            const e = new Event('input')
-            this.dispatchEvent(e)
-        }
+        classSet(this.graphic,  "hidden",this.displaying!="graphic")
+        classSet(this.text_edit,"hidden",this.displaying=="graphic")
+
+        const f = (this.value - this.options.min) / (this.options.max - this.options.min)
+        this.graphic_fill.style.width = `${100*f}%`
+        this.graphic_text.innerHTML   = this.format_for_display(this.value)
+        this.text_edit.value = this.format_for_display(this.value)        
+
     }
 
 }
