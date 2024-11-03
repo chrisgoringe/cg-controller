@@ -17,6 +17,12 @@ export class ImageManager {
     false if the listener is no longer interested
     */
 
+    static init() {
+        ImageManager.node_listener_map = {}
+        ImageManager.node_src_map = {}
+        ImageManager.executing_node = null
+    }
+
     static node_listener_map = {}  // map to Set
     static node_src_map      = {}  // map to url
     static executing_node    = null

@@ -58,8 +58,9 @@ app.registerExtension({
     async afterConfigureGraph() {
         /* This is now just for backward compatibility - we *remove* the ControllerNode and put the data in app.graph.extras */
         //CGControllerNode.remove()  
-
+        ImageManager.init()
         ControllerPanel.new_workflow()
+
     },
 
     /* Called at the end of the application startup */
