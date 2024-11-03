@@ -21,19 +21,21 @@ export class UpdateController {
     static push_pause() { UpdateController.pause_stack += 1 }
     static pop_pause() { UpdateController.pause_stack -= 1 }
 
-    static make_request(label, after_ms, noretry) {
+    static make_single_request(label, controller) {
+        UpdateController.make_request(label, null, null, controller)
+    }
+    static make_request(label, after_ms, noretry, controller) {
         if (after_ms) {
-            if (label) Debug.extended(`${label} made request`)
-            setTimeout(UpdateController.make_request, after_ms, label, null, noretry)
+            setTimeout(UpdateController.make_request, after_ms, label, null, noretry, controller)
         } else {
-            const wait_time = UpdateController.pause_stack>0 ? Timings.PAUSE_STACK_WAIT : UpdateController.permission()
+            
+            const wait_time = UpdateController.pause_stack>0 ? Timings.PAUSE_STACK_WAIT : UpdateController.permission(controller)
+            if (label) Debug.extended(`${label} made update request and got ${wait_time}`)
 
             if (wait_time == 0) {
-                UpdateController.callback()
+                UpdateController.callback(controller)
                 return
             }
-
-            if (label) Debug.extended(`${label} got asked to wait ${wait_time}`)
 
             var reason_not_to_try_again = null
             if (wait_time < 0)               reason_not_to_try_again = "delay was negative"
@@ -44,15 +46,15 @@ export class UpdateController {
                 Debug.extended(`${label} not trying again because ${reason_not_to_try_again}`)
             } else {
                 UpdateController.requesting = true
-                setTimeout( UpdateController.deferred_request, wait_time, label)
+                setTimeout( UpdateController.deferred_request, wait_time, label, controller)
             }
 
         }
     }
 
-    static deferred_request(label) {
+    static deferred_request(label, controller) {
         UpdateController.requesting = false
-        UpdateController.make_request(label)
+        UpdateController.make_request(label, null, null, controller)
     }
 
 }

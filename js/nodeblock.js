@@ -1,12 +1,13 @@
 import { app } from "../../scripts/app.js";
-import { api } from "../../scripts/api.js";
+
 import { ComfyWidgets } from "../../scripts/widgets.js";
 
 import { create, darken, classSet } from "./utilities.js";
 import { Entry } from "./panel_entry.js"
 import { make_resizable } from "./resize_manager.js";
-import { WidgetChangeManager, OnExecutedManager } from "./widget_change_manager.js";
+import { ImageManager, is_image_upload_node, isImageNode } from "./image_manager.js";
 import { UpdateController } from "./update_controller.js";
+import { Debug } from "./debug.js";
 
 function is_single_image(data) { return (data && data.items && data.items.length==1 && data.items[0].type.includes("image")) }
 
@@ -24,9 +25,19 @@ export class NodeBlock extends HTMLSpanElement {
             this.node.properties.controller_widgets = {}
         }
         this.classList.add("nodeblock")
+        this.bypassed = (this.node.mode!=0)
+        if (this.bypassed) {
+            create('span', 'bypass_overlay', this)
+        }
+        classSet(this, 'bypassed', this.bypassed)
         this.main = create("span",null,this)
         this.build_nodeblock()
         this.add_block_drag_handlers()
+    }
+
+    can_reuse() {
+        if (this.bypassed != (this.node.mode!=0)) return false
+        return true
     }
 
     add_block_drag_handlers() {
@@ -74,7 +85,7 @@ export class NodeBlock extends HTMLSpanElement {
         }
 
         if (e.dataTransfer.types.includes('Files')) {
-            if (nodeblock_over?.is_image_upload_node?.() && is_single_image(e.dataTransfer)) {
+            if (is_image_upload_node(nodeblock_over?.node) && is_single_image(e.dataTransfer)) {
                 e.dataTransfer.dropEffect = "move"    
                 e.stopPropagation()        
             } else {
@@ -88,7 +99,7 @@ export class NodeBlock extends HTMLSpanElement {
         if (NodeBlock.dragged) {
             e.preventDefault(); 
         } else if (e.dataTransfer.types.includes('Files')) {
-            if (e.currentTarget.is_image_upload_node?.() && is_single_image(e.dataTransfer)) {
+            if (is_image_upload_node(e.currentTarget?.node) && is_single_image(e.dataTransfer)) {
                 const node = e.currentTarget.node
                 e.preventDefault(); 
                 e.stopImmediatePropagation()
@@ -155,6 +166,9 @@ export class NodeBlock extends HTMLSpanElement {
 
         classSet(this, 'minimised', this.minimised)
 
+        if (this.image_panel) this.image_panel.remove()
+        this.image_panel = create("div", "nodeblock_image_panel nodeblock_image_empty", new_main)
+
         this.valid_nodeblock = false
         this.node.widgets?.forEach(w => {
             if (!this.node.properties.controller_widgets[w.name]) this.node.properties.controller_widgets[w.name] = {}
@@ -167,32 +181,45 @@ export class NodeBlock extends HTMLSpanElement {
             }
         })
 
-        if (this.image_panel) this.image_panel.remove()
-
         if (!this.node.properties.controller_widgets['__image_panel']) this.node.properties.controller_widgets['__image_panel'] = {}
-        this.image_panel = create("div", "nodeblock_image_panel nodeblock_image_empty", new_main)
+        
         this.image_image = create('img', 'nodeblock_image', this.image_panel)
         this.image_image.addEventListener('load', this.rescale_image.bind(this))
         
         make_resizable( this.image_panel, this.node.id, "__image_panel", this.node.properties.controller_widgets['__image_panel'] )
         new ResizeObserver(this.rescale_image.bind(this)).observe(this.image_panel)
 
-        OnExecutedManager.add_listener(this.node.id, this)
+        if (isImageNode(this.node)) {
+            const add_upstream = (nd) => {
+                if (nd==this.node || (!isImageNode(nd) && !is_image_upload_node(nd))) {
+                    ImageManager.add_listener(nd.id, this)
+                    //Debug.trivia(`${this.node.id} listening to ${nd.id}`)
+                    nd.inputs.forEach((i)=>{
+                        if (i.type=="IMAGE" || i.type=="LATENT") {
+                            const lk = i.link
+                            const upstream_id = lk ? app.graph.links[lk]?.origin_id : null
+                            if (upstream_id) add_upstream(app.graph._nodes_by_id[upstream_id])
+                        }
+                    })
+                }
+            }
+            add_upstream(this.node)
+        }
+        ImageManager.add_listener(this.node.id, this) // add ourself last to take priority
 
         this.replaceChild(new_main, this.main)
         this.main = new_main
 
-        if (this.node.imgs) this.show_image(this.node.imgs)
-        else OnExecutedManager.resend(this.node.id)
-    
+        if (this.node.imgs && this.node.imgs.length>0) {
+            ImageManager.node_has_img(this.node, this.node.imgs[0])
+        } 
+
         this.valid_nodeblock = true
     }
 
-    oem_manager_callback(o) {
+    manage_image(url) {
         if (!this.parentElement) return false
-        if (o && o.images && !this.hidden) {
-            this.show_image(o.images)
-        }
+        if (!(this.bypassed || this.hidden)) this.show_image(url)
         return true
     }
 
@@ -225,18 +252,11 @@ export class NodeBlock extends HTMLSpanElement {
         this.rescaling = false
     }
 
-    is_image_upload_node() {
-        return ( this.node.pasteFile != undefined )
-    }
+    show_image(url) {
+        classSet(this.image_panel, 'nodeblock_image_empty', !url)
 
-    show_image(v) {
-        classSet(this.image_panel, 'nodeblock_image_empty', !(v?.length>0))
-        if (v.length==0) return
-        var src = v[0].src ?? api.apiURL(
-            `/view?filename=${encodeURIComponent(v[0].filename ?? v)}&type=${v[0].type ?? "input"}&subfolder=${v[0].subfolder ?? ""}`
-          )
-        if (this.image_image.src != src) {
-            this.image_image.src = src
+        if (this.image_image.src != url) {
+            this.image_image.src = url
             this.image_panel.style.maxHeight = ''
         }
     }

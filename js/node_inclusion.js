@@ -1,37 +1,23 @@
 import { get_node } from "./utilities.js";
 import { app } from "../../scripts/app.js"
+import { InclusionOptions, Texts, Colors } from "./constants.js";
 
 export class NodeInclusionManager {
-    static EXCLUDE  = "Don't include this node"
-    static INCLUDE  = "Include this node"
-    static ALWAYS   = "Include this node in all group views"
-    static ADVANCED = "Include this node as advanced control"
-
-    static EXCLUDES =  NodeInclusionManager.EXCLUDE.replace('this node', 'these nodes')
-    static INCLUDES  = NodeInclusionManager.INCLUDE.replace('this node', 'these nodes')
-    static ALWAYSS   = NodeInclusionManager.ALWAYS.replace('this node', 'these nodes')
-    static ADVANCEDS = NodeInclusionManager.ADVANCED.replace('this node', 'these nodes')
-
     static node_change_callback = null
 
     static node_includable(node_or_node_id) {
         const nd = get_node(node_or_node_id)
-        return (nd && nd.properties["controller"] && nd.properties["controller"]!=NodeInclusionManager.EXCLUDE) 
-    }
-
-    static node_in_all_views(node_or_node_id){
-        const nd = get_node(node_or_node_id)
-        return (nd && nd.properties["controller"] && nd.properties["controller"]==NodeInclusionManager.ALWAYS) 
+        return (nd && nd.properties["controller"] && nd.properties["controller"]!=InclusionOptions.EXCLUDE) 
     }
 
     static include_node(node_or_node_id) { 
         const nd = get_node(node_or_node_id)
-        return (nd && nd.properties["controller"] && nd.properties["controller"]!=NodeInclusionManager.EXCLUDE && nd.mode == 0) 
+        return (nd && nd.properties["controller"] && nd.properties["controller"]!=InclusionOptions.EXCLUDE) 
     }
     
     static advanced_only(node_or_node_id) {
         const nd = get_node(node_or_node_id)
-        return (nd && nd.properties["controller"] && nd.properties["controller"]==NodeInclusionManager.ADVANCED && nd.mode == 0) 
+        return (nd && nd.properties["controller"] && nd.properties["controller"]==InclusionOptions.ADVANCED) 
     }
 
     static visual(ctx, node) {
@@ -59,23 +45,22 @@ function selected_nodes() {
 }
 
 function cp_callback_submenu(value, options, e, menu, node) {
-    const current = node.properties["controller"] ?? NodeInclusionManager.EXCLUDE;
+    const current = node.properties["controller"] ?? InclusionOptions.EXCLUDE;
     const selection = selected_nodes()
     const choices = (selection.length==1) ? 
-        [NodeInclusionManager.EXCLUDE, NodeInclusionManager.INCLUDE, NodeInclusionManager.ALWAYS, NodeInclusionManager.ADVANCED] : 
-        [NodeInclusionManager.EXCLUDES, NodeInclusionManager.INCLUDES, NodeInclusionManager.ALWAYSS, NodeInclusionManager.ADVANCEDS]
+        [InclusionOptions.EXCLUDE,  InclusionOptions.INCLUDE,  InclusionOptions.ADVANCED] : 
+        [InclusionOptions.EXCLUDES, InclusionOptions.INCLUDES, InclusionOptions.ADVANCEDS]
     const submenu = new LiteGraph.ContextMenu(
         choices,
         { event: e, callback: function (v) { 
             selection.forEach((nd)=>{nd.properties["controller"] = v.replace('these nodes', 'this node')})
-            //node.properties["controller"] = v; 
             NodeInclusionManager.node_change_callback?.();
             app.canvas.setDirty(true, true) 
         }, 
         parentMenu: menu, node:node}
     )
     Array.from(submenu.root.children).forEach(child => {
-        if (child.innerText == current) child.style.borderLeft = "2px solid #C08080";
+        if (child.innerText == current) child.style.borderLeft = `2px solid ${Colors.MENU_HIGHLIGHT}`;
     });
 }
 
@@ -83,11 +68,10 @@ export function add_control_panel_options(options) {
     if (options[options.length-1] != null) options.push(null);
     options.push(
         {
-            content: "Controller Panel",
+            content: Texts.CONTEXT_MENU,
             has_submenu: true,
             callback: cp_callback_submenu,
         }
     )
-    //options.push(null);
 }
 
