@@ -257,6 +257,10 @@
     color: var(--mid-fore-color);
 }
 
+.minimised .nodeblock_titlebar {
+    color: var(--muted-fore-color);
+}
+
 .minimisedot {
     padding: 0px 4px 0px 0px;
     cursor: url(collapse.png) 8 8, zoom-out;
