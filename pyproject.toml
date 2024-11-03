@@ -1,7 +1,7 @@
 [project]
 name = "cg-controller"
-description = "A simple control panel that shows all widgets from selected nodes only."
-version = "1.0"
+description = "A control panel that shows all widgets from selected nodes. A whole new way to interact with Comfy!"
+version = "1.2"
 license = {file = "LICENSE"}
 
 [project.urls]
