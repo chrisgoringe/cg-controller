@@ -15,9 +15,11 @@ And if you share the workflow with someone else, they get your controller as wel
 
 ## Getting started
 
-The Controller is an extra sidebar tab. Like other sidebar tabs, just click it to bring the Controller into view.
+The Controller is toggled using a button in the top menu. When the sliders icon is blue, the Controller is active.
 
-![sidebar](images/sidebar.png)
+![top](images/top.png)
+
+To create a Controller window, right click on the background and select "New Controller" from the menu (if it isn't there, check the Controller is active!).
 
 At first, the Controller will be empty. To add nodes to it, right-click on the node and in the Controller Panel menu select "Include this node".
 
@@ -47,10 +49,37 @@ of the original limits the workflow may fail to validate on the server.
 
 You can change the way the scrollwheel interacts with the sliders, and the keys required to edit the limits, in the main settings.
 
-## Getting more organised
+## Groups and Tabs
 
-For more complex workflows, you will probably find that there are quite a few nodes that you want to be able to control. 
-The controller scrolls to accomodate as many nodes as you like, but we can do better than that...
+A new controller will show all of the selected nodes - that's what is meant by the 'All' in the top left hand corner.
+
+![controllertop](images/controllertop.png)
+
+If you click on the 'All' you will get a drop down menu of all groups in the workflow 
+which contain nodes that have been added to the controller. If there are added nodes that
+are not in any group, you will also see the pseudo-group 'Ungrouped'. 
+Select from this menu to choose the group to display.
+
+Alternatively, you can add additional tabs, by clicking on the '+' and selecting from the same menu,
+and then switch between them by clicking on the tabs (once you have multiple tabs, clicking on them
+doesn't bring up the menu any more). If you want to get rid of a tab, switch to it and then click on the dustbin icon.
+
+## The other icons
+
+The little lightning bolt icon is used to show/hide any nodes that were added as advanced controls. 
+If there are no advanced control, this icon won't be shown.
+
+The no-entry sign (circle with slash) is a placeholder - in a forthcoming release it will be
+used to toggle the group between active and bypassed.
+
+In the top right there is a minimise button, and a close button which can be used to minimise or close
+this controller window. A minimised controller just shows the tab name and the 'X':
+
+![minimised](images/minimised.png)
+
+click the tab name to restore the controller to full size.
+
+## Other things to explore
 
 ### Rearrange the nodes
 
@@ -58,16 +87,7 @@ The controller scrolls to accomodate as many nodes as you like, but we can do be
 
 You can rearrange the node panels in the controller by clicking on the node panel title bar and dragging it up or down.
 
-### Advanced controls
-
-<img src="images/gears.png" style="padding-right:8px;"/>
-
-If there are nodes that you only occasionally need to interact with, you can designate them as 'advanced controls' when you 
-add them to the controller. Advanced controls will only be shown if the 'Advanced controls' icon (the gears in the top right hand corner) is blue, 
-and the node in the workflow gets an open circle in place of the dot in the top right. The gears icon only appears if there are advanced controls to show or hide!
-
 ### Collapse nodes
-
 
 <img src="images/collapse.png" style="padding-right:8px;"/>
 
@@ -81,18 +101,6 @@ at the left-hand side of the title bar, click it again to expand.
 Multiline text fields and image displays can be rescaled up or down using the resize handle in the bottom right hand corner of the widget.
 As you drag the height is shown as an overlay, in case you want to make things the same size.
 
-### Selecting groups
-
-<img src="images/groups.png" style="padding-right:8px;"/>
-
-If you've build a complex workflow you've probably used groups to help you organise the nodes. 
-Using the drop-down menu at the top of the controller you can choose to just see the nodes in a single group.
-So you can quickly flick between the controls for your prompt, your controlnet, your upscaling...
-
-And if you want a node to be visible whatever group is selected, just add it with the 'Include this node in all group views' setting.
-
-## Other cool things
-
 ### The workflow is still there
 
 Any time you want to, you can go back to the workflow and work with it directly. 
@@ -103,7 +111,8 @@ but you just need to click the refresh button (top right of the Controller) to b
 
 ### Images
 
-The Controller works with Load, Save and Preview image nodes, as well as the image previews shown on the sampler node.
+The Controller works with Load, Save and Preview image nodes. The image preview nodes also show the interim images shown in the sampler, if you
+have that feature turned on.
 
 ### Settings
 
@@ -112,10 +121,10 @@ and settings to control how you can interact with the sliders.
 
 There's also a debug setting that I might ask you to use if you report a problem!
 
-### Controller width
+### Resize controller
 
-There is a little drag box at the bottom right of the controller that you can use to make it narrower or wider. 
-Its width is independant of the other sidebar controls.
+There is a little drag box at the bottom right of the controller that you can use to resize it. 
+You can also move it around by dragging the header.
 
 ## Known Limitations
 
@@ -129,15 +138,24 @@ in future releases, probably starting with rgthree's Power Lora Loader.
 
 Future features will depend on community feedback, but some of the top contenders right now are...
 
-- Visual links between the controller and workflow (click a workflow group to select it in the controller)
-- Toggling node and group bypass from the controller
-- Multiple controller columns
-- Multiple group selection
+- Visual links between the controller and workflow (highlight node on hover)
+- Toggling bypass 
+- Selecting which widgets on a node to show
 
-For more details of what's under consideration, take a look [here](https://github.com/chrisgoringe/cg-controller/milestone/21), 
-and jump into the discussion [here](https://github.com/chrisgoringe/cg-controller/discussions/210).
+For more details of what's under consideration, take a look at the [issues list](https://github.com/chrisgoringe/cg-controller/issues), 
+and feel free to add your ideas there, or 
+jump into the discussion [here](https://github.com/chrisgoringe/cg-controller/discussions/210).
 
-[Bug reports or feature requests very welcome](https://github.com/chrisgoringe/cg-controller/issues)
+# Bug reports
+
+[Bug reports are very welcome](https://github.com/chrisgoringe/cg-controller/issues). 
+
+It's really helpful if you include as much in the way of specific detail as possible, possibly including screenshots or copies of the workflow.
+You can also press f12 and look in the javascript console to see if there are any errors with 'cg-controller' in them.
+
+A screenshot of your Settings/About is a big help too!
+
+![settings](images/settings.png)
 
 # Credits
 

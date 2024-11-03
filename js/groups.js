@@ -6,6 +6,10 @@ export class GroupManager {
     static instance = null
     constructor() {
         this.groups = {}
+        const ungrouped = new Set()
+        app.graph._nodes.forEach((node)=>{
+            if (NodeInclusionManager.node_includable(node)) ungrouped.add(node.id)
+        })
         this.colors = {}
         app.graph._groups.forEach((group) => {
             if (!group.graph) {
@@ -19,9 +23,11 @@ export class GroupManager {
                         this.colors[group.title] = group.color
                     }
                     this.groups[group.title].add(node.id)
+                    ungrouped.delete(node.id)
                 }
             })
         })
+        this.groups[Texts.UNGROUPED] = ungrouped
     }
 
     static setup() { GroupManager.instance = new GroupManager() }

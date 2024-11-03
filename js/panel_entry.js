@@ -7,6 +7,7 @@ import { UpdateController } from "./update_controller.js";
 import { Debug } from "./debug.js";
 import { SettingIds } from "./constants.js";
 import { Toggle } from "./toggle.js";
+import { WidgetChangeManager } from "./widget_change_manager.js";
 
 function typecheck_number(v) {
     const vv = parseFloat(v)
@@ -20,10 +21,8 @@ export class Entry extends HTMLDivElement {
     /*
     Entry represents a single widget within a NodeBlock
     */
-    static FULL_WIDTH = [ 'customtext', 'toggle', 'number', 'text' ]
-    static firing_widget_callback = false
 
-    constructor(parent_controller, node, target_widget, properties) {
+    constructor(parent_controller, parent_nodeblock, node, target_widget, properties) {
         super()
         if (target_widget.disabled) return
         if (target_widget.name=='control_after_generate' && !app.ui.settings.getSettingValue(SettingIds.CONTROL_AFTER_GENERATE, false)) return
@@ -32,6 +31,7 @@ export class Entry extends HTMLDivElement {
 
         this.classList.add('entry')
         this.parent_controller = parent_controller
+        this.parent_nodeblock = parent_nodeblock
         this.target_widget = target_widget
         this.input_element = null
         this.properties = properties
@@ -54,12 +54,17 @@ export class Entry extends HTMLDivElement {
             case 'combo':
                 this.entry_label = create('span','entry_label', this, {'innerText':widget_label, 'draggable':false} )  
                 this.entry_value = create('span','entry_label value', this, {'innerText':target_widget.value, 'draggable':false} )  
-                this.input_element = create("select", 'input', this) 
+                this.input_element = create("select", 'input', this, {"doesntBlockRefresh":true}) 
                 target_widget.options.values.forEach((o) => this.input_element.add(new Option(o,o)))
-                this.input_element.addEventListener("change", (e)=>{this.entry_value.innerText=e.target.value})
+                this.input_element.addEventListener("change", (e)=>{
+                    this.entry_value.innerText = e.target.value
+                })
+                this.input_element.redraw = () => {
+                    this.entry_value.innerText = this.input_element.value
+                }
                 break
             case 'button':
-                this.input_element = create("button", 'input', this, {"innerText":widget_label})
+                this.input_element = create("button", 'input', this, {"innerText":widget_label, "doesntBlockRefresh":true})
                 break
             case 'toggle':
                 this.input_element = new Toggle(target_widget.value, widget_label)
@@ -81,11 +86,37 @@ export class Entry extends HTMLDivElement {
 
         this.typecheck = (target_widget.type=='number') ? typecheck_number : typecheck_other
 
-        target_widget.unhijacked_callback = target_widget.unhijacked_callback ?? target_widget.callback
-        this.original_target_widget_callback = target_widget.unhijacked_callback
-        target_widget.callback = this.widget_callback_callback.bind(this)
+        if (target_widget.element) {
+            target_widget.element.addEventListener('input', (e)=>{WidgetChangeManager.notify(target_widget)})
+        } else {
+            if (!target_widget.original_callback) target_widget.original_callback = target_widget.callback
+            target_widget.callback = () => {
+                if (target_widget.original_callback) {
+                    target_widget.original_callback(target_widget.value)
+                }
+                WidgetChangeManager.notify(target_widget)
+            }
+        }
 
+        const onRemove = target_widget.onRemove
+        target_widget.onRemove = function () {
+            onRemove.apply(target_widget, arguments)
+            UpdateController.make_request('widget removed')
+        }
+
+        WidgetChangeManager.add_listener(target_widget, this)
         this.render()
+    }
+
+    wcm_manager_callback() {
+        if (!this.parent_controller.contains(this)) return false;
+        this.input_element.value = this.target_widget.value;
+        if (this.input_element.wcm_manager_callback) this.input_element.wcm_manager_callback()
+        if (this.input_element.redraw) this.input_element.redraw(true)
+        if (this.target_widget.name=='image' && this.target_widget._real_value && this.target_widget.type=="combo") {
+            this.parent_nodeblock.show_image(this.target_widget.value)
+        }
+        return true;
     }
 
     valid() { return (this.input_element != null) }
@@ -95,10 +126,11 @@ export class Entry extends HTMLDivElement {
         UpdateController.push_pause()
         try {
             const v = this.typecheck(e.target.value)
-            if (v != null) {
+            if (v != null && this.target_widget.value != v) {
                 this.target_widget.value = v
                 this.target_widget.callback?.(v)
-                app.graph.setDirtyCanvas(true,true)
+                WidgetChangeManager.notify(this.target_widget)
+                //app.graph.setDirtyCanvas(true,true)
             }
         } finally { UpdateController.pop_pause() }
     }
@@ -119,34 +151,6 @@ export class Entry extends HTMLDivElement {
             app.graph.setDirtyCanvas(true,true); 
             UpdateController.make_request("button clicked")
         } finally { UpdateController.pop_pause() }
-    }
-
-    widget_callback_callback (v) {
-        Debug.trivia("widget_callback_callback")
-        UpdateController.push_pause()
-        try {
-            if (Entry.firing_widget_callback) return                
-            try { 
-                Entry.firing_widget_callback = true;
-                this._widget_calling_callback(v)
-            } finally { Entry.firing_widget_callback = false }
-           
-        } finally { UpdateController.pop_pause() }
-    } 
-
-    _widget_calling_callback(v) {
-        if (this.target_widget.type=="button") {
-            this.original_target_widget_callback?.(v)
-            UpdateController.make_request("target widget button clicked")
-        } else {
-            this.input_element.value = v
-            if (!this.is_integer) {
-                this.original_target_widget_callback?.apply(this.target_widget,arguments)
-            } else {
-                this.input_element.redraw_with_value(v)
-            }
-            UpdateController.make_request("target widget changed")
-        }
     }
 
     render() {
