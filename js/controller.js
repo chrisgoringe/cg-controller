@@ -131,6 +131,15 @@ app.registerExtension({
             }
         })
 
+        node._mode = node._mode
+        Object.defineProperty(node, 'mode', {
+            get: () => { return node._mode },
+            set: (v) => { 
+                node._mode = v; 
+                ControllerPanel.node_change(node.id);
+            }            
+        })
+
     },
 
 })
