@@ -14,7 +14,7 @@ const DEFAULTS = {
 const KEYS = Object.keys(DEFAULTS)
 
 const GLOBAL = {
-    "hidden" : false,
+    "hidden" : true,
     "version" : 1
 }
 const GLOBAL_KEYS = Object.keys(GLOBAL)
