@@ -56,6 +56,20 @@ export class GroupManager {
         return {"any":any, "all":all}
     }
 
+    static toggle_bypass(group_name) {
+        GroupManager.set_bypass(group_name, !(GroupManager.bypassed(group_name).all))
+    }
+    static set_bypass(group_name, value) {
+        value = value ? 4 : 0
+        app.graph._groups.forEach((group) => {
+            if (group.title == group_name) {
+                group._nodes.forEach((node) => {
+                    node.mode = value
+                })
+            }
+        })        
+    }
+
     static is_node_in(group_name, node_id) {
         if (group_name==Texts.ALL_GROUPS) return true
         return (GroupManager.instance.groups?.[group_name] && GroupManager.instance.groups[group_name].has(parseInt(node_id)))

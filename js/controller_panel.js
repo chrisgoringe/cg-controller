@@ -436,7 +436,9 @@ export class ControllerPanel extends HTMLDivElement {
         } else {
             this.add_group_button = create('i', 'pi pi-plus header_button last', this.header1_left)
             this.remove_group_button = create('i', 'pi pi-trash header_button', this.header2_left)
-            this.bypass_group_button = create('i', 'pi pi-ban header_button', this.header2_left)
+            if (this.settings.group_choice != Texts.ALL_GROUPS && this.settings.group_choice != Texts.UNGROUPED) {
+                this.bypass_group_button = create('i', 'pi pi-ban header_button', this.header2_left)
+            }
             this.show_advanced_button = create('i', `pi pi-bolt header_button${this.settings.advanced ? " clicked":""}`, this.header2_left)
             this.minimise_button = create("i", `pi pi-minus header_button collapse_button`, this.header1_right)
             this.delete_button = create('i', 'pi pi-times header_button', this.header1_right)
@@ -547,13 +549,14 @@ export class ControllerPanel extends HTMLDivElement {
         }
 
         if (this.bypass_group_button) {
+            const bypass = GroupManager.bypassed(this.settings.group_choice)
             this.bypass_group_button.addEventListener('click', (e) => {
                 e.preventDefault(); 
                 e.stopPropagation(); 
-                alert("yet to be implemented")
+                GroupManager.toggle_bypass(this.settings.group_choice)
             })
-            add_tooltip(this.bypass_group_button, `Toggle group bypass`, 'right')
-            const bypass = GroupManager.bypassed(this.settings.group_choice)
+            add_tooltip(this.bypass_group_button, `${bypass.all ? 'enable' : 'bypass'} group nodes`, 'right')
+            
             classSet(this.bypass_group_button, 'all_bypassed', bypass.any && bypass.all)
             classSet(this.bypass_group_button, 'some_bypassed', bypass.any && !bypass.all)
             classSet(this.bypass_group_button, 'none_bypassed', !bypass.any)
