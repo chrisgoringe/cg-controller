@@ -5,12 +5,12 @@ import { Colors, Texts } from "./constants.js"
 export class GroupManager {
     static instance = null
     constructor() {
-        this.groups = {}
+        this.groups = {}  // maps group name to Set of node ids
         const ungrouped = new Set()
         app.graph._nodes.forEach((node)=>{
             if (NodeInclusionManager.node_includable(node)) ungrouped.add(node.id)
         })
-        this.colors = {}
+        this.colors = {}  // maps group name to color
         app.graph._groups.forEach((group) => {
             if (!group.graph) {
                 group.graph = app.graph
@@ -27,13 +27,13 @@ export class GroupManager {
                 }
             })
         })
-        this.groups[Texts.UNGROUPED] = ungrouped
+        if (ungrouped.size>0) this.groups[Texts.UNGROUPED] = ungrouped
     }
 
     static setup() { GroupManager.instance = new GroupManager() }
 
     static list_group_names() {
-        const names = [Texts.ALL_GROUPS]
+        const names = [Texts.ALL_GROUPS,]
         Object.keys(GroupManager.instance.groups).forEach((gp) => {names.push(gp)})
         return names
     }
@@ -42,15 +42,38 @@ export class GroupManager {
         return GroupManager.instance.colors[group_name] ?? Colors.DARK_BACKGROUND
     }
 
+    static bypassed(group_name) {
+        var any = false
+        var all = true
+        app.graph._groups.forEach((group) => {
+            if (group.title == group_name) {
+                group._nodes.forEach((node) => {
+                    any = any || (node.mode!=0)
+                    all = all && (node.mode!=0)
+                })
+            }
+        })
+        return {"any":any, "all":all}
+    }
+
+    static toggle_bypass(group_name) {
+        GroupManager.set_bypass(group_name, !(GroupManager.bypassed(group_name).all))
+    }
+    static set_bypass(group_name, value) {
+        value = value ? 4 : 0
+        app.graph._groups.forEach((group) => {
+            if (group.title == group_name) {
+                group._nodes.forEach((node) => {
+                    node.mode = value
+                })
+            }
+        })        
+    }
+
     static is_node_in(group_name, node_id) {
         if (group_name==Texts.ALL_GROUPS) return true
-        return (GroupManager.instance.groups[group_name] && GroupManager.instance.groups[group_name].has(parseInt(node_id)))
+        return (GroupManager.instance.groups?.[group_name] && GroupManager.instance.groups[group_name].has(parseInt(node_id)))
     }
 
     static any_groups() { return (Object.keys(GroupManager.instance.groups).length > 0) }
-
-    static valid_option(group_name) {
-        if (group_name && GroupManager.instance.groups[group_name]) return group_name
-        return Texts.ALL_GROUPS
-    }
 }

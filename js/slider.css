@@ -96,6 +96,7 @@
 .option_setting_input {
     width: 50px;
     font-size: 90%;
+    background-color: #00ff0080;
 }
 .option_setting_input.min {
     text-align:right;
@@ -123,5 +124,9 @@
 }
 
 .bad_value {
-    background: #ff000042;
+    background: #ff000080;
+}
+
+.danger_value {
+    background: #ff800080;
 }

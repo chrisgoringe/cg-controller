@@ -8,7 +8,9 @@ import { WidgetChangeManager } from "./widget_change_manager.js";
 
 function copy_to_widget(node, widget, options) {
     const opt = {
-        "min":options.min, "max":options.max, "round":options.round, "precision":options.precision, "step":options.step
+        "min":options.min, "max":options.max, 
+        "round":options.round, "precision":options.precision, "step":options.step, 
+        "org_min":options.org_min, "org_max":options.org_max
     }
     Object.assign(widget.options, opt)
     widget.options.step *= 10 // clicking the arrows moves a widget by 0.1 * step ????
@@ -17,7 +19,7 @@ function copy_to_widget(node, widget, options) {
 }
 
 class SliderOptions {
-    static KEYS = [ "min", "max", "step", "precision", "round" ]
+    static KEYS = [ "min", "max", "step", "precision", "round", "org_min", "org_max" ]
     constructor(widget_options, saved_values, is_integer) {
         const options = {}
         Object.assign(options, widget_options)
@@ -27,6 +29,8 @@ class SliderOptions {
         this.max       = options.max
         this.precision = options.precision
         this._step     = null
+        this.org_min   = options.org_min ?? options.min
+        this.org_max   = options.org_max ?? options.max
         Object.defineProperty(this, "step", {
             get : () => { return this._step },
             set : (v) => {
@@ -142,8 +146,16 @@ class SliderOptionEditor extends HTMLSpanElement {
             step_bad = step_bad || (parseFloat(this.step_edit.value) != parseInt(this.step_edit.value))
         }
 
-        classSet(this.min_edit, 'bad_value', (min_bad || both_bad))
-        classSet(this.max_edit, 'bad_value', (max_bad || both_bad))
+        min_bad = min_bad || both_bad
+        max_bad = max_bad || both_bad
+
+        const min_danger = (!min_bad && this.min_edit.value < this.slider_options.org_min)
+        const max_danger = (!max_bad && this.max_edit.value > this.slider_options.org_max)
+
+        classSet(this.min_edit, 'bad_value', min_bad)
+        classSet(this.max_edit, 'bad_value', max_bad)
+        classSet(this.min_edit, 'danger_value', min_danger)
+        classSet(this.max_edit, 'danger_value', max_danger)
         classSet(this.step_edit, 'bad_value', (step_bad))
 
         this.button_save.disabled = (min_bad || max_bad || step_bad || 

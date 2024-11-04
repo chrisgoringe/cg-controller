@@ -1,58 +1,74 @@
+import { app } from "../../scripts/app.js"
 import { Timings } from "./constants.js"
 import { Debug } from "./debug.js"
+
+function message(wait_time) {
+    if (wait_time==0) return ""
+    if (wait_time==-2) return "Graph configuring"
+    if (wait_time<0) return "Controller refused with no retry"
+    return `Controller requested retry after ${wait_time}ms`
+}
 
 export class UpdateController {
     static callback      = ()=>{}
     static permission    = ()=>{return false}
-    static interest_in   = (node_id)=>{return false}
     static pause_stack = 0
+    static _configuring = false
 
-    static setup(callback, permission, interest_in) {
+    static setup(callback, permission) {
         UpdateController.callback    = callback
         UpdateController.permission  = permission
-        UpdateController.interest_in = interest_in
-    }
-
-
-    static node_change(node_id) {
-        if (this.interest_in(node_id)) UpdateController.make_request(`node ${node_id} changed`)
     }
 
     static push_pause() { UpdateController.pause_stack += 1 }
     static pop_pause() { UpdateController.pause_stack -= 1 }
 
-    static make_request(label, after_ms, noretry) {
+    static configuring(v) { UpdateController._configuring = v }
+
+    static make_single_request(label, controller) {
+        UpdateController.make_request(label, null, null, controller)
+    }
+    static make_request(label, after_ms, noretry, controller) {
+        label = label ?? ""
+        const cont_name = controller ? `for controller ${controller.settings.index}` : `all controllers`
         if (after_ms) {
-            if (label) Debug.extended(`${label} made request`)
-            setTimeout(UpdateController.make_request, after_ms, label, null, noretry)
+            if (UpdateController._configuring) {
+                Debug.extended(`Update ${cont_name} requested because '${label}': ignored because still configuring`)
+            } else {
+                setTimeout(UpdateController.make_request, after_ms, label, null, noretry, controller)
+            }
         } else {
-            const wait_time = UpdateController.pause_stack>0 ? Timings.PAUSE_STACK_WAIT : UpdateController.permission()
+            var wait_time = 0
+            if (wait_time==0 && UpdateController.pause_stack>0) wait_time = Timings.PAUSE_STACK_WAIT
+            if (wait_time==0 && UpdateController._configuring) wait_time = -2
+            if (wait_time==0) wait_time = UpdateController.permission(controller)
+            Debug.extended(`Update ${cont_name} requested because '${label}'. ${message(wait_time)}`)
 
             if (wait_time == 0) {
-                UpdateController.callback()
+                Debug.extended(`Update ${cont_name} request '${label}' sent`)
+                UpdateController.callback(controller)
                 return
-            }
-
-            if (label) Debug.extended(`${label} got asked to wait ${wait_time}`)
-
-            var reason_not_to_try_again = null
-            if (wait_time < 0)               reason_not_to_try_again = "delay was negative"
-            if (noretry)                     reason_not_to_try_again = "noretry was set"
-            if (UpdateController.requesting) reason_not_to_try_again = "a retry is already pending"
-
-            if (reason_not_to_try_again) {
-                Debug.extended(`${label} not trying again because ${reason_not_to_try_again}`)
             } else {
-                UpdateController.requesting = true
-                setTimeout( UpdateController.deferred_request, wait_time, label)
+                var reason_not_to_try_again = null
+                if (wait_time < 0)               reason_not_to_try_again = "delay was negative"
+                if (noretry)                     reason_not_to_try_again = "noretry was set"
+                if (UpdateController.requesting) reason_not_to_try_again = "a retry is already pending"
+
+                if (reason_not_to_try_again) {
+                    Debug.extended(`Update ${cont_name} request '${label}' cancelled because ${reason_not_to_try_again}`)
+                } else {
+                    Debug.extended(`Update ${cont_name} request '${label}' rescheduled for ${wait_time}ms`)
+                    UpdateController.requesting = true
+                    setTimeout( UpdateController.deferred_request, wait_time, label, controller)
+                }
             }
 
         }
     }
 
-    static deferred_request(label) {
+    static deferred_request(label, controller) {
         UpdateController.requesting = false
-        UpdateController.make_request(label)
+        UpdateController.make_request(label, null, null, controller)
     }
 
 }

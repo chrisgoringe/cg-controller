@@ -8,25 +8,23 @@ import { add_control_panel_options, NodeInclusionManager,  } from "./node_inclus
 import { UpdateController } from "./update_controller.js"
 import { Debug } from "./debug.js"
 import { BASE_PATH } from "./constants.js"
-import { OnExecutedManager } from "./widget_change_manager.js"
+import { ImageManager } from "./image_manager.js"
 import { global_settings } from "./settings.js"
 
 
 function on_setup() {
-    UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh, (node_id)=>{
-        var interest = false
-        Object.keys(ControllerPanel.instances).forEach((k)=>{
-            if (ControllerPanel.instances[k].node_blocks[node_id]) interest = true
-        })
-        return interest
-    })  
+    UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh)  
     NodeInclusionManager.node_change_callback = UpdateController.make_request
     api.addEventListener('graphCleared', ControllerPanel.graph_cleared) 
-    api.addEventListener('executed', OnExecutedManager.on_executed)
-    api.addEventListener('executing', OnExecutedManager.on_executing)
-    api.addEventListener('b_preview', OnExecutedManager.on_b_preview)
+
+    api.addEventListener('executed', ImageManager.on_executed)
+    api.addEventListener('execution_start', ImageManager.on_execution_start)
+    api.addEventListener('executing', ImageManager.on_executing)
+    api.addEventListener('b_preview', ImageManager.on_b_preview)
+
     window.addEventListener("resize", ControllerPanel.onWindowResize)
     window.addEventListener('mouseup', ControllerPanel.mouse_up_anywhere)
+    window.addEventListener('mousemove', ControllerPanel.mouse_move_anywhere)
 
 
     const original_getCanvasMenuOptions = LGraphCanvas.prototype.getCanvasMenuOptions;
@@ -50,12 +48,15 @@ function on_setup() {
 app.registerExtension({
 	name: "cg.controller",
 
+    async beforeConfigureGraph() {
+        UpdateController.configuring(true)
+    },
+
     /* Called when the graph has been configured (page load, workflow load) */
     async afterConfigureGraph() {
-        /* This is now just for backward compatibility - we *remove* the ControllerNode and put the data in app.graph.extras */
-        //CGControllerNode.remove()  
-
+        ImageManager.init()
         ControllerPanel.new_workflow()
+        UpdateController.configuring(false)
     },
 
     /* Called at the end of the application startup */
@@ -65,7 +66,8 @@ app.registerExtension({
             {'rel':'stylesheet', 'type':'text/css', 'href':`${BASE_PATH}/controller.css` } )
         create('link', null, document.getElementsByTagName('HEAD')[0], 
             {'rel':'stylesheet', 'type':'text/css', 'href':`${BASE_PATH}/slider.css` } )
-
+        create('link', null, document.getElementsByTagName('HEAD')[0], 
+            {'rel':'stylesheet', 'type':'text/css', 'href':`${BASE_PATH}/tabs.css` } )
         // Allow our elements to do any setup they want
         on_setup()
 
@@ -98,17 +100,17 @@ app.registerExtension({
         const onInputRemoved = nodeType.prototype.onInputRemoved
         nodeType.prototype.onInputRemoved = function () {
             onInputRemoved?.apply(this,arguments)
-            UpdateController.node_change(this.id)
+            ControllerPanel.node_change(this.id)
         }
         const onInputAdded = nodeType.prototype.onInputAdded
         nodeType.prototype.onInputAdded = function () {
             onInputAdded?.apply(this,arguments)
-            UpdateController.node_change(this.id)
+            ControllerPanel.node_change(this.id)
         }
         const onModeChange = nodeType.prototype.onModeChange
         nodeType.prototype.onModeChange = function () {
             onModeChange?.apply(this,arguments)
-            UpdateController.node_change(this.id)
+            ControllerPanel.node_change(this.id)
         }
     },
 
@@ -123,12 +125,21 @@ app.registerExtension({
         node._imgs = node.imgs
         Object.defineProperty(node, 'imgs', {
             get: () => { return node._imgs },
-            set: (v) => { node._imgs = v; UpdateController.make_request('imgs', 100)}
+            set: (v) => { 
+                node._imgs = v; 
+                if (v && v.length>0) ImageManager.node_has_img(node, v[0])
+            }
+        })
+
+        node._mode = node._mode
+        Object.defineProperty(node, 'mode', {
+            get: () => { return node._mode },
+            set: (v) => { 
+                node._mode = v; 
+                ControllerPanel.node_change(node.id);
+            }            
         })
 
     },
 
-    //registerCustomNodes() {
-    //    LiteGraph.registerNodeType("CGControllerNode", CGControllerNode)
-    //}
 })

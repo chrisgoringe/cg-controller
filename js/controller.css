@@ -1,11 +1,15 @@
 /* Menu */
 
-.controller-menu-button {
-    cursor: pointer;
-    font-size: 14pt;
+.controller_menu_buttons {
     background-color: var(--comfy-input-bg);
-    padding: 4px;
-    border-radius: 4px;
+    border-radius: 6px;
+}
+.controller_menu_button {
+    cursor: pointer;
+    font-size: 12pt;
+    background-color: var(--comfy-input-bg);
+    padding: 6px;
+    border-radius: 6px;
 }
 
 .showing {
@@ -28,6 +32,9 @@
     --overlay-background:  #ffffff66;
     --overlay-foreground: #353535;
 
+    --bypass-button-color: #d179ff;
+    --bypass-overlay-color: #d179ff80;
+
     --toggle-on: #8899aa;
     --toggle-off: #333333;
 
@@ -40,8 +47,7 @@
     background: var(--main-back-color);
     padding: 0 0 0 2px;
     position: absolute;
-
-    min-width: 215px;
+    min-width: 130px;
     overflow: clip scroll;
     border-width: 4px;
     border-style: solid;
@@ -58,18 +64,9 @@
 .controller.collapsed {
     overflow: clip;
     min-width: 0px;
-    width: 128px;
+    padding: 0px;
 }
 
-.header_button.collapse_button {
-    color: var(--p-button-text-primary-color);
-    padding-right: 6px;
-    padding-left:2px;
-}
-
-.controller.collapsed .header_button.collapse_button {
-    color: var(--mid-fore-color);
-}
 
 /* Header */
 
@@ -92,41 +89,121 @@
     display: flex;
     border-bottom: 1px solid var(--third-back-color);
     padding: 0px 4px 0px 4px;
-    justify-content: flex-end;
-    align-items: center;
+    cursor: grab;
+    cursor: grab;
+    padding: 4px 0px 0px 0px;
+    border-bottom: 1px solid var(--main-back-color);
+    margin-bottom: 2px;
+    justify-content: space-between;
 }
 
 .subheader1 {
-    cursor:grab;
-}
-
-.controller.being_dragged .subheader1 {
-    cursor:grabbing;
+    display:flex;
 }
 
 .subheader2 {
-    padding: 8px 0px 8px 0px;
+    padding-top:2px;
 }
 
-.header_title {
-    font-family: Arial, sans-serif;
-    font-size:13px;
-    flex-grow:1;
-    text-align: center;
-    padding: 8px 0px 8px 0px;
- }
+.subheader .left {
 
-.header_select {
-    max-width: var(--element_width);
+} 
+
+.subheader .right {
+
+}
+
+.subheader1 .right {
+    min-width: max-content;
+}
+
+.controller.grabbed .subheader1 {
+    cursor:grabbing;
+}
+
+.last { order: 100 }
+
+.tabs.group {
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: row;
+    align-items: center;
+    /* allow the group to shirnk */
+    min-width: 0px;
+    flex-shrink: 1;
+}
+.tab { 
+    --base-color: black;
+    border-radius: 6px;
+    padding: 2px 6px;
+    border: 1px solid var(--deep-back-color);
+    background-color: color-mix(in srgb, var(--base-color), transparent);
+    color: var(--muted-fore-color);
+    /*color : color-contrast(var(--base-color) vs var(--muted-fore-color), var(--second-back-color)) */
+    cursor: pointer;
+    text-align: center;
+    margin: 0px 1px 4px 1px;
+
+    /* allow the group to shirnk */
+    min-width: 0px;
+    flex-shrink: 1;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+.tab.selected {
+
     color: var(--main-fore-color);
- }
+    background-color: var(--base-color);
+    /*border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+    border-bottom: none; 
+    margin-bottom:0px;*/
+}
+
+.controller.grabbed .tab {
+    cursor:grabbing;
+}
+
+.collapsed .tab {
+    display: none;
+    margin-bottom: 0px;
+    margin-left:4px;
+}
+.collapsed .tab.selected {
+    display: block;
+}
+
+.header_buttons {
+    border-bottom: 1px solid var(--deep-back-color);
+    flex-shrink: 0;
+}
 
 .header_button {
     cursor: pointer;
     font-size: 12pt;
     color: var(--mid-fore-color);
-    padding-left: 6px;
-    padding-right: 2px;
+    margin: 8px 4px 0px 4px;
+    top:-4px;
+    position: relative;
+}
+
+.header_button.collapse_button {
+    top: 4px;
+}
+
+.collapse_button {
+    margin-top:0;
+    padding-top: 8px;
+}
+
+.header_button.none_bypassed {
+
+}
+.header_button.some_bypassed {
+
+}
+.header_button.all_bypassed {
+    color: var(--bypass-button-color)
 }
 
 .clicked {
@@ -135,42 +212,15 @@
 
 .being_dragged {
     opacity: 0.5;
+    cursor: grabbing;
 }
 
 .extra_controls {
     height: 15px;
 }
-/*
-.advanced_controls {
-    margin: 5px 2px 5px 0px;
-    padding: 2px;
-    font-size: 75%;
-    display: flex;
-    justify-content: center;
-    background-color: #C0808060;
-}
 
-.advanced_label {
-    font-size: 80%;
-    position: absolute;
-    top: 6px;
-    right: 22px;
-    height: 15px;
-    cursor: pointer;
-}
-
-.advanced_label_ {
-    width: 15px;
-    height: 15px;
-    background-color: #00000000;
-    cursor: pointer;
-    left: -5px;
-    top: 1px;
-}
-
-.advanced_checkbox {
-    margin: 0px;
-}*/
+.collapsed .main { display:none;  }
+.collapsed .footer { display: none; }
 
 
 .empty_message {
@@ -206,6 +256,10 @@
     color: var(--mid-fore-color);
 }
 
+.minimised .nodeblock_titlebar {
+    color: var(--muted-fore-color);
+}
+
 .minimisedot {
     padding: 0px 4px 0px 0px;
     cursor: url(collapse.png) 8 8, zoom-out;
@@ -219,7 +273,7 @@
 }
 
 .titlebar_nocolor {
-    border-bottom: 2px solid var(--second-back-color);
+    border-bottom: 1px solid var(--second-back-color);
     padding-bottom: 1px;
     background-color: var(--third-back-color)
 }
@@ -267,6 +321,17 @@
     height: 10px;
     border: none;
     display:none;
+}
+
+.nodeblock.bypassed {
+    opacity: 0.5;
+}
+
+.bypass_overlay {
+    position:absolute;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bypass-overlay-color);
 }
 
 /* Entry (widget) */
@@ -385,11 +450,38 @@ textarea.input {
     position: absolute;
 }
 
+/* group add */
+
+.group_add_select {
+    position:absolute;
+    z-index: 1001;
+    background-color: var(--comfy-input-bg);
+    border: thin solid var(--border-color);
+    border-radius: 6px;
+    padding: 4px;
+}
+
+.group_add_option {
+    padding: 2px;
+    cursor: pointer;
+    color: var(--fg-color);
+    border-bottom: 1px solid var(--border-color);
+    border-left: 2px solid var(--comfy-input-bg);
+}
+
+.group_add_option:last-child {
+    border-bottom: none;
+}
+
+.group_add_option:hover {
+    border-left-color: var(--comfy-input-fg);
+}
+
 
 /* Global */
 
 .hidden {
-    display:none;
+    display:none !important;
 }
 
 .overlay {
@@ -407,6 +499,7 @@ textarea.input {
 .tooltip {
     position: relative;
     display: inline-block;
+    z-index:1000;
   }
   
   /* Tooltip text */
