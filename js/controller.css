@@ -47,8 +47,7 @@
     background: var(--main-back-color);
     padding: 0 0 0 2px;
     position: absolute;
-
-    min-width: 215px;
+    min-width: 130px;
     overflow: clip scroll;
     border-width: 4px;
     border-style: solid;
