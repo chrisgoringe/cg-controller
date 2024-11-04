@@ -181,12 +181,19 @@ export class NodeBlock extends HTMLSpanElement {
             }
         })
 
-        if (!this.node.properties.controller_widgets['__image_panel']) this.node.properties.controller_widgets['__image_panel'] = {}
-        
+        this.image_panel_id = `__image_panel.${this.parent_controller.settings.index}`
+
+        if (!this.node.properties.controller_widgets[this.image_panel_id]) {
+            this.node.properties.controller_widgets[this.image_panel_id] = {}
+            if (this.node.properties.controller_widgets['__image_panel']) { // backward compatibility - get the size from the per-node version 
+                Object.assign(this.node.properties.controller_widgets[this.image_panel_id], this.node.properties.controller_widgets['__image_panel'])
+                delete this.node.properties.controller_widgets['__image_panel']
+            }
+        }
         this.image_image = create('img', 'nodeblock_image', this.image_panel)
         this.image_image.addEventListener('load', this.rescale_image.bind(this))
         
-        make_resizable( this.image_panel, this.node.id, "__image_panel", this.node.properties.controller_widgets['__image_panel'] )
+        make_resizable( this.image_panel, this.node.id, this.image_panel_id, this.node.properties.controller_widgets[this.image_panel_id] )
         new ResizeObserver(this.rescale_image.bind(this)).observe(this.image_panel)
 
         if (isImageNode(this.node)) {
@@ -230,7 +237,7 @@ export class NodeBlock extends HTMLSpanElement {
         if (this.image_image) {
             const box = this.image_panel.getBoundingClientRect()
             if (box.width) {
-                this.node.properties.controller_widgets['__image_panel'].height = box.height
+                this.node.properties.controller_widgets[this.image_panel_id].height = box.height
                 const w = box.width - 8
                 const im_h = this.image_image?.naturalHeight
                 const im_w = this.image_image?.naturalWidth

@@ -211,7 +211,6 @@ export class ControllerPanel extends HTMLDivElement {
 
     _can_refresh() {
         try {        
-            //if (!this.showing) { return -1 }
             if (this.classList.contains('unrefreshable')) { Debug.trivia("already refreshing"); return -1 }
             if (this.contains(document.activeElement) && !document.activeElement.doesntBlockRefresh) { Debug.trivia("delay refresh because active element"); return 1 }
          
@@ -307,9 +306,11 @@ export class ControllerPanel extends HTMLDivElement {
                     } else {
                         show = true;
                     } 
-                } 
-                classSet(node_block, 'hidden', (!show))
-                node_block.is_hidden = (!show)
+                    classSet(node_block, 'hidden', (!show))
+                    node_block.is_hidden = (!show)
+                } else {
+                    node_block.remove()
+                }
             }
         })
     }
