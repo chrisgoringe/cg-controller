@@ -10,6 +10,10 @@ export function isImageNode(node) {
     return false
 }
 
+export function image_is_blob(url) {
+    return url.startsWith('blob')
+}
+
 export class ImageManager {
     /*
     node_listener_map is a map from node_id to a Set of listeners.
@@ -39,7 +43,7 @@ export class ImageManager {
         if (src) {
             if (ImageManager.node_listener_map[node_id]) {
                 Array.from(ImageManager.node_listener_map[node_id]).forEach((l)=>{
-                    if (!l.manage_image(src)) ImageManager.node_listener_map[node_id].delete(node_id)
+                    if (!l.manage_image(src, (ImageManager.executing_node!=null))) ImageManager.node_listener_map[node_id].delete(node_id)
                 })
             }
         }

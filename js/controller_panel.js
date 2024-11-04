@@ -173,7 +173,7 @@ export class ControllerPanel extends HTMLDivElement {
         if (c) {
             c.redraw()
         } else {
-            Object.keys(ControllerPanel.instances).forEach((k)=>{ControllerPanel.instances[k].redraw() })
+            Object.values(ControllerPanel.instances).forEach((cp)=>{cp.redraw()})
         }
     }
 
@@ -197,6 +197,14 @@ export class ControllerPanel extends HTMLDivElement {
             })
             return response
         }
+    }
+
+    static node_change(node_id) {
+        Object.values(ControllerPanel.instances).forEach((cp)=>{cp._node_change(node_id)})
+    }
+
+    _node_change(node_id) {
+        if (this.node_blocks[node_id] && this.node_blocks[node_id].parentElement) UpdateController.make_single_request(`node ${node_id} changed`,this)
     }
 
     choose_suitable_initial_group() {
@@ -270,7 +278,7 @@ export class ControllerPanel extends HTMLDivElement {
         if (this.new_node_id_list.includes(node_id)) return   // already got it in the new list
         if (NodeInclusionManager.include_node(node_or_node_id)) {             // is it still valid?
             if (this.node_blocks[node_id] && this.node_blocks[node_id].can_reuse()) {     
-                this.node_blocks[node_id].build_nodeblock()
+                //this.node_blocks[node_id].build_nodeblock() do this in set_node_visibility instead
             } else {
                 this.maybe_create_node_block_for_node(node_id) 
             }
@@ -308,6 +316,7 @@ export class ControllerPanel extends HTMLDivElement {
                     } 
                     classSet(node_block, 'hidden', (!show))
                     node_block.is_hidden = (!show)
+                    if (show) node_block.build_nodeblock()
                 } else {
                     node_block.remove()
                 }
@@ -494,7 +503,7 @@ export class ControllerPanel extends HTMLDivElement {
                             return
                         }
                         this.settings.group_choice = nm
-                        UpdateController.make_single_request('uncollapse', this) 
+                        UpdateController.make_single_request(`tab ${nm} clicked`, this) 
                     }
                     this.mouse_up()
                     e.preventDefault()

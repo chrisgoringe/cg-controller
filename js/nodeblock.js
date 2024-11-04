@@ -5,7 +5,7 @@ import { ComfyWidgets } from "../../scripts/widgets.js";
 import { create, darken, classSet } from "./utilities.js";
 import { Entry } from "./panel_entry.js"
 import { make_resizable } from "./resize_manager.js";
-import { ImageManager, is_image_upload_node, isImageNode } from "./image_manager.js";
+import { image_is_blob, ImageManager, is_image_upload_node, isImageNode } from "./image_manager.js";
 import { UpdateController } from "./update_controller.js";
 import { Debug } from "./debug.js";
 
@@ -224,9 +224,12 @@ export class NodeBlock extends HTMLSpanElement {
         this.valid_nodeblock = true
     }
 
-    manage_image(url) {
+    manage_image(url, running) {
         if (!this.parentElement) return false
-        if (!(this.bypassed || this.hidden)) this.show_image(url)
+        if (!(this.bypassed || this.hidden)) {
+            /* take anything when running, or if we have nothing, or if we have a blob; otherwise reject blobs */
+            if (running || !this.image_image.src || image_is_blob(this.image_image.src) || !image_is_blob(url)) this.show_image(url)
+        }
         return true
     }
 
