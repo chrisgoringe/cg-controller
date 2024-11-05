@@ -135,14 +135,22 @@ app.registerExtension({
             }
         })
 
-        node._mode = node._mode
-        Object.defineProperty(node, 'mode', {
-            get: () => { return node._mode },
-            set: (v) => { 
-                node._mode = v; 
-                ControllerPanel.node_change(node.id);
-            }            
-        })
+        if (!node._mode) {
+            node._mode = node.mode
+            Object.defineProperty(node, "mode", {
+                get: ( )=>{return node._mode},
+                set: (v)=>{node._mode = v; node.afterChangeMade?.('mode', v);}            
+            })
+        }
+
+        const acm = node.afterChangeMade
+        node.afterChangeMade = (p, v) => {
+            acm?.(p,v)
+            if (p==='mode') {
+                ControllerPanel.node_change(node.id, `${p} set to ${v}`)
+            }
+        }
+
         UpdateController.make_request_unless_configuring("node_created", 20)
     },
 

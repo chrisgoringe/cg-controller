@@ -202,12 +202,12 @@ export class ControllerPanel extends HTMLDivElement {
         }
     }
 
-    static node_change(node_id) {
-        Object.values(ControllerPanel.instances).forEach((cp)=>{cp._node_change(node_id)})
+    static node_change(node_id, moreinfo) {
+        Object.values(ControllerPanel.instances).forEach((cp)=>{cp._node_change(node_id, moreinfo)})
     }
 
-    _node_change(node_id) {
-        if (this.node_blocks[node_id] && this.node_blocks[node_id].parentElement) UpdateController.make_single_request(`node ${node_id} changed`,this)
+    _node_change(node_id, moreinfo) {
+        if (this.node_blocks[node_id] && this.node_blocks[node_id].parentElement) UpdateController.make_single_request(`node ${node_id} changed ${moreinfo ?? ""}`,this)
     }
 
     choose_suitable_initial_group() {
