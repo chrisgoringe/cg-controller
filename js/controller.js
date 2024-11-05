@@ -11,6 +11,20 @@ import { BASE_PATH } from "./constants.js"
 import { ImageManager } from "./image_manager.js"
 import { global_settings } from "./settings.js"
 
+const MINIMUM_UE = 500005
+async function check_ue() {
+    try {
+        let ue = await import("../cg-use-everywhere/ue_debug.js")
+        if (!ue.version || ue.version < MINIMUM_UE) {
+            alert("A warning from Comfy Controller\n\n" + 
+                  "The version of Use Everywhere nodes that you have installed is not compatible with Comfy Controller or newer version of the Comfy UI.\n\n"+
+                  "You should update to the latest version of Use Everywhere (which is much improved anyway!) to avoid problems.\n\n" +
+                  "You can do this through the manager, or manually by going into the custom_nodes/cg-use-everywhere directory and typing 'git pull'.")
+        }
+    } catch (e) {
+        Debug.extended("Use Everywhere nodes not installed")
+    }
+}
 
 function on_setup() {
     UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh)  
@@ -95,6 +109,8 @@ app.registerExtension({
             }
 
         }
+
+        check_ue()
     },
 
     async init() {
