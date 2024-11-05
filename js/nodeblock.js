@@ -280,7 +280,7 @@ export class NodeBlock extends HTMLSpanElement {
                         //    this.image_image.style.height = `100%`
                         //    this.image_image.style.width = `${w}px`
                         //} else {
-                            this.image_panel.style.maxHeight = `${(im_h * w) / (im_w)}px`
+                            this.image_panel.style.maxHeight = `unset`
                             this.image_image.style.height = `100%`
                             this.image_image.style.width = `${w/scaled_height_fraction}px`
                         //}
