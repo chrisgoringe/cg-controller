@@ -153,14 +153,14 @@ export class ControllerPanel extends HTMLDivElement {
             add_tooltip(ControllerPanel.menu_button, 'Toggle controllers')
             classSet(ControllerPanel.menu_button, 'showing', !global_settings.hidden) 
             ControllerPanel.menu_button.addEventListener('click', ControllerPanel.toggle)
-
+/*
             ControllerPanel.refresh_button = create('i', 'pi pi-sync controller_menu_button', buttons)
             add_tooltip(ControllerPanel.refresh_button, `Refresh controllers`)
             ControllerPanel.refresh_button.addEventListener('click', (e) => {
                 UpdateController.make_request("refresh_button");
                 ControllerPanel.refresh_button.classList.add("clicked");
                 setTimeout(()=>{ControllerPanel.refresh_button.classList.remove("clicked")}, 200);
-            })
+            })*/
             
         } else {
             setTimeout(ControllerPanel.create_menu_icon,100)
