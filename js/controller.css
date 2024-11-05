@@ -297,6 +297,10 @@
     height: 16px;*/
 }
 
+.nodeblock.minimised .nodeblock_titlebar_right {
+    display:none;
+}
+
 .nodeblock_draghandle {
     cursor: grab;
     position: absolute;
@@ -308,10 +312,6 @@
 .nodeblock_title {
     text-align: left;
     pointer-events: none;
-}
-
-.nodeblock_image {
-
 }
 
 .nodeblock_image_panel {
@@ -330,6 +330,11 @@
     height: 10px;
     border: none;
     display:none;
+}
+
+.nodeblock.minimised .nodeblock_image_panel {
+    display:none;
+    height:0px !important;
 }
 
 .nodeblock.bypassed {

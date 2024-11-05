@@ -160,7 +160,7 @@ export class NodeBlock extends HTMLSpanElement {
 
         this.title_text = create("span", 'nodeblock_title', this.title_bar_left, {"innerText":this.node.title, 'draggable':false})
 
-        this.image_pin = create('i', 'pi pi-arrows-alt hidden', this.title_bar_right)
+        this.image_pin = create('i', 'pi pi-thumbtack hidden', this.title_bar_right)
         this.image_pin.addEventListener('click', (e) => {
             this.node.properties.controller_widgets[this.image_panel_id].pinned = !this.node.properties.controller_widgets[this.image_panel_id].pinned
             this.update_pin()
@@ -274,16 +274,8 @@ export class NodeBlock extends HTMLSpanElement {
                         this.image_image.style.width = `${w}px`
                     } else {
                         const scaled_height_fraction = (im_h * w) / (im_w * box.height)
-                        if (scaled_height_fraction<=1) {
-                            this.image_panel.style.height = `${(im_h * w) / (im_w)}px`
-                            this.image_panel.style.maxHeight = `${(im_h * w) / (im_w)}px`
-                            this.image_image.style.height = `100%`
-                            this.image_image.style.width = `${w}px`
-                        } else {
-                            this.image_panel.style.maxHeight = `${(im_h * w) / (im_w)}px`
-                            this.image_image.style.height = `100%`
-                            this.image_image.style.width = `${w/scaled_height_fraction}px`
-                        }
+                        this.image_panel.style.maxHeight = 'unset'
+                        this.image_image.style.width = `${w/scaled_height_fraction}px`
                     }
                 }
             } 
