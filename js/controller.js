@@ -54,9 +54,13 @@ app.registerExtension({
 
     /* Called when the graph has been configured (page load, workflow load) */
     async afterConfigureGraph() {
-        ImageManager.init()
-        ControllerPanel.new_workflow()
         UpdateController.configuring(false)
+        try {
+            ImageManager.init()
+            ControllerPanel.new_workflow()
+        } catch (e) {
+            console.error(e)
+        } 
     },
 
     /* Called at the end of the application startup */
