@@ -83,6 +83,18 @@ app.registerExtension({
             on_change?.apply(this,arguments)
             UpdateController.request_when_gap(100, 'on_change')
         }
+
+        const rcin = app.refreshComboInNodes
+        app.refreshComboInNodes = function () {
+            try {
+                if (rcin) rcin.bind(app)()
+            } catch (e) {
+                console.error(e)
+            } finally {
+                UpdateController.make_request('refreshComboInNodes')
+            }
+
+        }
     },
 
     async init() {
