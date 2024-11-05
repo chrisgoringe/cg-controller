@@ -77,6 +77,12 @@ app.registerExtension({
 
         // add to the canvas menu, and keyboard shortcuts
         add_controls()
+
+        const on_change = app.graph.on_change
+        app.graph.on_change = function () {
+            on_change?.apply(this,arguments)
+            UpdateController.request_when_gap(100, 'on_change')
+        }
     },
 
     async init() {
@@ -134,22 +140,6 @@ app.registerExtension({
                 if (v && v.length>0) ImageManager.node_has_img(node, v[0])
             }
         })
-
-        if (!node._mode) {
-            node._mode = node.mode
-            Object.defineProperty(node, "mode", {
-                get: ( )=>{return node._mode},
-                set: (v)=>{node._mode = v; node.afterChangeMade?.('mode', v);}            
-            })
-        }
-
-        const acm = node.afterChangeMade
-        node.afterChangeMade = (p, v) => {
-            acm?.(p,v)
-            if (p==='mode') {
-                ControllerPanel.node_change(node.id, `${p} set to ${v}`)
-            }
-        }
 
         UpdateController.make_request_unless_configuring("node_created", 20)
     },

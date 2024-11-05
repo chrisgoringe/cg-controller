@@ -79,4 +79,17 @@ export class UpdateController {
         UpdateController.make_request(label, null, null, controller)
     }
 
+    static gap_request_stack = 0
+    static request_when_gap(ms, label) {
+        UpdateController.gap_request_stack += 1
+        Debug.trivia(`${label} gap stack ${UpdateController.gap_request_stack}`)
+        setTimeout(UpdateController._gap_timeout_end, ms, label)
+    }
+    static _gap_timeout_end(label) {
+        UpdateController.gap_request_stack -= 1
+        if (UpdateController.gap_request_stack == 0) {
+            UpdateController.make_request(`After gap as requested by ${label}`)
+        }
+    }
+
 }
