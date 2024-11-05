@@ -243,9 +243,8 @@
 }
 
 .nodeblock.minimised {
-    min-height: 20px;
+    min-height: unset;
     padding-bottom: 0px;
-    height: 20px;
     overflow: hidden;
 }
 
@@ -267,6 +266,8 @@
     color: var(--muted-fore-color);
 }
 
+.minimised .entry { display: none; }
+
 .minimisedot {
     padding: 0px 4px 0px 0px;
     cursor: url(collapse.png) 8 8, zoom-out;
@@ -286,13 +287,14 @@
 }
 
 .nodeblock.minimised .nodeblock_titlebar {
-    height:20px
+    border-bottom: 0px;
+    padding-bottom: 0px;
 }
 
 .nodeblock.minimised .titlebar_nocolor {
-    border-bottom: 2px solid var(--third-back-color);
+    /*border-bottom: 2px solid var(--third-back-color);
     background-color: var(--third-back-color);
-    height: 16px;
+    height: 16px;*/
 }
 
 .nodeblock_draghandle {
