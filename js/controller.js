@@ -115,7 +115,7 @@ app.registerExtension({
     },
 
     async nodeCreated(node) {
-        UpdateController.make_request("node_created", 20)
+        
         const onRemoved = node.onRemoved
         node.onRemoved = function() {
             onRemoved?.apply(this, arguments)
@@ -139,7 +139,7 @@ app.registerExtension({
                 ControllerPanel.node_change(node.id);
             }            
         })
-
+        UpdateController.make_request_unless_configuring("node_created", 20)
     },
 
 })

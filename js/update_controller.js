@@ -23,20 +23,28 @@ export class UpdateController {
     static push_pause() { UpdateController.pause_stack += 1 }
     static pop_pause() { UpdateController.pause_stack -= 1 }
 
-    static configuring(v) { UpdateController._configuring = v }
+    static configuring(v) { 
+        Debug.trivia(`_configuring set to ${v}`)
+        UpdateController._configuring = v 
+    }
 
     static make_single_request(label, controller) {
         UpdateController.make_request(label, null, null, controller)
+    }
+    static make_request_unless_configuring(label, after_ms, noretry, controller) {
+        if (UpdateController._configuring) {
+            Debug.extended(`make_request_unless_configuring ${label} ignored because still configuring`)
+        } else {      
+            UpdateController.make_request  (label, after_ms, noretry, controller)
+        }
     }
     static make_request(label, after_ms, noretry, controller) {
         label = label ?? ""
         const cont_name = controller ? `for controller ${controller.settings.index}` : `all controllers`
         if (after_ms) {
-            if (UpdateController._configuring) {
-                Debug.extended(`Update ${cont_name} requested because '${label}': ignored because still configuring`)
-            } else {
-                setTimeout(UpdateController.make_request, after_ms, label, null, noretry, controller)
-            }
+
+            setTimeout(UpdateController.make_request, after_ms, label, null, noretry, controller)
+
         } else {
             var wait_time = 0
             if (wait_time==0 && UpdateController.pause_stack>0) wait_time = Timings.PAUSE_STACK_WAIT
