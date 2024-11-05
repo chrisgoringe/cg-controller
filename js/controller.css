@@ -254,6 +254,13 @@
     display: block;
     padding: 1px 3px 2px 2px;
     color: var(--mid-fore-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.nodeblock_titlebar_right .pi {
+    font-size:1.25em;
 }
 
 .minimised .nodeblock_titlebar {
