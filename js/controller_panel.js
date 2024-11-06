@@ -553,6 +553,7 @@ export class ControllerPanel extends HTMLDivElement {
                 e.stopPropagation(); 
                 GroupManager.toggle_bypass(this.settings.group_choice)
                 app.canvas.setDirty(true,true)
+                UpdateController.make_single_request('bypass button', this)
             })
             add_tooltip(this.bypass_group_button, `${bypass.all ? 'enable' : 'bypass'} group nodes`, 'right')
             
