@@ -73,12 +73,12 @@ export class ImageManager {
     }
 
     static on_b_preview(e) {
-        Debug.trivia(`${ImageManager.executing_node} on_b_preview`)
+        Debug.trivia(`ImageManager on_b_preview ${ImageManager.executing_node}`)
         ImageManager._set_source( ImageManager.executing_node, window.URL.createObjectURL(e.detail) )
     }
 
     static on_executed(e) {
-        Debug.trivia(`${e.detail.node} on_executed`)
+        Debug.trivia(`ImageManager on_executed ${e.detail.node}`)
         const v = e.detail?.output?.images?.[0]
         if (v) {
             ImageManager._set_source( e.detail.node, api.apiURL(

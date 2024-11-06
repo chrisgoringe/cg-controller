@@ -36,6 +36,9 @@ function on_setup() {
     api.addEventListener('executing', ImageManager.on_executing)
     api.addEventListener('b_preview', ImageManager.on_b_preview)
 
+    api.addEventListener('progress', ControllerPanel.on_progress)
+    api.addEventListener('executing', ControllerPanel.on_executing)
+
     window.addEventListener("resize", ControllerPanel.onWindowResize)
     window.addEventListener('mouseup', ControllerPanel.mouse_up_anywhere)
     window.addEventListener('mousemove', ControllerPanel.mouse_move_anywhere)

@@ -16,8 +16,10 @@ import { SettingIds, Timings, Texts } from "./constants.js";
 export class ControllerPanel extends HTMLDivElement {
     static instances = {}
     static button = undefined
+
     constructor(index) {
         super()
+        this.progress = create('span','progress_bar')
         if (index == null) index = new_controller_setting_index()
         if (ControllerPanel.instances[index]) { ControllerPanel.instances[index].remove(); Debug.essential(`removed index clash ${index}`) }
         ControllerPanel.instances[index] = this
@@ -81,6 +83,30 @@ export class ControllerPanel extends HTMLDivElement {
         this.addEventListener('mousedown', ()=>{this.should_update_size = true})
         
         new ResizeObserver((x) => this.on_size_change()).observe(this)
+    }
+
+    static on_progress(e) {
+        const node_id = e.detail.node
+        const value = e.detail.value
+        const max = e.detail.max
+        Object.values(ControllerPanel.instances).filter((cp)=>cp.have_node(node_id)).forEach((cp)=>cp.on_progress(node_id, value, max))
+    }
+
+    on_progress(node_id, value, max) {
+        this.node_blocks[node_id].title_bar?.appendChild(this.progress)
+        const w = this.node_blocks[node_id].getBoundingClientRect().width * value / max
+        this.progress.style.width = `${w}px`
+    }
+
+    static on_executing(e) {
+        const node_id = e.detail
+        Debug.trivia(`ControllerPanel.on_executing ${node_id}`)
+        Object.values(ControllerPanel.instances).forEach((cp)=>{
+            Object.values(cp.node_blocks).forEach((nb)=>{
+                classSet(nb, 'active', nb.node.id==node_id)
+            })
+            cp.progress.remove()
+        })
     }
 
     static mouse_up_anywhere() {
@@ -202,9 +228,15 @@ export class ControllerPanel extends HTMLDivElement {
         Object.values(ControllerPanel.instances).forEach((cp)=>{cp._node_change(node_id, moreinfo)})
     }
 
-    _node_change(node_id, moreinfo) {
-        if (this.node_blocks[node_id] && this.node_blocks[node_id].parentElement) UpdateController.make_single_request(`node ${node_id} changed ${moreinfo ?? ""}`,this)
+    have_node(nid) {
+        return (this.node_blocks[nid] && this.node_blocks[nid].parentElement)
     }
+
+    _node_change(node_id, moreinfo) {
+        if (this.have_node(node_id)) UpdateController.make_single_request(`node ${node_id} changed ${moreinfo ?? ""}`,this)
+    }
+
+
 
     choose_suitable_initial_group() {
         const all_options = GroupManager.list_group_names()
