@@ -92,14 +92,24 @@ app.registerExtension({
         // add to the canvas menu, and keyboard shortcuts
         add_controls()
 
-        const on_change = app.graph.on_change
-        app.graph.on_change = function () {
-            Debug.trivia("*** CAUGHT on_change")
-            on_change?.apply(this,arguments)
-            Debug.trivia("*** PASSING on_change")
-            UpdateController.request_when_gap(100, 'on_change')
+        try {
+            const on_change = app.graph.on_change
+            app.graph.on_change = function () {
+                try {
+                    Debug.trivia("*** CAUGHT on_change")
+                    on_change?.apply(this,arguments)
+                    Debug.trivia("*** PASSING on_change")
+                    UpdateController.request_when_gap(100, 'on_change')
+                } catch (e) {
+                    Debug.trivia("*** EXCEPTION HANDLING on_change")
+                    console.error(e)
+                }
+            }
+            Debug.trivia("*** ADDED on_change")
+        } catch (e) {
+            Debug.trivia("*** EXCEPTION ADDING on_change")
+            console.error(e)
         }
-        Debug.trivia("*** ADDED on_change")
 
         const rcin = app.refreshComboInNodes
         app.refreshComboInNodes = function () {
