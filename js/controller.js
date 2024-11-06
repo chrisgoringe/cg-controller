@@ -118,7 +118,7 @@ app.registerExtension({
             } catch (e) {
                 console.error(e)
             } finally {
-                UpdateController.make_request('refreshComboInNodes')
+                UpdateController.make_request('refreshComboInNodes', 200)
             }
 
         }
