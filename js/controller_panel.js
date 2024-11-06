@@ -10,6 +10,7 @@ import { Debug } from "./debug.js";
 
 import { NodeInclusionManager } from "./node_inclusion.js";
 import { get_all_setting_indices, getSettingValue, global_settings, new_controller_setting_index, get_settings, delete_settings, initialise_settings, valid_settings } from "./settings.js";
+import { update_node_order, add_missing_nodes } from "./settings.js"
 import { SettingIds, Timings, Texts } from "./constants.js";
 
 export class ControllerPanel extends HTMLDivElement {
@@ -32,7 +33,10 @@ export class ControllerPanel extends HTMLDivElement {
         this.node_blocks = {}   
 
         this.addEventListener('dragstart', (e) => { this.classList.add('unrefreshable'); this.reason = 'drag happening' })
-        this.addEventListener('dragend',   (e) => { this.save_node_order(); this.classList.remove('unrefreshable') } )
+        this.addEventListener('dragend',   (e) => { 
+            update_node_order(this.settings.node_order, NodeBlock.last_dragged.node.id, NodeBlock.last_dragged.previousSibling?.node.id, NodeBlock.last_dragged.nextSibling?.node.id); 
+            this.classList.remove('unrefreshable') 
+        } )
         this.addEventListener('dragover',  (e) => {
             if (NodeBlock.dragged) {
                 e.dataTransfer.effectAllowed = "move";
@@ -153,14 +157,6 @@ export class ControllerPanel extends HTMLDivElement {
             add_tooltip(ControllerPanel.menu_button, 'Toggle controllers')
             classSet(ControllerPanel.menu_button, 'showing', !global_settings.hidden) 
             ControllerPanel.menu_button.addEventListener('click', ControllerPanel.toggle)
-
-            ControllerPanel.refresh_button = create('i', 'pi pi-sync controller_menu_button', buttons)
-            add_tooltip(ControllerPanel.refresh_button, `Refresh controllers`)
-            ControllerPanel.refresh_button.addEventListener('click', (e) => {
-                UpdateController.make_request("refresh_button");
-                ControllerPanel.refresh_button.classList.add("clicked");
-                setTimeout(()=>{ControllerPanel.refresh_button.classList.remove("clicked")}, 200);
-            })
             
         } else {
             setTimeout(ControllerPanel.create_menu_icon,100)
@@ -202,12 +198,12 @@ export class ControllerPanel extends HTMLDivElement {
         }
     }
 
-    static node_change(node_id) {
-        Object.values(ControllerPanel.instances).forEach((cp)=>{cp._node_change(node_id)})
+    static node_change(node_id, moreinfo) {
+        Object.values(ControllerPanel.instances).forEach((cp)=>{cp._node_change(node_id, moreinfo)})
     }
 
-    _node_change(node_id) {
-        if (this.node_blocks[node_id] && this.node_blocks[node_id].parentElement) UpdateController.make_single_request(`node ${node_id} changed`,this)
+    _node_change(node_id, moreinfo) {
+        if (this.node_blocks[node_id] && this.node_blocks[node_id].parentElement) UpdateController.make_single_request(`node ${node_id} changed ${moreinfo ?? ""}`,this)
     }
 
     choose_suitable_initial_group() {
@@ -278,16 +274,14 @@ export class ControllerPanel extends HTMLDivElement {
 
     consider_adding_node(node_or_node_id) {
         const node_id = node_or_node_id.id ?? node_or_node_id
-        if (this.new_node_id_list.includes(node_id)) return   // already got it in the new list
-        if (NodeInclusionManager.include_node(node_or_node_id)) {             // is it still valid?
+       if (NodeInclusionManager.include_node(node_or_node_id)) {             // is it still valid?
             if (this.node_blocks[node_id] && this.node_blocks[node_id].can_reuse()) {     
-                //this.node_blocks[node_id].build_nodeblock() do this in set_node_visibility instead
+                //we already have it - we will rebuild, if needed, in set_node_visibility instead
             } else {
                 this.maybe_create_node_block_for_node(node_id) 
             }
             if (this.node_blocks[node_id]) {             // if it now exists, add it
                 this._main.append(this.node_blocks[node_id])
-                this.new_node_id_list.push(node_id)
             }
         }        
     }
@@ -331,15 +325,15 @@ export class ControllerPanel extends HTMLDivElement {
         if (this.being_dragged) return;
         const box = this.parentElement.getBoundingClientRect()
         this.settings.set_position(
-            clamp(this.settings.position.x, 0, box.width  - this.settings.position.w),
-            clamp(this.settings.position.y, 0, box.height - this.settings.position.h),
+            clamp(this.settings.position.x, 0),//, box.width  - this.settings.position.w),
+            clamp(this.settings.position.y, 0),//, box.height - this.settings.position.h),
             null, null 
         )
-        this.settings.set_position( 
+    /*    this.settings.set_position( 
             null, null, 
             clamp(this.settings.position.w, 0, box.width  - this.settings.position.x),
             clamp(this.settings.position.h, 0, box.height - this.settings.position.y)
-        )
+        )*/
     }
 
     set_position(set_by_user) {
@@ -353,7 +347,7 @@ export class ControllerPanel extends HTMLDivElement {
             this.settings.retreive_position()
         }
 
-        //this.check_dimensions()
+        this.check_dimensions()
 
         if (this.settings.collapsed) {
             this.style.left   = `${this.settings.position.x}px`
@@ -408,6 +402,7 @@ export class ControllerPanel extends HTMLDivElement {
         classSet(this, 'hidden', global_settings.hidden)
         this.style.setProperty('--font-size',`${1.333*getSettingValue(SettingIds.FONT_SIZE, 12)}px`)
         GroupManager.setup( )
+        add_missing_nodes(this.settings.node_order)
 
         /* 
         Create the top section
@@ -455,8 +450,8 @@ export class ControllerPanel extends HTMLDivElement {
         this.new_node_id_list = []
         this.remove_absent_nodes()
         this.settings.node_order.forEach( (n) => {this.consider_adding_node(n)} )
-        app.graph._nodes.forEach( (n) => {this.consider_adding_node(n)} )
-        if (this.new_node_id_list.length>0) this.settings.node_order = this.new_node_id_list
+        //app.graph._nodes.forEach( (n) => {this.consider_adding_node(n)} )
+        //if (this.new_node_id_list.length>0) this.settings.node_order = this.new_node_id_list
 
         this.set_node_visibility()
 
@@ -558,6 +553,7 @@ export class ControllerPanel extends HTMLDivElement {
                 e.stopPropagation(); 
                 GroupManager.toggle_bypass(this.settings.group_choice)
                 app.canvas.setDirty(true,true)
+                UpdateController.make_single_request('bypass button', this)
             })
             add_tooltip(this.bypass_group_button, `${bypass.all ? 'enable' : 'bypass'} group nodes`, 'right')
             
@@ -593,11 +589,11 @@ export class ControllerPanel extends HTMLDivElement {
         }
     }
 
-    save_node_order() {
-        const node_id_list = []
-        this.main.childNodes.forEach((child)=>{if (child?.node?.id) node_id_list.push(child.node.id)})
-        this.settings.node_order = node_id_list
-    }
+   // save_node_order() {
+   //     const node_id_list = []
+   //     this.main.childNodes.forEach((child)=>{if (child?.node?.id) node_id_list.push(child.node.id)})
+   //     this.settings.node_order = node_id_list
+   // }
 
     show_group_select(e, replace) {
         const the_select = create('span','group_add_select', document.body)

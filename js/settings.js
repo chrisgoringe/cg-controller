@@ -14,8 +14,9 @@ const DEFAULTS = {
 const KEYS = Object.keys(DEFAULTS)
 
 const GLOBAL = {
-    "hidden" : true,
-    "version" : 1
+    "hidden"        : true,
+    "version"       : 2,
+    "default_order" : []
 }
 const GLOBAL_KEYS = Object.keys(GLOBAL)
 
@@ -27,6 +28,7 @@ class _Settings {
             Object.assign(app.graph.extra.controller_panel.controllers[index], DEFAULTS)
         }
         this.settings = app.graph.extra.controller_panel.controllers[index]
+        if (this.settings.node_order.length==0) this.settings.node_order = Array.from(global_settings.default_order)
         KEYS.forEach((k) => {
             Object.defineProperty(this, k, {
                 get : ()  => { return this.settings[k] },
@@ -126,3 +128,35 @@ export function getSettingValue(comfy_key, _default) {
     return app.ui.settings.getSettingValue(comfy_key, _default)
 }
 
+export function add_missing_nodes(order) {
+    app.graph._nodes.forEach((n)=>{
+        if (!order.includes(n.id)) order.push(n.id)
+        if (!global_settings.default_order.includes(n.id)) global_settings.default_order.push(n.id)   
+    })
+}
+
+export function update_node_order(order, moved_node, now_after, now_before) {
+    _update_node_order(order, moved_node, now_after, now_before)
+    _update_node_order(global_settings.default_order, moved_node, now_after, now_before)
+}
+
+function _update_node_order(order, moved_node, now_after, now_before) {
+    const initial      = order.indexOf(moved_node)
+    const place_after  = order.indexOf(now_after) 
+    const place_before = (order.indexOf(now_before) >= 0) ? order.indexOf(now_before) : order.length
+
+    if (place_before < place_after) {
+        _update_node_order(order, now_before, now_after)
+        _update_node_order(order, moved_node, now_after, now_before)
+        return
+    }
+
+    if (initial < place_after) {
+        order.splice(initial, 1)
+        order.splice(place_after, 0, moved_node)
+    } else if (initial > place_before) {
+        order.splice(initial, 1)
+        order.splice(place_before, 0, moved_node)
+    }
+
+}

@@ -68,9 +68,13 @@ app.registerExtension({
 
     /* Called when the graph has been configured (page load, workflow load) */
     async afterConfigureGraph() {
-        ImageManager.init()
-        ControllerPanel.new_workflow()
         UpdateController.configuring(false)
+        try {
+            ImageManager.init()
+            ControllerPanel.new_workflow()
+        } catch (e) {
+            console.error(e)
+        } 
     },
 
     /* Called at the end of the application startup */
@@ -80,13 +84,45 @@ app.registerExtension({
             {'rel':'stylesheet', 'type':'text/css', 'href':`${BASE_PATH}/controller.css` } )
         create('link', null, document.getElementsByTagName('HEAD')[0], 
             {'rel':'stylesheet', 'type':'text/css', 'href':`${BASE_PATH}/slider.css` } )
-        create('link', null, document.getElementsByTagName('HEAD')[0], 
-            {'rel':'stylesheet', 'type':'text/css', 'href':`${BASE_PATH}/tabs.css` } )
+        //create('link', null, document.getElementsByTagName('HEAD')[0], 
+        //    {'rel':'stylesheet', 'type':'text/css', 'href':`${BASE_PATH}/tabs.css` } )
         // Allow our elements to do any setup they want
         on_setup()
 
         // add to the canvas menu, and keyboard shortcuts
         add_controls()
+
+        try {
+            const on_change = app.graph.on_change
+            app.graph.on_change = function () {
+                try {
+                    Debug.trivia("*** CAUGHT on_change")
+                    on_change?.apply(this,arguments)
+                    Debug.trivia("*** PASSING on_change")
+                    UpdateController.request_when_gap(100, 'on_change')
+                } catch (e) {
+                    Debug.trivia("*** EXCEPTION HANDLING on_change")
+                    console.error(e)
+                }
+            }
+            Debug.trivia("*** ADDED on_change")
+        } catch (e) {
+            Debug.trivia("*** EXCEPTION ADDING on_change")
+            console.error(e)
+        }
+
+        const rcin = app.refreshComboInNodes
+        app.refreshComboInNodes = function () {
+            try {
+                if (rcin) rcin.bind(app)()
+            } catch (e) {
+                console.error(e)
+            } finally {
+                UpdateController.make_request('refreshComboInNodes', 200)
+            }
+
+        }
+
         check_ue()
     },
 
@@ -146,14 +182,6 @@ app.registerExtension({
             }
         })
 
-        node._mode = node._mode
-        Object.defineProperty(node, 'mode', {
-            get: () => { return node._mode },
-            set: (v) => { 
-                node._mode = v; 
-                ControllerPanel.node_change(node.id);
-            }            
-        })
         UpdateController.make_request_unless_configuring("node_created", 20)
     },
 

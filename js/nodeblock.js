@@ -53,9 +53,11 @@ export class NodeBlock extends HTMLSpanElement {
     }
 
     static dragged = null
+    static last_dragged = null
 
     drag_me(e) {
         NodeBlock.dragged = this
+        NodeBlock.last_dragged = this
         NodeBlock.dragged.classList.add("being_dragged")
         e.dataTransfer.setDragImage(this, e.layerX, e.layerY);
     }
@@ -132,12 +134,15 @@ export class NodeBlock extends HTMLSpanElement {
         const new_main = create("span")
 
         this.title_bar = create("span", 'nodeblock_titlebar', new_main)
+        this.title_bar_left = create("span", 'nodeblock_titlebar_left', this.title_bar)
+        this.title_bar_right = create("span", 'nodeblock_titlebar_right', this.title_bar)
+
         this.draghandle = create("span", 'nodeblock_draghandle', this.title_bar, { })
         this.add_handle_drag_handlers(this.draghandle)
 
         this.minimised = this.node.properties.controller_details.minimised
 
-        this.minimisedot = create("span", 'minimisedot', this.title_bar, { "innerHTML":"&#x25FC;"})
+        this.minimisedot = create("span", 'minimisedot', this.title_bar_left, { "innerHTML":"&#x25FC;"})
         this.minimisedot.addEventListener("click", (e)=>{ 
             e.preventDefault(); 
             e.stopPropagation(); 
@@ -153,7 +158,13 @@ export class NodeBlock extends HTMLSpanElement {
             e.stopPropagation(); 
         })
 
-        this.title_text = create("span", 'nodeblock_title', this.title_bar, {"innerText":this.node.title, 'draggable':false})
+        this.title_text = create("span", 'nodeblock_title', this.title_bar_left, {"innerText":this.node.title, 'draggable':false})
+
+        this.image_pin = create('i', 'pi pi-thumbtack hidden', this.title_bar_right)
+        this.image_pin.addEventListener('click', (e) => {
+            this.node.properties.controller_widgets[this.image_panel_id].pinned = !this.node.properties.controller_widgets[this.image_panel_id].pinned
+            this.update_pin()
+        })
 
         this.style.backgroundColor = this.node.bgcolor ?? LiteGraph.NODE_DEFAULT_BGCOLOR
         if (this.node.bgcolor) {
@@ -190,6 +201,9 @@ export class NodeBlock extends HTMLSpanElement {
                 delete this.node.properties.controller_widgets['__image_panel']
             }
         }
+        if (!this.node.properties.controller_widgets[this.image_panel_id].pinned) this.node.properties.controller_widgets[this.image_panel_id].pinned = false
+        this.update_pin()
+
         this.image_image = create('img', 'nodeblock_image', this.image_panel)
         this.image_image.addEventListener('load', this.rescale_image.bind(this))
         
@@ -233,28 +247,43 @@ export class NodeBlock extends HTMLSpanElement {
         return true
     }
 
+    update_pin() {
+        classSet(this.image_pin, 'clicked', this.node.properties.controller_widgets[this.image_panel_id].pinned)
+        this.image_panel.style.resize = this.node.properties.controller_widgets[this.image_panel_id].pinned ? "none" : "vertical"
+        this.rescale_image()
+    }
+
     rescale_image() {
         if (this.rescaling) return
         if (this.parent_controller.settings.collapsed) return
         this.rescaling = true
         if (this.image_image) {
             const box = this.image_panel.getBoundingClientRect()
+            const pinned = this.node.properties.controller_widgets[this.image_panel_id].pinned
             if (box.width) {
                 this.node.properties.controller_widgets[this.image_panel_id].height = box.height
                 const w = box.width - 8
                 const im_h = this.image_image?.naturalHeight
                 const im_w = this.image_image?.naturalWidth
                 if (im_h && im_w) {
-                    const scaled_height_fraction = (im_h * w) / (im_w * box.height)
-                    if (scaled_height_fraction<=1) {
-                        this.image_panel.style.height = `${(im_h * w) / (im_w)}px`
-                        this.image_panel.style.maxHeight = `${(im_h * w) / (im_w)}px`
-                        this.image_image.style.height = `100%`
+                    if (pinned) {
+                        const full_h = (im_h/im_w)*w
+                        this.image_panel.style.height = `${full_h}px`
+                        this.image_panel.style.maxHeight = `${full_h}px`
+                        this.image_image.style.height = `${full_h}px`
                         this.image_image.style.width = `${w}px`
                     } else {
-                        this.image_panel.style.maxHeight = `${(im_h * w) / (im_w)}px`
-                        this.image_image.style.height = `100%`
-                        this.image_image.style.width = `${w/scaled_height_fraction}px`
+                        const scaled_height_fraction = (im_h * w) / (im_w * box.height)
+                        //if (scaled_height_fraction<=1) {
+                        //    this.image_panel.style.height = `${(im_h * w) / (im_w)}px`
+                        //    this.image_panel.style.maxHeight = `${(im_h * w) / (im_w)}px`
+                        //    this.image_image.style.height = `100%`
+                        //    this.image_image.style.width = `${w}px`
+                        //} else {
+                            this.image_panel.style.maxHeight = `unset`
+                            this.image_image.style.height = `100%`
+                            this.image_image.style.width = `${w/scaled_height_fraction}px`
+                        //}
                     }
                 }
             } 
@@ -264,6 +293,7 @@ export class NodeBlock extends HTMLSpanElement {
 
     show_image(url) {
         classSet(this.image_panel, 'nodeblock_image_empty', !url)
+        classSet(this.image_pin, 'hidden', !url)
 
         if (this.image_image.src != url) {
             this.image_image.src = url
