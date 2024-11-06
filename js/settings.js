@@ -1,6 +1,7 @@
 import { app } from "../../scripts/app.js"
 import { Debug } from "./debug.js"
 import { Texts } from "./constants.js"
+import { defineProperty } from "./utilities.js"
 
 const DEFAULTS = {
     "node_order"   : [],
@@ -30,7 +31,7 @@ class _Settings {
         this.settings = app.graph.extra.controller_panel.controllers[index]
         if (this.settings.node_order.length==0) this.settings.node_order = Array.from(global_settings.default_order)
         KEYS.forEach((k) => {
-            Object.defineProperty(this, k, {
+            defineProperty(this, k, {
                 get : ()  => { return this.settings[k] },
                 set : (v) => { this.settings[k] = v /*; console.log(`${this.index} ${k} <= ${v}`)*/}
             })
@@ -114,7 +115,7 @@ export function initialise_settings() {
 class GlobalSettings {
     constructor() {
         GLOBAL_KEYS.forEach((k) => {
-            Object.defineProperty(this, k, {
+            defineProperty(this, k, {
                 get : ()  => { return app.graph.extra.controller_panel[k] },
                 set : (v) => { app.graph.extra.controller_panel[k] = v }
             })

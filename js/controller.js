@@ -2,7 +2,7 @@ import { app } from "../../scripts/app.js"
 import { api } from "../../scripts/api.js" 
 import { ControllerPanel } from "./controller_panel.js"
 //import { CGControllerNode } from "./controller_node.js"   
-import { create } from "./utilities.js"
+import { create, defineProperty } from "./utilities.js"
 import { add_controls } from "./controller_controls.js"
 import { add_control_panel_options, NodeInclusionManager,  } from "./node_inclusion.js"
 import { UpdateController } from "./update_controller.js"
@@ -11,7 +11,7 @@ import { BASE_PATH } from "./constants.js"
 import { ImageManager } from "./image_manager.js"
 import { global_settings } from "./settings.js"
 
-const MINIMUM_UE = 500005
+const MINIMUM_UE = 500006
 async function check_ue() {
     try {
         let ue = await import("../cg-use-everywhere/ue_debug.js")
@@ -171,7 +171,7 @@ app.registerExtension({
         }
 
         node._imgs = node.imgs
-        Object.defineProperty(node, 'imgs', {
+        defineProperty(node, 'imgs', {
             get: () => { return node._imgs },
             set: (v) => { 
                 node._imgs = v; 

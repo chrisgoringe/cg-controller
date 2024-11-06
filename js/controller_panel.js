@@ -1,6 +1,6 @@
 import { app } from "../../scripts/app.js";
 
-import { create, get_node, add_tooltip, clamp, classSet } from "./utilities.js";
+import { create, get_node, add_tooltip, clamp, classSet, defineProperty } from "./utilities.js";
 import { GroupManager } from "./groups.js";
 
 import { UpdateController } from "./update_controller.js";
@@ -72,7 +72,7 @@ export class ControllerPanel extends HTMLDivElement {
 
         this.overlay = create('span', 'overlay', null, {'stack':0})
 
-        Object.defineProperty(this, "footer_height", {
+        defineProperty(this, "footer_height", {
             get : () => { return this.footer.getBoundingClientRect().height },
             set : (v) => { this.footer.style.height = `${v}px`}
         })

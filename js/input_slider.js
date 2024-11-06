@@ -1,5 +1,5 @@
 import { app } from "../../scripts/app.js";
-import { create, step_size, check_float } from "./utilities.js"
+import { create, step_size, check_float, defineProperty } from "./utilities.js"
 import { clamp, classSet } from "./utilities.js"
 import { Debug } from "./debug.js"
 import { getSettingValue } from "./settings.js";
@@ -31,7 +31,7 @@ class SliderOptions {
         this._step     = null
         this.org_min   = options.org_min ?? options.min
         this.org_max   = options.org_max ?? options.max
-        Object.defineProperty(this, "step", {
+        defineProperty(this, "step", {
             get : () => { return this._step },
             set : (v) => {
                 this._step = v
@@ -202,7 +202,7 @@ export class FancySlider extends HTMLSpanElement {
         this.addEventListener('focusout',      (e) => this._focusout(e))
 
         this._dragging = false
-        Object.defineProperty(this, "dragging", {
+        defineProperty(this, "dragging", {
             get : () => { return this._dragging},
             set : (v) => {
                 this._dragging = v
@@ -212,7 +212,7 @@ export class FancySlider extends HTMLSpanElement {
         })
 
         this._wheeling = false
-        Object.defineProperty(this, "wheeling", {
+        defineProperty(this, "wheeling", {
             get : () => { return this._wheeling},
             set : (v) => {
                 this._wheeling = v
