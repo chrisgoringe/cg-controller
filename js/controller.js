@@ -94,9 +94,12 @@ app.registerExtension({
 
         const on_change = app.graph.on_change
         app.graph.on_change = function () {
+            Debug.trivia("*** CAUGHT on_change")
             on_change?.apply(this,arguments)
+            Debug.trivia("*** PASSING on_change")
             UpdateController.request_when_gap(100, 'on_change')
         }
+        Debug.trivia("*** ADDED on_change")
 
         const rcin = app.refreshComboInNodes
         app.refreshComboInNodes = function () {
