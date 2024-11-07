@@ -95,7 +95,11 @@ export class ControllerPanel extends HTMLDivElement {
     on_progress(node_id, value, max) {
         this.node_blocks[node_id].title_bar?.appendChild(this.progress)
         const w = this.node_blocks[node_id].getBoundingClientRect().width * value / max
+        const h = this.node_blocks[node_id].minimised ? 2 : 3
+        const top = this.progress.parentElement.getBoundingClientRect().height - h
         this.progress.style.width = `${w}px`
+        this.progress.style.top = `${top}px`
+        this.progress.style.height = `${h}px`
     }
 
     static on_executing(e) {

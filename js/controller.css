@@ -551,9 +551,8 @@ textarea.input {
   .progress_bar {
     position: absolute;
     background-color: var(--progress-color);
-    height: 2px;
     left: 0px;
-    /* width set programatically */
+    /* top, width, height set programatically */
   }
   
   /* Show the tooltip text when you mouse over the tooltip container */
