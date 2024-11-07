@@ -119,6 +119,7 @@ app.registerExtension({
                 console.error(e)
             } finally {
                 UpdateController.make_request('refreshComboInNodes')
+                UpdateController.make_request('refreshComboInNodes delayed',2000)
             }
 
         }
