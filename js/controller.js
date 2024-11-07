@@ -2,7 +2,7 @@ import { app } from "../../scripts/app.js"
 import { api } from "../../scripts/api.js" 
 import { ControllerPanel } from "./controller_panel.js"
 //import { CGControllerNode } from "./controller_node.js"   
-import { create } from "./utilities.js"
+import { create, defineProperty } from "./utilities.js"
 import { add_controls } from "./controller_controls.js"
 import { add_control_panel_options, NodeInclusionManager,  } from "./node_inclusion.js"
 import { UpdateController } from "./update_controller.js"
@@ -11,7 +11,7 @@ import { BASE_PATH } from "./constants.js"
 import { ImageManager } from "./image_manager.js"
 import { global_settings } from "./settings.js"
 
-const MINIMUM_UE = 500005
+const MINIMUM_UE = 500006
 async function check_ue() {
     try {
         let ue = await import("../cg-use-everywhere/ue_debug.js")
@@ -35,6 +35,9 @@ function on_setup() {
     api.addEventListener('execution_start', ImageManager.on_execution_start)
     api.addEventListener('executing', ImageManager.on_executing)
     api.addEventListener('b_preview', ImageManager.on_b_preview)
+
+    api.addEventListener('progress', ControllerPanel.on_progress)
+    api.addEventListener('executing', ControllerPanel.on_executing)
 
     window.addEventListener("resize", ControllerPanel.onWindowResize)
     window.addEventListener('mouseup', ControllerPanel.mouse_up_anywhere)
@@ -84,8 +87,7 @@ app.registerExtension({
             {'rel':'stylesheet', 'type':'text/css', 'href':`${BASE_PATH}/controller.css` } )
         create('link', null, document.getElementsByTagName('HEAD')[0], 
             {'rel':'stylesheet', 'type':'text/css', 'href':`${BASE_PATH}/slider.css` } )
-        //create('link', null, document.getElementsByTagName('HEAD')[0], 
-        //    {'rel':'stylesheet', 'type':'text/css', 'href':`${BASE_PATH}/tabs.css` } )
+
         // Allow our elements to do any setup they want
         on_setup()
 
@@ -96,29 +98,27 @@ app.registerExtension({
             const on_change = app.graph.on_change
             app.graph.on_change = function () {
                 try {
-                    Debug.trivia("*** CAUGHT on_change")
                     on_change?.apply(this,arguments)
-                    Debug.trivia("*** PASSING on_change")
                     UpdateController.request_when_gap(100, 'on_change')
                 } catch (e) {
-                    Debug.trivia("*** EXCEPTION HANDLING on_change")
+                    Debug.error("*** EXCEPTION HANDLING on_change")
                     console.error(e)
                 }
             }
-            Debug.trivia("*** ADDED on_change")
+            Debug.trivia("*** in setup, ADDED on_change")
         } catch (e) {
-            Debug.trivia("*** EXCEPTION ADDING on_change")
+            Debug.error("*** EXCEPTION ADDING on_change")
             console.error(e)
         }
 
         const rcin = app.refreshComboInNodes
-        app.refreshComboInNodes = function () {
+        app.refreshComboInNodes = async function () {
             try {
-                if (rcin) rcin.bind(app)()
+                if (rcin) await rcin.bind(app)()
             } catch (e) {
                 console.error(e)
             } finally {
-                UpdateController.make_request('refreshComboInNodes', 200)
+                UpdateController.make_request('refreshComboInNodes')
             }
 
         }
@@ -174,7 +174,7 @@ app.registerExtension({
         }
 
         node._imgs = node.imgs
-        Object.defineProperty(node, 'imgs', {
+        defineProperty(node, 'imgs', {
             get: () => { return node._imgs },
             set: (v) => { 
                 node._imgs = v; 
