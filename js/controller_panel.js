@@ -26,7 +26,7 @@ export class ControllerPanel extends HTMLDivElement {
         this.index = index
         this.settings = get_settings(index)
         this.classList.add("controller")
-        document.getElementsByClassName('graph-canvas-panel')[0].appendChild(this)
+        ControllerPanel.find_controller_parent().appendChild(this)
 
         this.header = create('span','header', this)
         this.main   = create('span','main', this)
@@ -165,17 +165,23 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     static add_controllers() {
-        get_all_setting_indices().forEach((i)=>{
-            new ControllerPanel(i).redraw()
-        })
+        if (ControllerPanel.find_controller_parent()) {
+            get_all_setting_indices().forEach((i)=>{
+                new ControllerPanel(i).redraw()
+            })
+        }
     }
 
     static onWindowResize() {
         Object.keys(ControllerPanel.instances).forEach((k)=>ControllerPanel.instances[k].set_position(false))
     }
 
+    static find_controller_parent() {
+        return document.getElementsByClassName('graph-canvas-panel')[0] ?? null
+    }
+
     static create_menu_icon() {
-        if (document.getElementsByClassName('graph-canvas-panel').length>0) {
+        if (ControllerPanel.find_controller_parent()) {
             const comfy_menu = document.getElementsByClassName('comfyui-menu')[0]
             var spacer = null
             comfy_menu.childNodes.forEach((node)=>{if (node.classList.contains('flex-grow')) spacer = node})
@@ -196,6 +202,14 @@ export class ControllerPanel extends HTMLDivElement {
     static redraw(c) { 
         if (!valid_settings()) {
             ControllerPanel.new_workflow()
+            return
+        }
+        if (Object.values(ControllerPanel.instances).length>0 && !document.body.contains(Object.values(ControllerPanel.instances)[0])) {
+            // probably in focus mode
+            ControllerPanel.instances = {}
+        }
+        if (Object.values(ControllerPanel.instances).length == 0) {
+            ControllerPanel.add_controllers()
             return
         }
         if (c) {
