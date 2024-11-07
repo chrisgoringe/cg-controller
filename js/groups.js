@@ -42,25 +42,23 @@ export class GroupManager {
         return GroupManager.instance.colors[group_name] ?? Colors.DARK_BACKGROUND
     }
 
-    static bypassed(group_name) {
-        var any = false
-        var all = true
+    static group_node_mode(group_name) {
+        const modes = {0:0,2:0,4:0}
         app.graph._groups.forEach((group) => {
             if (group.title == group_name) {
                 group._nodes.forEach((node) => {
-                    any = any || (node.mode!=0)
-                    all = all && (node.mode!=0)
+                    modes[node.mode] += 1
                 })
             }
         })
-        return {"any":any, "all":all}
+        if (modes[2]==0 && modes[4]==0) return 0
+        if (modes[0]==0 && modes[4]==0) return 2
+        if (modes[0]==0 && modes[2]==0) return 4
+        return 9
     }
 
-    static toggle_bypass(group_name) {
-        GroupManager.set_bypass(group_name, !(GroupManager.bypassed(group_name).all))
-    }
-    static set_bypass(group_name, value) {
-        value = value ? 4 : 0
+    static change_group_mode(group_name, current_mode, e) {
+        const value = (current_mode==0) ? ((e.ctrlKey) ? 2 : 4) : 0
         app.graph._groups.forEach((group) => {
             if (group.title == group_name) {
                 group._nodes.forEach((node) => {

@@ -471,7 +471,7 @@ export class ControllerPanel extends HTMLDivElement {
             this.add_group_button = create('i', 'pi pi-plus header_button last', this.header1_left)
             this.remove_group_button = create('i', 'pi pi-trash header_button', this.header2_left)
             if (this.settings.group_choice != Texts.ALL_GROUPS && this.settings.group_choice != Texts.UNGROUPED) {
-                this.bypass_group_button = create('i', 'pi pi-ban header_button', this.header2_left)
+                this.group_mode_button = create('i', 'pi header_button mode', this.header2_left)
             }
             this.show_advanced_button = create('i', `pi pi-bolt header_button${this.settings.advanced ? " clicked":""}`, this.header2_left)
             this.minimise_button = create("i", `pi pi-minus header_button collapse_button`, this.header1_right)
@@ -582,20 +582,22 @@ export class ControllerPanel extends HTMLDivElement {
             add_tooltip(this.remove_group_button, 'Remove active group tab', 'right')
         }
 
-        if (this.bypass_group_button) {
-            const bypass = GroupManager.bypassed(this.settings.group_choice)
-            this.bypass_group_button.addEventListener('click', (e) => {
+        if (this.group_mode_button) {
+            const node_mode = GroupManager.group_node_mode(this.settings.group_choice)
+            this.group_mode_button.addEventListener('click', (e) => {
                 e.preventDefault(); 
                 e.stopPropagation(); 
-                GroupManager.toggle_bypass(this.settings.group_choice)
+                GroupManager.change_group_mode(this.settings.group_choice, node_mode, e)
                 app.canvas.setDirty(true,true)
-                UpdateController.make_single_request('bypass button', this)
+                UpdateController.make_single_request('group mode button', this)
             })
-            add_tooltip(this.bypass_group_button, `${bypass.all ? 'enable' : 'bypass'} group nodes`, 'right')
+            add_tooltip(this.group_mode_button, Texts.MODE_TOOLTIP[node_mode], 'right')
             
-            classSet(this.bypass_group_button, 'all_bypassed', bypass.any && bypass.all)
-            classSet(this.bypass_group_button, 'some_bypassed', bypass.any && !bypass.all)
-            classSet(this.bypass_group_button, 'none_bypassed', !bypass.any)
+            classSet(this.group_mode_button, 'mode_0', node_mode==0)
+            classSet(this.group_mode_button, 'mode_2', node_mode==2)
+            classSet(this.group_mode_button, 'mode_4', node_mode==4)
+            classSet(this.group_mode_button, 'mode_9', node_mode==9)
+
         }
 
         if (this.show_advanced_button) {

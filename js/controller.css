@@ -32,8 +32,11 @@
     --overlay-background:  #ffffff66;
     --overlay-foreground: #353535;
 
+    --mute-button-color:red;
     --bypass-button-color: #d179ff;
-    --bypass-overlay-color: #d179ff80;
+
+    --mute-overlay-color: #ffffff20;
+    --bypass-overlay-color: #d179ff20;
 
     --toggle-on: #8899aa;
     --toggle-off: #333333;
@@ -200,15 +203,24 @@
     padding-top: 8px;
 }
 
-.header_button.none_bypassed {
+.header_button.mode {
 
 }
-.header_button.some_bypassed {
+.header_button.mode:before {
+    content: "\ea14";
+}
+.header_button.mode_2:before {
+    content: "\e90c";
+    color: var(--mute-button-color);
+}
+.header_button.mode_4:before {
+    content: "\ea10";
+    color: var(--bypass-button-color)  
+}
+.header_button.mode_9:before {
+    content: "\e959";
+}
 
-}
-.header_button.all_bypassed {
-    color: var(--bypass-button-color)
-}
 
 .clicked {
     color: var(--p-button-text-primary-color);
@@ -278,7 +290,7 @@
 .minimised .entry { display: none; }
 
 .minimisedot {
-    padding: 0px 4px 0px 0px;
+    padding: 0px 0px 0px 0px;
     cursor: url(collapse.png) 8 8, zoom-out;
     position: relative;
     font-size: 125%;
@@ -313,9 +325,9 @@
 .nodeblock_draghandle {
     cursor: grab;
     position: absolute;
-    height: 20px;
-    width: calc(var(--element_width) - 32px);
-    left: 16px;
+    height: 18px;
+    width: calc(var(--element_width) - 46px);
+    left: 28px;
 }
 
 .nodeblock_title {
@@ -350,11 +362,38 @@
     opacity: 0.5;
 }
 
-.bypass_overlay {
+.mode_overlay {
     position:absolute;
     width: 100%;
     height: 100%;
+    background-color: transparent;
+    pointer-events: none;
+}
+.mode_overlay_2 {
+    background-color: var(--mute-overlay-color);
+}
+.mode_overlay_4 {
     background-color: var(--bypass-overlay-color);
+}
+
+.nodeblock .mode_button {
+    font-size: 90%;
+    padding: 0px 4px 0px 2px;
+    cursor:pointer;
+}
+
+.nodeblock .mode_button:before {
+    content: "\ea14";
+}
+
+.nodeblock .mode_button_2:before {
+    content: "\e90c";
+    color: var(--mute-button-color);
+}
+
+.nodeblock .mode_button_4:before {
+    content: "\ea10";
+    color: var(--bypass-button-color)
 }
 
 /* Entry (widget) */

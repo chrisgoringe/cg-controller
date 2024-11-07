@@ -38,6 +38,12 @@ export class Texts {
     static ALL_GROUPS = "All"
     static UNGROUPED = "Ungrouped"
     static CONTEXT_MENU = "Controller Panel"
+    static MODE_TOOLTIP = {
+        0 : "Click to bypass</br>ctrl&#8209;click to mute",
+        2 : "Group muted.</br>Click to activate",
+        4 : "Group bypassed.</br>Click to activate",
+        9 : "Some nodes muted or bypassed.</br>Click to activate"
+    }
 }
 
 export const BASE_PATH = "extensions/cg-controller"

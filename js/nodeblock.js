@@ -20,17 +20,18 @@ export class NodeBlock extends HTMLSpanElement {
         super()
         this.parent_controller = parent_controller
         this.node = node
+        this.mode = this.node.mode
+
         if (!this.node.properties.controller_details) {
             this.node.properties.controller_details = {}
             this.node.properties.controller_widgets = {}
         }
         this.classList.add("nodeblock")
-        this.bypassed = (this.node.mode!=0)
-        if (this.bypassed) {
-            create('span', 'bypass_overlay', this)
-        }
-        classSet(this, 'bypassed', this.bypassed)
-        this.main = create("span",null,this)
+
+        this.mode_overlay = create('span', `mode_overlay mode_overlay_${this.mode}`, this)
+        classSet(this, 'bypassed', this.mode!=0)
+
+        this.main = create("span","nb_main",this)
         this.build_nodeblock()
         this.add_block_drag_handlers()
     }
@@ -156,6 +157,15 @@ export class NodeBlock extends HTMLSpanElement {
         this.minimisedot.addEventListener("mousedown", (e)=>{ 
             e.preventDefault(); 
             e.stopPropagation(); 
+        })
+
+        this.mode_button  = create('i', `pi mode_button mode_button_${this.mode}`, this.title_bar_left)
+        this.mode_button.addEventListener('click', (e)=>{
+            e.preventDefault(); 
+            e.stopPropagation(); 
+            this.node.mode = (this.node.mode!=0) ? 0 : (e.ctrlKey ? 2 : 4)
+            app.canvas.setDirty(true,true)
+            UpdateController.make_single_request('node mode button', this.parent_controller)        
         })
 
         this.title_text = create("span", 'nodeblock_title', this.title_bar_left, {"innerText":this.node.title, 'draggable':false})
