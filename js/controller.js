@@ -110,26 +110,13 @@ app.registerExtension({
             Debug.error("*** EXCEPTION ADDING on_change")
             console.error(e)
         }
-/*
-        const rcin = app.refreshComboInNodes
-        app.refreshComboInNodes = async function () {
-            try {
-                if (rcin) await rcin.bind(app)()
-            } catch (e) {
-                console.error(e)
-            } finally {
-                UpdateController.make_request('refreshComboInNodes')
-                UpdateController.make_request('refreshComboInNodes delayed',2000)
-            }
-
-        }*/
 
         check_ue()
     },
 
     async refreshComboInNodes() {
         UpdateController.make_request('refreshComboInNodes')
-        //UpdateController.make_request('refreshComboInNodes delayed',2000)        
+        UpdateController.make_request('refreshComboInNodes delayed',1000)        
     },
 
     async init() {
