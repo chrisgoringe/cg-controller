@@ -283,7 +283,7 @@ export class NodeBlock extends HTMLSpanElement {
         this.main = new_main
 
         if (this.node.imgs) {
-            ImageManager.node_has_img(this.node)
+            ImageManager.node_img_change(this.node)
         } 
 
         this.valid_nodeblock = isImageNode(this.node) || this.widget_count || (this.node.imgs && this.node.imgs.length>0)
