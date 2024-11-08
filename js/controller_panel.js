@@ -35,8 +35,10 @@ export class ControllerPanel extends HTMLDivElement {
 
         this.addEventListener('dragstart', (e) => { this.classList.add('unrefreshable'); this.reason = 'drag happening' })
         this.addEventListener('dragend',   (e) => { 
-            update_node_order(this.settings.node_order, NodeBlock.last_dragged.node.id, NodeBlock.last_dragged.previousSibling?.node.id, NodeBlock.last_dragged.nextSibling?.node.id); 
-            this.classList.remove('unrefreshable') 
+            if (e.target.className == "nodeblock_draghandle") {
+                update_node_order(this.settings.node_order, NodeBlock.last_dragged.node.id, NodeBlock.last_dragged.previousSibling?.node.id, NodeBlock.last_dragged.nextSibling?.node.id); 
+                this.classList.remove('unrefreshable') 
+            }
         } )
         this.addEventListener('dragover',  (e) => {
             if (NodeBlock.dragged) {

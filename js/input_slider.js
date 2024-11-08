@@ -247,12 +247,13 @@ export class FancySlider extends HTMLSpanElement {
         this.classList.add('unrefreshable')
         this.reason = "slider in text edit mode"
         this.redraw()
-        setTimeout(this.text_edit.focus,100)
+        setTimeout(()=>{this.text_edit.focus()},100)
     }
 
     switch_to_graphicaledit() {
         if (FancySlider.in_textedit == this) FancySlider.in_textedit = null
         this.displaying = "graphic"
+        this.redraw()
     }
 
     edit_min_max(e) {
