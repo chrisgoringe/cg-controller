@@ -55,7 +55,9 @@ export class ImageManager {
     }
 
     /* called by a nodeblock if it has an imgs value. If we're running, we ignore this */
-    static node_has_img(node, v) {
+    static node_has_img(node) {
+        if (node.imgs.length == 0) return
+        const v = node.imgs[0]
         if (ImageManager.executing_node==null || is_image_upload_node(node)) {
             var src = v.src ?? api.apiURL(
                 `/view?filename=${encodeURIComponent(v.filename ?? v)}&type=${v.type ?? "input"}&subfolder=${v.subfolder ?? ""}`

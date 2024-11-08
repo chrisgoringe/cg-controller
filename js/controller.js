@@ -179,14 +179,29 @@ app.registerExtension({
             UpdateController.make_request("node_removed", 20)
         }
 
-        node._imgs = node.imgs
-        defineProperty(node, 'imgs', {
-            get: () => { return node._imgs },
-            set: (v) => { 
-                node._imgs = v; 
-                if (v && v.length>0) ImageManager.node_has_img(node, v[0])
+        const onDrawForeground = node.onDrawForeground
+        node.onDrawForeground = function() {
+            onDrawForeground?.apply(this,arguments)
+            if (node._imgs === undefined) node._imgs = node.imgs
+            if (node._imgs !== node.imgs && node.imgs && node.imgs.length>0) {
+                ImageManager.node_has_img(node)
+                node._imgs = node.imgs
             }
-        })
+        }
+/*
+        try {
+            node._imgs = node.imgs
+            defineProperty(node, 'imgs', {
+                get: () => { return node._imgs },
+                set: (v) => { 
+                    node._imgs = v; 
+                    if (v && v.length>0) ImageManager.node_has_img(node, v[0])
+                }
+            })
+        } catch (e) {
+            Debug.error(`In nodeCreated, for ${node}`)
+            console.log(e)
+        }*/
 
         UpdateController.make_request_unless_configuring("node_created", 20)
     },
