@@ -230,6 +230,7 @@ export class NodeBlock extends HTMLSpanElement {
         this.image_panel = create("div", "nodeblock_image_panel nodeblock_image_empty", new_main)
 
         this.valid_nodeblock = false
+        this.widget_count = 0
         this.node.widgets?.forEach(w => {
             if (!this.node.properties.controller_widgets[w.name]) this.node.properties.controller_widgets[w.name] = {}
             const properties = this.node.properties.controller_widgets[w.name]
@@ -237,7 +238,8 @@ export class NodeBlock extends HTMLSpanElement {
             if (e.valid()) {
                 new_main.appendChild(e)
                 this[w.name] = e
-                this.valid_nodeblock = true                    
+                this.valid_nodeblock = true    
+                this.widget_count += 1                
             }
         })
 
@@ -284,7 +286,7 @@ export class NodeBlock extends HTMLSpanElement {
             ImageManager.node_has_img(this.node, this.node.imgs[0])
         } 
 
-        this.valid_nodeblock = true
+        this.valid_nodeblock = this.image_node || this.widget_count || (this.node.imgs && this.node.imgs.length>0)
     }
 
     manage_image(url, running) {
