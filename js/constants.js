@@ -6,6 +6,7 @@ export class SettingIds {
     static DEBUG_LEVEL = "Controller.debug.level"
     static FONT_SIZE = "Controller.options.font_size"
     static TOOLTIPS = "Controller.options.tooltips"
+    static DEFAULT_APPLY_TO_SIMILAR = "Controller.options.default_apply_to_similar"
 }
 
 export class InclusionOptions {

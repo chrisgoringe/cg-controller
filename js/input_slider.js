@@ -83,7 +83,7 @@ class SliderOptionEditor extends HTMLSpanElement {
             const n = this.other_like_node.length
             this.apply_also_panel = create('span',  'option_setting_panel', this)
             create('span', 'option_setting_label', this.apply_also_panel, {"innerHTML":`Apply to ${n} similar node${n>1?"s":"" }`})
-            this.apply_also_checkbox = create('input', 'option_setting_also_checkbox', this.apply_also_panel, {'type':'checkbox', "checked":true})
+            this.apply_also_checkbox = create('input', 'option_setting_also_checkbox', this.apply_also_panel, {'type':'checkbox', "checked":getSettingValue(SettingIds.DEFAULT_APPLY_TO_SIMILAR, true)})
         }
 
         this.buttons       = create('span',  'option_setting_buttons', this)

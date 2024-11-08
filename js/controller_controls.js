@@ -35,9 +35,17 @@ export function add_controls() {
     app.ui.settings.addSetting({
         id: SettingIds.TOOLTIPS,
         name: "Show tooltips",
-        tooltop: "Refresh controller after changing",
+        tooltip: "Refresh controller after changing",
         type: "boolean",
         defaultValue: true
+    })
+
+    app.ui.settings.addSetting({
+        id: SettingIds.DEFAULT_APPLY_TO_SIMILAR,
+        name: "Default apply to similar",
+        tooltip: "Default setting of 'apply to similar' checkbox",
+        type: "boolean",
+        defaultValue: true        
     })
 
     app.ui.settings.addSetting({
