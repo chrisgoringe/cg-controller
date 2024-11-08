@@ -2,7 +2,7 @@ import { app } from "../../scripts/app.js";
 
 import { ComfyWidgets } from "../../scripts/widgets.js";
 
-import { create, darken, classSet } from "./utilities.js";
+import { create, darken, classSet, mode_change } from "./utilities.js";
 import { Entry } from "./panel_entry.js"
 import { make_resizable } from "./resize_manager.js";
 import { image_is_blob, ImageManager, is_image_upload_node, isImageNode } from "./image_manager.js";
@@ -51,6 +51,10 @@ export class NodeBlock extends HTMLSpanElement {
     add_handle_drag_handlers(draghandle) {
         draghandle.draggable = "true"
         draghandle.addEventListener('dragstart', (e) =>  { this.drag_me(e) } )
+        //draghandle.addEventListener('mousedown', (e)=>{ })
+        draghandle.addEventListener('mouseup', (e)=>{
+            if (!NodeBlock.dragged) this.toggle_minimise()
+        })
     }
 
     static dragged = null
@@ -61,6 +65,15 @@ export class NodeBlock extends HTMLSpanElement {
         NodeBlock.last_dragged = this
         NodeBlock.dragged.classList.add("being_dragged")
         e.dataTransfer.setDragImage(this, e.layerX, e.layerY);
+    }
+
+    toggle_minimise() {
+        this.node.properties.controller_details.minimised = (!!!this.node.properties.controller_details.minimised)
+        this.minimised = this.node.properties.controller_details.minimised
+        classSet(this, 'minimised', this.minimised)
+        if (this.minimised && this.contains(document.activeElement)) {
+            document.activeElement.blur()
+        }
     }
 
     static drag_over_me(e, nodeblock_over, force_before) {
@@ -132,43 +145,28 @@ export class NodeBlock extends HTMLSpanElement {
     }
 
     build_nodeblock() {
-        const new_main = create("span")
+        const new_main = create("span", 'nb_main')
 
         this.title_bar = create("span", 'nodeblock_titlebar', new_main)
+        
         this.title_bar_left = create("span", 'nodeblock_titlebar_left', this.title_bar)
+        this.draghandle = create("span", 'nodeblock_draghandle', this.title_bar, { })
         this.title_bar_right = create("span", 'nodeblock_titlebar_right', this.title_bar)
 
-        this.draghandle = create("span", 'nodeblock_draghandle', this.title_bar, { })
         this.add_handle_drag_handlers(this.draghandle)
 
         this.minimised = this.node.properties.controller_details.minimised
-
-        this.minimisedot = create("span", 'minimisedot', this.title_bar_left, { "innerHTML":"&#x25FC;"})
-        this.minimisedot.addEventListener("click", (e)=>{ 
-            e.preventDefault(); 
-            e.stopPropagation(); 
-            this.node.properties.controller_details.minimised = (!!!this.node.properties.controller_details.minimised)
-            this.minimised = this.node.properties.controller_details.minimised
-            classSet(this, 'minimised', this.minimised)
-            if (this.minimised && this.contains(document.activeElement)) {
-                document.activeElement.blur()
-            }
-        })
-        this.minimisedot.addEventListener("mousedown", (e)=>{ 
-            e.preventDefault(); 
-            e.stopPropagation(); 
-        })
 
         this.mode_button  = create('i', `pi mode_button mode_button_${this.mode}`, this.title_bar_left)
         this.mode_button.addEventListener('click', (e)=>{
             e.preventDefault(); 
             e.stopPropagation(); 
-            this.node.mode = (this.node.mode!=0) ? 0 : (e.ctrlKey ? 2 : 4)
+            this.node.mode = mode_change(this.node.mode,e)
             app.canvas.setDirty(true,true)
-            UpdateController.make_single_request('node mode button', this.parent_controller)        
+            UpdateController.make_request('node mode button')        
         })
 
-        this.title_text = create("span", 'nodeblock_title', this.title_bar_left, {"innerText":this.node.title, 'draggable':false})
+        this.title_text = create("span", 'nodeblock_title', this.draghandle, {"innerText":this.node.title, 'draggable':false})
 
         this.image_pin = create('i', 'pi pi-thumbtack hidden', this.title_bar_right)
         this.image_pin.addEventListener('click', (e) => {
@@ -211,7 +209,7 @@ export class NodeBlock extends HTMLSpanElement {
                 delete this.node.properties.controller_widgets['__image_panel']
             }
         }
-        if (!this.node.properties.controller_widgets[this.image_panel_id].pinned) this.node.properties.controller_widgets[this.image_panel_id].pinned = false
+        if (this.node.properties.controller_widgets[this.image_panel_id].pinned == undefined) this.node.properties.controller_widgets[this.image_panel_id].pinned = true
         this.update_pin()
 
         this.image_image = create('img', 'nodeblock_image', this.image_panel)

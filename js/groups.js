@@ -1,6 +1,7 @@
 import { app } from "../../scripts/app.js"
 import { NodeInclusionManager } from "./node_inclusion.js"
 import { Colors, Texts } from "./constants.js"
+import { mode_change } from "./utilities.js"
 
 export class GroupManager {
     static instance = null
@@ -58,7 +59,7 @@ export class GroupManager {
     }
 
     static change_group_mode(group_name, current_mode, e) {
-        const value = (current_mode==0) ? ((e.ctrlKey) ? 2 : 4) : 0
+        const value = mode_change(current_mode,e)
         app.graph._groups.forEach((group) => {
             if (group.title == group_name) {
                 group._nodes.forEach((node) => {
