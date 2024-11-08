@@ -91,6 +91,7 @@ export function classSet(element, name, add) {
 }
 
 export function add_tooltip(element, text, extra_classes) {
+    if (app.canvas.read_only) return
     if (getSettingValue(SettingIds.TOOLTIPS, true)) {
         element.classList.add('tooltip')
         if (extra_classes) extra_classes.split(" ").forEach((s) => element.classList.add(s))

@@ -421,6 +421,7 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     header_mouse_down(e) {
+        if (app.canvas.read_only) return
         //if (e.target==this.header_tabs || e.target.parentElement==this.header_tabs) {
             this.being_dragged = true
             this.classList.add('grabbed')
@@ -431,6 +432,7 @@ export class ControllerPanel extends HTMLDivElement {
         //}
     }
     mouse_move(e) {
+        if (app.canvas.read_only) return
         if (this.being_dragged) {
             if (e.currentTarget==window) {
                 this.classList.add('being_dragged')
@@ -516,6 +518,8 @@ export class ControllerPanel extends HTMLDivElement {
         }
 
         this.add_button_actions()
+
+        this.style.resize = app.canvas.read_only ? 'none' : 'both'
         
         /*
         Finalise
@@ -581,6 +585,7 @@ export class ControllerPanel extends HTMLDivElement {
             this.add_group_button.addEventListener('click', (e) => {
                 e.preventDefault()
                 e.stopPropagation()
+                if (app.canvas.read_only) return
                 this.show_group_select(e)
             })
             add_tooltip(this.add_group_button, 'Add new group tab', 'right')
@@ -591,6 +596,7 @@ export class ControllerPanel extends HTMLDivElement {
             this.remove_group_button.addEventListener('click', (e) => {
                 e.preventDefault(); 
                 e.stopPropagation(); 
+                if (app.canvas.read_only) return
                 this.settings.groups = this.settings.groups.filter((g)=>g!=this.settings.group_choice)
                 if (this.settings.groups.length==0) {
                     this.delete_controller()
@@ -605,6 +611,7 @@ export class ControllerPanel extends HTMLDivElement {
             this.group_mode_button.addEventListener('click', (e) => {
                 e.preventDefault(); 
                 e.stopPropagation(); 
+                if (app.canvas.read_only) return
                 GroupManager.change_group_mode(this.settings.group_choice, node_mode, e)
                 app.canvas.setDirty(true,true)
                 UpdateController.make_single_request('group mode button', this)
@@ -620,6 +627,7 @@ export class ControllerPanel extends HTMLDivElement {
 
         if (this.show_advanced_button) {
             this.show_advanced_button.addEventListener('click', (e) => {
+                if (app.canvas.read_only) return
                 this.settings.advanced = !this.settings.advanced
                 this.redraw()
                 e.stopPropagation()    
@@ -632,6 +640,7 @@ export class ControllerPanel extends HTMLDivElement {
             this.minimise_button.addEventListener("click", (e)=>{ 
                 e.preventDefault(); 
                 e.stopPropagation(); 
+                if (app.canvas.read_only) return
                 this.settings.collapsed = (!this.settings.collapsed)
                 UpdateController.make_single_request('collapse', this) 
             })
@@ -640,6 +649,7 @@ export class ControllerPanel extends HTMLDivElement {
 
         if (this.delete_button) {
             this.delete_button.addEventListener('click', (e) => {
+                if (app.canvas.read_only) return
                 this.delete_controller()    
             })
         }

@@ -118,6 +118,12 @@ app.registerExtension({
             NodeBlock.on_draw(ctx);
         }
 
+        app.canvas.__read_only = app.canvas.read_only
+        defineProperty(app.canvas, "read_only", {
+            get: ()=>{return app.canvas.__read_only},
+            set: (v)=>{app.canvas.__read_only = v; UpdateController.make_request("read_only") }
+        })
+
         check_ue()
     },
 
