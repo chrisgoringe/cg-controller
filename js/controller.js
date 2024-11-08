@@ -110,7 +110,7 @@ app.registerExtension({
             Debug.error("*** EXCEPTION ADDING on_change")
             console.error(e)
         }
-
+/*
         const rcin = app.refreshComboInNodes
         app.refreshComboInNodes = async function () {
             try {
@@ -122,9 +122,14 @@ app.registerExtension({
                 UpdateController.make_request('refreshComboInNodes delayed',2000)
             }
 
-        }
+        }*/
 
         check_ue()
+    },
+
+    async refreshComboInNodes() {
+        UpdateController.make_request('refreshComboInNodes')
+        //UpdateController.make_request('refreshComboInNodes delayed',2000)        
     },
 
     async init() {
