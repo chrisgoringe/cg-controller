@@ -15,7 +15,6 @@ import { SettingIds, Timings, Texts } from "./constants.js";
 
 export class ControllerPanel extends HTMLDivElement {
     static instances = {}
-    static button = undefined
 
     constructor(index) {
         super()
@@ -193,6 +192,11 @@ export class ControllerPanel extends HTMLDivElement {
             add_tooltip(ControllerPanel.menu_button, 'Toggle controllers')
             classSet(ControllerPanel.menu_button, 'showing', !global_settings.hidden) 
             ControllerPanel.menu_button.addEventListener('click', ControllerPanel.toggle)
+
+            const exit_focus_button = document.getElementsByTagName('main')[0].getElementsByTagName('button')[0]
+            exit_focus_button.addEventListener('click', () => {
+                UpdateController.make_request('exit focus', 10)
+            })
             
         } else {
             setTimeout(ControllerPanel.create_menu_icon,100)
