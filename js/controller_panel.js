@@ -491,11 +491,11 @@ export class ControllerPanel extends HTMLDivElement {
             this.delete_button = create('i', 'pi pi-times header_button', this.header1_right)
         } else {
             this.add_group_button = create('i', 'pi pi-plus header_button last', this.header1_left)
-            this.remove_group_button = create('i', 'pi pi-trash header_button', this.header2_left)
             if (this.settings.group_choice != Texts.ALL_GROUPS && this.settings.group_choice != Texts.UNGROUPED) {
                 this.group_mode_button = create('i', 'pi header_button mode', this.header2_left)
             }
             this.show_advanced_button = create('i', `pi pi-bolt header_button${this.settings.advanced ? " clicked":""}`, this.header2_left)
+            this.remove_group_button = create('i', 'pi pi-trash header_button', this.header2_right)
             this.minimise_button = create("i", `pi pi-minus header_button collapse_button`, this.header1_right)
             this.delete_button = create('i', 'pi pi-times header_button', this.header1_right)
         }
@@ -656,12 +656,6 @@ export class ControllerPanel extends HTMLDivElement {
             })
         }
     }
-
-   // save_node_order() {
-   //     const node_id_list = []
-   //     this.main.childNodes.forEach((child)=>{if (child?.node?.id) node_id_list.push(child.node.id)})
-   //     this.settings.node_order = node_id_list
-   // }
 
     show_group_select(e, replace) {
         const the_select = create('span','group_add_select', document.body)

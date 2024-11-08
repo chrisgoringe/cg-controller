@@ -27,9 +27,7 @@ export class NodeBlock extends HTMLSpanElement {
             this.node.properties.controller_widgets = {}
         }
         this.classList.add("nodeblock")
-
-        this.mode_overlay = create('span', `mode_overlay mode_overlay_${this.mode}`, this)
-        classSet(this, 'bypassed', this.mode!=0)
+        this.classList.add(`mode_${this.mode}`)
 
         this.main = create("span","nb_main",this)
         this.build_nodeblock()
@@ -217,12 +215,11 @@ export class NodeBlock extends HTMLSpanElement {
 
         this.style.backgroundColor = this.node.bgcolor ?? LiteGraph.NODE_DEFAULT_BGCOLOR
         if (this.node.bgcolor) {
-            this.style.backgroundColor = this.node.bgcolor
             this.title_bar.style.backgroundColor = darken(this.node.bgcolor)
         } else {
-            this.style.backgroundColor = LiteGraph.NODE_DEFAULT_BGCOLOR
             this.title_bar.classList.add("titlebar_nocolor")
         }
+        this.style.backgroundColor = this.node.bgcolor
 
         classSet(this, 'minimised', this.minimised)
 

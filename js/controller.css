@@ -258,6 +258,13 @@
     border: 1px solid transparent;
 }
 
+.nodeblock.mode_2 {
+    opacity: 0.5;
+}
+.nodeblock.mode_4 {
+    opacity: 0.5;
+}
+
 .nodeblock.active {
     border-color: var(--active-color);
 }
@@ -343,24 +350,6 @@
 .nodeblock.minimised .nodeblock_image_panel {
     display:none;
     height:0px !important;
-}
-
-.nodeblock.bypassed .nb_main div {
-    opacity: 0.5;
-}
-
-.mode_overlay {
-    position:absolute;
-    width: 100%;
-    height: 100%;
-    background-color: transparent;
-    pointer-events: none;
-}
-.mode_overlay_2 {
-    background-color: var(--mute-overlay-color);
-}
-.mode_overlay_4 {
-    background-color: var(--bypass-overlay-color);
 }
 
 .nodeblock .mode_button:before {

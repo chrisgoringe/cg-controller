@@ -118,11 +118,16 @@ app.registerExtension({
             NodeBlock.on_draw(ctx);
         }
 
-        app.canvas.__read_only = app.canvas.read_only
-        defineProperty(app.canvas, "read_only", {
-            get: ()=>{return app.canvas.__read_only},
-            set: (v)=>{app.canvas.__read_only = v; UpdateController.make_request("read_only") }
-        })
+        try {
+            app.canvas.__read_only = app.canvas.read_only
+            defineProperty(app.canvas, "read_only", {
+                get: ()=>{return app.canvas.__read_only},
+                set: (v)=>{app.canvas.__read_only = v; UpdateController.make_request("read_only") }
+            })
+        } catch (e) {
+            Debug.error("in setup")
+            console.error(e)
+        }
 
         check_ue()
     },
@@ -182,11 +187,18 @@ app.registerExtension({
         const onDrawForeground = node.onDrawForeground
         node.onDrawForeground = function() {
             onDrawForeground?.apply(this,arguments)
-            if (node._imgs === undefined) node._imgs = node.imgs
-            if (node._imgs !== node.imgs && node.imgs && node.imgs.length>0) {
+
+            if (node._controller_imgs !== node.imgs && node.imgs && node.imgs.length>0) {
                 ImageManager.node_img_change(node)
-                node._imgs = node.imgs
             }
+            node._controller_imgs = node.imgs
+
+            //bgcolor gets changed all the time
+            //if (node._controller_bgcolor !== node.bgcolor) {
+            //    ControllerPanel.node_change(node.id)
+            //}
+            //node._controller_bgcolor = node._controller_bgcolor
+
         }
 
         UpdateController.make_request_unless_configuring("node_created", 20)
