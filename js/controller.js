@@ -10,6 +10,7 @@ import { Debug } from "./debug.js"
 import { BASE_PATH } from "./constants.js"
 import { ImageManager } from "./image_manager.js"
 import { global_settings } from "./settings.js"
+import { NodeBlock } from "./nodeblock.js"
 
 const MINIMUM_UE = 500006
 async function check_ue() {
@@ -109,6 +110,12 @@ app.registerExtension({
         } catch (e) {
             Debug.error("*** EXCEPTION ADDING on_change")
             console.error(e)
+        }
+
+        const draw = app.canvas.onDrawForeground;
+        app.canvas.onDrawForeground = function(ctx, visible) {
+            draw?.apply(this,arguments);
+            NodeBlock.on_draw(ctx);
         }
 
         check_ue()

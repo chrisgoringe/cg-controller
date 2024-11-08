@@ -33,7 +33,7 @@ export class NodeBlock extends HTMLSpanElement {
 
         this.main = create("span","nb_main",this)
         this.build_nodeblock()
-        this.add_block_drag_handlers()
+        this.add_block_handlers()
     }
 
     can_reuse() {
@@ -41,11 +41,52 @@ export class NodeBlock extends HTMLSpanElement {
         return true
     }
 
-    add_block_drag_handlers() {
+    add_block_handlers() {
         this.addEventListener('dragover',  function (e) { NodeBlock.drag_over_me(e) } )
         this.addEventListener('drop',      function (e) { NodeBlock.drop_on_me(e)   } )
         this.addEventListener('dragend',   function (e) { NodeBlock.drag_end(e)     } )
         this.addEventListener('dragenter', function (e) { e.preventDefault()        } )
+
+        this.addEventListener('mouseenter', (e) => {this.mouseover(true)})
+        this.addEventListener('mouseleave', (e) => {this.mouseover(false)})
+    }
+
+    static area = [0,0,0,0]
+    static on_draw(ctx) {
+        if (NodeBlock.mouse_in) {
+            const ctx = app.canvas.ctx
+
+            ctx.save();
+            try {
+                ctx.translate(NodeBlock.mouse_in.node.pos[0], NodeBlock.mouse_in.node.pos[1]);
+
+                NodeBlock.mouse_in.node.measure(NodeBlock.area);
+                NodeBlock.area[0] -= NodeBlock.mouse_in.node.pos[0];
+                NodeBlock.area[1] -= NodeBlock.mouse_in.node.pos[1];
+
+                ctx.strokeStyle = "white"
+                ctx.lineWidth   = 1
+                ctx.shadowColor = "white"
+                ctx.shadowBlur  = 4
+                ctx.fillStyle   = "#ffd70040"
+
+                ctx.beginPath()
+                ctx.roundRect(NodeBlock.area[0], NodeBlock.area[1], NodeBlock.area[2], NodeBlock.area[3], 6)
+                ctx.stroke()
+                ctx.fill()
+            } finally {
+                ctx.restore()
+            }
+        }
+    }
+
+    mouseover(isin) {
+        if (isin) {
+            NodeBlock.mouse_in = this
+        } else {
+            NodeBlock.mouse_in = null
+        }
+        app.canvas.setDirty(true, true)
     }
 
     add_handle_drag_handlers(draghandle) {
