@@ -43,8 +43,8 @@ export class ControllerPanel extends HTMLDivElement {
                 e.dataTransfer.effectAllowed = "move";
                 e.dataTransfer.dropEffect = "move"
             } else {
-                e.dataTransfer.effectAllowed = "none" 
-                e.dataTransfer.dropEffect = "none"
+                e.dataTransfer.effectAllowed = "copy" 
+                e.dataTransfer.dropEffect = "copy"
             }
             e.preventDefault();
         })
