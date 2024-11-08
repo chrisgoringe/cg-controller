@@ -319,7 +319,7 @@
 .nodeblock_title {
     text-align: left;
     pointer-events: none;
-    padding-left: 2px;
+    padding-left: 3px;
 }
 
 .nodeblock_image_panel {
