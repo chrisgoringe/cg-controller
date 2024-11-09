@@ -61,6 +61,18 @@ export function add_controls() {
     })
 
     app.ui.settings.addSetting({
+        id: SettingIds.SHOW_SCROLLBARS,
+        name: "Controller scrollbars",
+        tooltip: "If off, can still scroll with scrollwheel",
+        type: "combo",
+        options: [ {value:"no", text:"Off"}, 
+                {value:"thin", text:"Thin"}, 
+                {value:"full", text:"Normal"},
+             ],
+        defaultValue: "thin",     
+    })
+
+    app.ui.settings.addSetting({
         id: SettingIds.EDIT_SLIDERS,
         name: "Edit slider limits",
         type: "combo",

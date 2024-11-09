@@ -7,6 +7,7 @@ export class SettingIds {
     static FONT_SIZE = "Controller.options.font_size"
     static TOOLTIPS = "Controller.options.tooltips"
     static DEFAULT_APPLY_TO_SIMILAR = "Controller.options.default_apply_to_similar"
+    static SHOW_SCROLLBARS = "Controller.options.show_scrollbars"
 }
 
 export class InclusionOptions {

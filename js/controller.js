@@ -129,6 +129,19 @@ app.registerExtension({
             console.error(e)
         }
 
+        new MutationObserver((mutations)=>{
+            var need_update = ""
+            mutations.forEach((mutation)=>{
+                mutation.addedNodes.forEach((n)=>{
+                    if (n.classList?.contains?.('p-dialog-mask')) need_update = "dialog added"
+                })
+                mutation.removedNodes.forEach((n)=>{
+                    if (n.classList?.contains?.('p-dialog-mask')) need_update = "dialog removed"
+                })
+            })
+            if (need_update != "") UpdateController.make_request(`mutation: ${need_update}`)
+        }).observe(document.body, {"childList":true})
+
         check_ue()
     },
 

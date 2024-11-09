@@ -62,10 +62,19 @@
     border-radius: 4px;
     resize: both;
     z-index:999;
-    scrollbar-width: thin;
+    scrollbar-width: auto;
     scrollbar-color: var(--third-back-color) var(--main-back-color);
     pointer-events: all;
     user-select: none;
+}
+
+.controller.small_scrollbars {
+    scrollbar-width: thin;
+}
+
+.controller.hide_scrollbars {
+    scrollbar-width: none;
+    padding-right: 2px;
 }
 
 .controller.collapsed {

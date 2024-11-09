@@ -522,6 +522,10 @@ export class ControllerPanel extends HTMLDivElement {
         this.add_button_actions()
 
         this.style.resize = app.canvas.read_only ? 'none' : 'both'
+
+        const bars = getSettingValue(SettingIds.SHOW_SCROLLBARS, "thin")
+        classSet(this, "hide_scrollbars", bars == "no")
+        classSet(this, "small_scrollbars", bars == "thin")
         
         /*
         Finalise
