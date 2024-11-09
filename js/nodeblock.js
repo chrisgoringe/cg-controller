@@ -92,7 +92,7 @@ export class NodeBlock extends HTMLSpanElement {
         draghandle.addEventListener('dragstart', (e) =>  { this.drag_me(e) } )
         //draghandle.addEventListener('mousedown', (e)=>{ })
         draghandle.addEventListener('mouseup', (e)=>{
-            if (!NodeBlock.dragged) this.toggle_minimise()
+            if (!NodeBlock.dragged && e.button == 0) this.toggle_minimise()
         })
     }
 
