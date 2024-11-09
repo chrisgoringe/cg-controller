@@ -90,10 +90,14 @@ app.registerExtension({
             {'rel':'stylesheet', 'type':'text/css', 'href':`${BASE_PATH}/slider.css` } )
 
         // Allow our elements to do any setup they want
+        try {
         on_setup()
+        } except (e) { Debug.error("on setup");console.error(e) }
 
         // add to the canvas menu, and keyboard shortcuts
+        try {
         add_controls()
+        } except (e) { Debug.error("add controls");console.error(e) }
 
         try {
             const on_change = app.graph.on_change
