@@ -8,6 +8,7 @@ export class SettingIds {
     static TOOLTIPS = "Controller.options.tooltips"
     static DEFAULT_APPLY_TO_SIMILAR = "Controller.options.default_apply_to_similar"
     static SHOW_SCROLLBARS = "Controller.options.show_scrollbars"
+    static SHOW_IN_FOCUS_MODE = "Controller.options.show_in_focus_mode"
 }
 
 export class InclusionOptions {

@@ -103,6 +103,11 @@ export class ControllerPanel extends HTMLDivElement {
         this.progress.style.height = `${h}px`
     }
 
+    static focus_mode_changed() {
+        Object.values(ControllerPanel.instances).forEach((cp)=>{cp.remove()})
+        UpdateController.make_request('focus mode changed')
+    }
+
     static on_executing(e) {
         const node_id = e.detail
         Debug.trivia(`ControllerPanel.on_executing ${node_id}`)
@@ -178,7 +183,9 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     static find_controller_parent() {
-        return document.getElementsByClassName('graph-canvas-panel')[0] ?? null
+        const show_in_focus = getSettingValue(SettingIds.SHOW_IN_FOCUS_MODE, false)
+        return document.getElementsByClassName('graph-canvas-panel')[0] ?? 
+                (show_in_focus ? (document.getElementsByClassName('graph-canvas-container')[0] ?? null) : null)
     }
 
     static create_menu_icon() {
@@ -526,7 +533,7 @@ export class ControllerPanel extends HTMLDivElement {
         const bars = getSettingValue(SettingIds.SHOW_SCROLLBARS, "thin")
         classSet(this, "hide_scrollbars", bars == "no")
         classSet(this, "small_scrollbars", bars == "thin")
-        
+
         /*
         Finalise
         */

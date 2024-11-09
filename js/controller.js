@@ -129,6 +129,7 @@ app.registerExtension({
             console.error(e)
         }
 
+        /* look for dialog boxes appearing or disappearing */
         new MutationObserver((mutations)=>{
             var need_update = ""
             mutations.forEach((mutation)=>{
@@ -141,6 +142,20 @@ app.registerExtension({
             })
             if (need_update != "") UpdateController.make_request(`mutation: ${need_update}`)
         }).observe(document.body, {"childList":true})
+
+        /* look for focus mode start or stop */
+        new MutationObserver((mutations)=>{
+            var focus_change = false 
+            mutations.forEach((mutation)=>{
+                mutation.addedNodes.forEach((n)=>{
+                    if (n.$pc?.name == "Splitter") focus_change = true
+                })
+                mutation.removedNodes.forEach((n)=>{
+                    if (n.$pc?.name == "Splitter") focus_change = true
+                })
+            })
+            if (focus_change) ControllerPanel.focus_mode_changed()
+        }).observe(document.getElementsByClassName('graph-canvas-container')[0], {"childList":true})
 
         check_ue()
     },

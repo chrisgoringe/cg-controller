@@ -49,6 +49,13 @@ export function add_controls() {
     })
 
     app.ui.settings.addSetting({
+        id: SettingIds.SHOW_IN_FOCUS_MODE,
+        name: "Show controllers in focus mode",
+        type: "boolean",
+        defaultValue: false        
+    })
+
+    app.ui.settings.addSetting({
         id: SettingIds.SCROLL_MOVES_SLIDERS,
         name: "Scrollwheel changes sliders",
         type: "combo",
