@@ -166,9 +166,9 @@ class SliderOptionEditor extends HTMLSpanElement {
 
 export class FancySlider extends HTMLSpanElement {
 
-    static in_textedit = null
-
+    static in_textedit   = null
     static mouse_down_on = null
+    static currently_active = null
 
     constructor(parent_controller, node, widget, properties) {
         super()
@@ -206,8 +206,8 @@ export class FancySlider extends HTMLSpanElement {
             get : () => { return this._dragging},
             set : (v) => {
                 this._dragging = v
-                if (v) this.classList.add('unrefreshable')
-                else this.classList.remove('unrefreshable')
+                if (v) FancySlider.currently_active = this
+                else FancySlider.currently_active = null
             }
         })
 
@@ -216,9 +216,9 @@ export class FancySlider extends HTMLSpanElement {
             get : () => { return this._wheeling},
             set : (v) => {
                 this._wheeling = v
-                if (v) this.classList.add('unrefreshable')
+                if (v) FancySlider.currently_active = this
                 else {
-                    this.classList.remove('unrefreshable')
+                    FancySlider.currently_active = null
                     this.redraw()
                 }
             }
@@ -244,8 +244,7 @@ export class FancySlider extends HTMLSpanElement {
         FancySlider.in_textedit = this
         this.displaying = "text"
         this.enddragging()
-        this.classList.add('unrefreshable')
-        this.reason = "slider in text edit mode"
+        FancySlider.currently_active = this
         this.redraw()
         setTimeout(()=>{this.text_edit.focus()},100)
     }
@@ -291,7 +290,7 @@ export class FancySlider extends HTMLSpanElement {
     _change(e) {
         e.stopPropagation()
         this.switch_to_graphicaledit()
-        this.classList.remove('unrefreshable')
+        FancySlider.currently_active = null
     }
 
     _mousedown(e) { 

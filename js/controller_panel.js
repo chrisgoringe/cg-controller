@@ -12,6 +12,7 @@ import { NodeInclusionManager } from "./node_inclusion.js";
 import { get_all_setting_indices, getSettingValue, global_settings, new_controller_setting_index, get_settings, delete_settings, initialise_settings, valid_settings } from "./settings.js";
 import { update_node_order, add_missing_nodes } from "./settings.js"
 import { SettingIds, Timings, Texts } from "./constants.js";
+import { FancySlider } from "./input_slider.js";
 
 export class ControllerPanel extends HTMLDivElement {
     static instances = {}
@@ -33,11 +34,11 @@ export class ControllerPanel extends HTMLDivElement {
         
         this.node_blocks = {}   
 
-        this.addEventListener('dragstart', (e) => { this.classList.add('unrefreshable'); this.reason = 'drag happening' })
+        this.addEventListener('dragstart', (e) => { this.unrefreshable_because = 'drag happening' })
         this.addEventListener('dragend',   (e) => { 
             if (e.target.className == "nodeblock_draghandle") {
                 update_node_order(this.settings.node_order, NodeBlock.last_dragged.node.id, NodeBlock.last_dragged.previousSibling?.node.id, NodeBlock.last_dragged.nextSibling?.node.id); 
-                this.classList.remove('unrefreshable') 
+                this.unrefreshable_because = null
             }
         } )
         this.addEventListener('dragover',  (e) => {
@@ -282,17 +283,25 @@ export class ControllerPanel extends HTMLDivElement {
 
     _can_refresh() {
         try {
-            if (!ControllerPanel.find_controller_parent()?.contains(this)) { return -1 }
-            if (this.classList.contains('unrefreshable')) { Debug.trivia("already refreshing"); return -1 }
-            if (this.contains(document.activeElement) && !document.activeElement.doesntBlockRefresh) { Debug.trivia("delay refresh because active element"); return 1 }
-         
-            const unrefreshables = this.getElementsByClassName('unrefreshable')
-            if (unrefreshables.length > 0) {
-                Debug.trivia(`Not refreshing because contains unrefreshable element because ${unrefreshables[0].reason}`)
-                return Timings.UPDATE_GENERAL_WAITTIME
+            if (!ControllerPanel.find_controller_parent()?.contains(this)) { 
+                Debug.trivia("not visible"); 
+                return -1 
+            }
+            if (this.unrefreshable_because) { 
+                Debug.trivia(this.unrefreshable_because); 
+                return -1 
+            }
+            if (this.contains(document.activeElement) && !document.activeElement.doesntBlockRefresh) { 
+                Debug.trivia("active element"); 
+                return Timings.ACTIVE_ELEMENT_DELAY
+            }
+            
+            if (FancySlider.currently_active && this.contains(FancySlider.currently_active)) {
+                Debug.trivia(`sldier active`)
+                return Timings.SLIDER_ACTIVE_DELAY
             } 
         } catch (e) {
-            Debug.important(`Not refreshing because:`)
+            Debug.important(`exception`)
             console.error(e)
             return Timings.UPDATE_EXCEPTION_WAITTIME
         }
@@ -456,12 +465,11 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     build_controllerPanel() { 
-        this.classList.add('unrefreshable')
-        this.reason = 'already refreshing'
+        this.unrefreshable_because = 'already refreshing'
         try {
             this._build_controllerPanel()
         } finally {
-            this.classList.remove('unrefreshable')
+            this.unrefreshable_because = null
         }
     }
 

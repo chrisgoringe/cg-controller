@@ -87,7 +87,7 @@ export class OnChangeController {
     static gap_request_stack = 0
     static on_change() {
         OnChangeController.gap_request_stack += 1
-        setTimeout(OnChangeController._on_change, Timings.ON_CHANGE)
+        setTimeout(OnChangeController._on_change, Timings.ON_CHANGE_GAP)
     }
     static _on_change() {
         OnChangeController.gap_request_stack -= 1

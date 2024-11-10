@@ -130,7 +130,6 @@ export class Entry extends HTMLDivElement {
                 this.target_widget.value = v
                 this.target_widget.callback?.(v)
                 WidgetChangeManager.notify(this.target_widget)
-                //app.graph.setDirtyCanvas(true,true)
             }
         } finally { UpdateController.pop_pause() }
     }
