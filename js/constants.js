@@ -30,6 +30,8 @@ export class Timings { // ms
     static GROUP_SELECT_NOSELECT_WAIT = 5000
     static PAUSE_STACK_WAIT = 101
     static HOLDER_RESIZED_WAIT = 2000
+
+    static ON_CHANGE = 200
 }
 
 export class Colors {

@@ -5,7 +5,7 @@ import { ControllerPanel } from "./controller_panel.js"
 import { create, defineProperty } from "./utilities.js"
 import { add_controls } from "./controller_controls.js"
 import { add_control_panel_options, NodeInclusionManager,  } from "./node_inclusion.js"
-import { UpdateController } from "./update_controller.js"
+import { OnChangeController, UpdateController } from "./update_controller.js"
 import { Debug } from "./debug.js"
 import { BASE_PATH } from "./constants.js"
 import { ImageManager } from "./image_manager.js"
@@ -28,7 +28,7 @@ async function check_ue() {
 }
 
 function on_setup() {
-    UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh)  
+    UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh, ControllerPanel.node_change)  
     NodeInclusionManager.node_change_callback = UpdateController.make_request
     api.addEventListener('graphCleared', ControllerPanel.graph_cleared) 
 
@@ -104,7 +104,7 @@ app.registerExtension({
             app.graph.on_change = function () {
                 try {
                     on_change?.apply(this,arguments)
-                    UpdateController.request_when_gap(100, 'on_change')
+                    OnChangeController.on_change()
                 } catch (e) {
                     Debug.error("*** EXCEPTION HANDLING on_change")
                     console.error(e)
@@ -123,10 +123,10 @@ app.registerExtension({
         }
 
         try {
-            app.canvas.__read_only = app.canvas.read_only
+            app.canvas._controller_read_only = app.canvas.read_only
             defineProperty(app.canvas, "read_only", {
-                get: ()=>{return app.canvas.__read_only},
-                set: (v)=>{app.canvas.__read_only = v; UpdateController.make_request("read_only") }
+                get: ()=>{return app.canvas._controller_read_only},
+                set: (v)=>{app.canvas._controller_read_only = v; UpdateController.make_request("read_only") }
             })
         } catch (e) {
             Debug.error("in setup")
@@ -224,12 +224,6 @@ app.registerExtension({
                 ImageManager.node_img_change(node)
             }
             node._controller_imgs = node.imgs
-
-            //bgcolor gets changed all the time
-            //if (node._controller_bgcolor !== node.bgcolor) {
-            //    ControllerPanel.node_change(node.id)
-            //}
-            //node._controller_bgcolor = node._controller_bgcolor
 
         }
 
