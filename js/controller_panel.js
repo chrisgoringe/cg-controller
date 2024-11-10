@@ -241,6 +241,7 @@ export class ControllerPanel extends HTMLDivElement {
 
     static can_refresh(c) {  // returns -1 to say "no, and don't try again", 0 to mean "go ahead!", or n to mean "wait n ms then ask again" 
         if (app.configuringGraph) { Debug.trivia("configuring"); return -1 }
+        if (global_settings.hidden) return -1
         
         if (c) {
             return c._can_refresh()
@@ -280,7 +281,8 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     _can_refresh() {
-        try {        
+        try {
+            if (!ControllerPanel.find_controller_parent()?.contains(this)) { return -1 }
             if (this.classList.contains('unrefreshable')) { Debug.trivia("already refreshing"); return -1 }
             if (this.contains(document.activeElement) && !document.activeElement.doesntBlockRefresh) { Debug.trivia("delay refresh because active element"); return 1 }
          
