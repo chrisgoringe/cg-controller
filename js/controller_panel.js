@@ -242,7 +242,7 @@ export class ControllerPanel extends HTMLDivElement {
     static can_refresh(c) {  // returns -1 to say "no, and don't try again", 0 to mean "go ahead!", or n to mean "wait n ms then ask again" 
         if (app.configuringGraph) { Debug.trivia("configuring"); return -1 }
         if (global_settings.hidden) return -1
-        
+        GroupManager.check_for_changes()
         if (c) {
             return c._can_refresh()
         } else {
@@ -468,7 +468,6 @@ export class ControllerPanel extends HTMLDivElement {
     _build_controllerPanel() {
         classSet(this, 'hidden', global_settings.hidden)
         this.style.setProperty('--font-size',`${1.333*getSettingValue(SettingIds.FONT_SIZE, 12)}px`)
-        GroupManager.setup( )
         add_missing_nodes(this.settings.node_order)
 
         /* 

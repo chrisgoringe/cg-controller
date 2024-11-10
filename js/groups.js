@@ -4,7 +4,7 @@ import { Colors, Texts } from "./constants.js"
 import { mode_change } from "./utilities.js"
 
 export class GroupManager {
-    static instance = null
+    static _instance = null
     constructor() {
         this.groups = {}  // maps group name to Set of node ids
         const ungrouped = new Set()
@@ -29,9 +29,16 @@ export class GroupManager {
             })
         })
         if (ungrouped.size>0) this.groups[Texts.UNGROUPED] = ungrouped
+
+        this.jsoned = JSON.stringify(this)
     }
 
-    static setup() { GroupManager.instance = new GroupManager() }
+    static check_for_changes() {
+        const gm2 = new GroupManager()
+        if (gm2.jsoned==GroupManager.instance.jsoned) return false
+        GroupManager._instance = gm2
+        return true
+    }
 
     static list_group_names() {
         const names = [Texts.ALL_GROUPS,]
@@ -76,3 +83,10 @@ export class GroupManager {
 
     static any_groups() { return (Object.keys(GroupManager.instance.groups).length > 0) }
 }
+
+Object.defineProperty(GroupManager, "instance", {
+    get : () => {
+        if (!GroupManager._instance) GroupManager._instance = new GroupManager()
+        return GroupManager._instance
+    }
+})
