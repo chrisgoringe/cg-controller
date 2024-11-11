@@ -122,17 +122,6 @@ app.registerExtension({
             NodeBlock.on_draw(ctx);
         }
 
-        try {
-            app.canvas._controller_read_only = app.canvas.read_only
-            defineProperty(app.canvas, "read_only", {
-                get: ()=>{return app.canvas._controller_read_only},
-                set: (v)=>{app.canvas._controller_read_only = v; UpdateController.make_request("read_only") }
-            })
-        } catch (e) {
-            Debug.error("in setup")
-            console.error(e)
-        }
-
         /* look for dialog boxes appearing or disappearing */
         new MutationObserver((mutations)=>{
             var need_update = ""
