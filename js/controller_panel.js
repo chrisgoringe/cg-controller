@@ -82,7 +82,7 @@ export class ControllerPanel extends HTMLDivElement {
         })
 
         this.should_update_size = false
-        this.addEventListener('mousedown', ()=>{this.should_update_size = true})
+        this.addEventListener('mousedown', (e)=>{this.mouse_down(e)})
         
         new ResizeObserver((x) => this.on_size_change()).observe(this)
     }
@@ -132,7 +132,23 @@ export class ControllerPanel extends HTMLDivElement {
         })
     } 
 
+    mouse_down(e) {
+        this.should_update_size = true
+        const box = this.getBoundingClientRect()
+        if (e.layerX<5)                   this.x_click = "left"
+        else if (e.layerX>(box.width-5))  this.x_click = "right"
+        if (e.layerY<5)                   this.y_click = "top"
+        else if (e.layerY>(box.height-5)) this.y_click = "bottom"
+
+        if (this.x_click || this.y_click) {
+            this.down_x = e.x
+            this.down_y = e.y
+        }
+    }
+
     mouse_up() {
+        this.x_click = false
+        this.y_click = false
         this.should_update_size = false; 
         this.being_dragged = false;
         this.classList.remove('being_dragged')
@@ -453,6 +469,7 @@ export class ControllerPanel extends HTMLDivElement {
     }
     mouse_move(e) {
         if (app.canvas.read_only) return
+        this.style.cursor = ''
         if (this.being_dragged) {
             if (e.currentTarget==window) {
                 this.classList.add('being_dragged')
@@ -460,6 +477,40 @@ export class ControllerPanel extends HTMLDivElement {
                 this.set_position(true)
                 this.offset_x = e.x - this.settings.position.x
                 this.offset_y = e.y - this.settings.position.y
+            }
+        } else if (this.x_click || this.y_click) {
+            if (this.x_click) {
+                const delta_x = e.x - this.down_x
+                this.down_x = e.x
+                if (this.x_click == "left") {
+                    this.settings.set_position( this.settings.position.x + delta_x, null, this.settings.position.w - delta_x, null )
+                } else {
+                    this.settings.set_position( null, null, this.settings.position.w + delta_x, null )
+                }
+                this.set_position(true)
+            } 
+            if (this.y_click) {
+                const delta_y = e.y - this.down_y
+                this.down_y = e.y
+                if (this.y_click == "top") {
+                    this.settings.set_position( null, this.settings.position.y + delta_y, null, this.settings.position.h - delta_y )
+                } else {
+                    this.settings.set_position( null, null, null, this.settings.position.h + delta_y )
+                }
+                this.set_position(true)
+            }
+        } else {
+            const box = this.getBoundingClientRect()
+            const dx = e.x - box.x
+            const dy = e.y - box.y
+            const ew = ((dx>=0 && dx<4) || (dx>(box.width-4) && dx<=(box.width)))
+            const ns = ((dy>=0 && dy<3) || (dy>(box.height-4) && dy<=(box.height)))
+            if (ew && ns) {
+                this.style.cursor = 'move'
+            } else if (ew) {
+                this.style.cursor = 'ew-resize'
+            } else if (ns) {
+                this.style.cursor = 'ns-resize'
             }
         }
     }
@@ -536,8 +587,6 @@ export class ControllerPanel extends HTMLDivElement {
         }
 
         this.add_button_actions()
-
-        this.style.resize = app.canvas.read_only ? 'none' : 'both'
 
         const bars = getSettingValue(SettingIds.SHOW_SCROLLBARS, "thin")
         classSet(this, "hide_scrollbars", bars == "no")

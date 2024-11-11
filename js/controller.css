@@ -60,7 +60,6 @@
     border-style: solid;
     border-color: var(--main-border-color);
     border-radius: 4px;
-    resize: both;
     z-index:999;
     scrollbar-width: auto;
     scrollbar-color: var(--third-back-color) var(--main-back-color);
