@@ -134,15 +134,17 @@ export class ControllerPanel extends HTMLDivElement {
 
     mouse_down(e) {
         this.should_update_size = true
-        const box = this.getBoundingClientRect()
-        if (e.layerX<5)                   this.x_click = "left"
-        else if (e.layerX>(box.width-5))  this.x_click = "right"
-        if (e.layerY<5)                   this.y_click = "top"
-        else if (e.layerY>(box.height-5)) this.y_click = "bottom"
+        if (e.target==this) {
+            const box = this.getBoundingClientRect()
+            if (e.layerX<5)                   this.x_click = "left"
+            else if (e.layerX>(box.width-5))  this.x_click = "right"
+            if (e.layerY<5)                   this.y_click = "top"
+            else if (e.layerY>(box.height-5)) this.y_click = "bottom"
 
-        if (this.x_click || this.y_click) {
-            this.down_x = e.x
-            this.down_y = e.y
+            if (this.x_click || this.y_click) {
+                this.down_x = e.x
+                this.down_y = e.y
+            }
         }
     }
 
@@ -487,9 +489,10 @@ export class ControllerPanel extends HTMLDivElement {
             }
         } else if (this.x_click || this.y_click) {
             if (this.x_click) {
-                const delta_x = e.x - this.down_x
+                var delta_x = e.x - this.down_x
                 this.down_x = e.x
                 if (this.x_click == "left") {
+                    if (this.settings.position.x + delta_x < 0) delta_x = -this.settings.position.x 
                     this.settings.set_position( this.settings.position.x + delta_x, null, this.settings.position.w - delta_x, null )
                 } else {
                     this.settings.set_position( null, null, this.settings.position.w + delta_x, null )
@@ -497,9 +500,10 @@ export class ControllerPanel extends HTMLDivElement {
                 this.set_position(true)
             } 
             if (this.y_click) {
-                const delta_y = e.y - this.down_y
+                var delta_y = e.y - this.down_y
                 this.down_y = e.y
                 if (this.y_click == "top") {
+                    if (this.settings.position.y + delta_y < 0) delta_y = -this.settings.position.y
                     this.settings.set_position( null, this.settings.position.y + delta_y, null, this.settings.position.h - delta_y )
                 } else {
                     this.settings.set_position( null, null, null, this.settings.position.h + delta_y )
