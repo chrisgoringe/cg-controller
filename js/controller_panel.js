@@ -235,7 +235,14 @@ export class ControllerPanel extends HTMLDivElement {
     static toggle() {
         global_settings.hidden = !global_settings.hidden
         if (ControllerPanel.menu_button) classSet(ControllerPanel.menu_button, 'showing', !global_settings.hidden)
-        if (!global_settings.hidden && Object.keys(ControllerPanel.instances).length==0) ControllerPanel.create_new()
+        if (global_settings.hidden) {
+            Object.values(ControllerPanel.instances).forEach((cp)=>{cp.remove()})
+            ControllerPanel.instances = {}
+        }
+        if (!global_settings.hidden && Object.keys(ControllerPanel.instances).length==0) {
+            ControllerPanel.add_controllers()
+            if (Object.keys(ControllerPanel.instances).length==0) ControllerPanel.create_new()
+        }
         UpdateController.make_request('toggle')
     }
 
