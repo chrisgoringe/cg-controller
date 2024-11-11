@@ -100,6 +100,7 @@ export class NodeBlock extends HTMLSpanElement {
     static last_dragged = null
 
     drag_me(e) {
+        if (app.canvas.read_only) return
         NodeBlock.dragged = this
         NodeBlock.last_dragged = this
         NodeBlock.dragged.classList.add("being_dragged")
@@ -107,6 +108,7 @@ export class NodeBlock extends HTMLSpanElement {
     }
 
     toggle_minimise() {
+        if (app.canvas.read_only) return
         this.node.properties.controller_details.minimised = (!!!this.node.properties.controller_details.minimised)
         this.minimised = this.node.properties.controller_details.minimised
         classSet(this, 'minimised', this.minimised)
@@ -198,6 +200,7 @@ export class NodeBlock extends HTMLSpanElement {
 
         this.mode_button  = create('i', `pi mode_button mode_button_${this.mode}`, this.title_bar_left)
         this.mode_button.addEventListener('click', (e)=>{
+            if (app.canvas.read_only) return
             e.preventDefault(); 
             e.stopPropagation(); 
             this.node.mode = mode_change(this.node.mode,e)
@@ -209,6 +212,7 @@ export class NodeBlock extends HTMLSpanElement {
 
         this.image_pin = create('i', 'pi pi-thumbtack hidden', this.title_bar_right)
         this.image_pin.addEventListener('click', (e) => {
+            if (app.canvas.read_only) return
             this.node.properties.controller_widgets[this.image_panel_id].pinned = !this.node.properties.controller_widgets[this.image_panel_id].pinned
             this.update_pin()
         })
@@ -255,8 +259,10 @@ export class NodeBlock extends HTMLSpanElement {
         this.image_image = create('img', 'nodeblock_image', this.image_panel)
         this.image_image.addEventListener('load', this.rescale_image.bind(this))
         
-        make_resizable( this.image_panel, this.node.id, this.image_panel_id, this.node.properties.controller_widgets[this.image_panel_id] )
-        new ResizeObserver(this.rescale_image.bind(this)).observe(this.image_panel)
+        if (!app.canvas.read_only) {
+            make_resizable( this.image_panel, this.node.id, this.image_panel_id, this.node.properties.controller_widgets[this.image_panel_id] )
+            new ResizeObserver(this.rescale_image.bind(this)).observe(this.image_panel)
+        }
 
         if (isImageNode(this.node)) {
             const add_upstream = (nd) => {

@@ -192,6 +192,8 @@
     flex-shrink: 0;
 }
 
+
+
 .header_button {
     cursor: pointer;
     font-size: 12pt;
@@ -359,6 +361,8 @@
     display:none;
     height:0px !important;
 }
+
+
 
 .nodeblock .mode_button:before {
     content: "\ea14";
@@ -580,3 +584,13 @@ i {
   .tooltip:hover .tooltiptext {
     visibility: visible;
   }
+
+.read_only .mode_button {
+    opacity: 0.5;
+    cursor: unset;
+}
+
+.read_only .header_button {
+    opacity: 0.5;
+    cursor: unset;
+}

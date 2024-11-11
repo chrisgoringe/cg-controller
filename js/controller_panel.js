@@ -538,6 +538,7 @@ export class ControllerPanel extends HTMLDivElement {
     _build_controllerPanel() {
         classSet(this, 'hidden', global_settings.hidden)
         this.style.setProperty('--font-size',`${1.333*getSettingValue(SettingIds.FONT_SIZE, 12)}px`)
+        classSet(this, 'read_only', app.canvas.read_only)
         add_missing_nodes(this.settings.node_order)
 
         /* 
