@@ -107,7 +107,7 @@ export class OnChangeController {
                     UpdateController.make_request("on_change, multiple nodes changed")
                 } else if (changed_nodes.length == 1) {
                     UpdateController.single_node(changed_nodes[0], "on_change")
-                } else if (app.canvas.read_only !== app.canvas._controller_read_only) {
+                } else if (app.canvas.read_only != app.canvas._controller_read_only) {
                     UpdateController.make_request(`on_change, read_only ${app.canvas.read_only}`)
                     app.canvas._controller_read_only = app.canvas.read_only
                 } else {

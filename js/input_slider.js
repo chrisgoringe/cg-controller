@@ -196,7 +196,6 @@ export class FancySlider extends HTMLSpanElement {
         this.addEventListener('wheel',         (e) => this._wheel(e))
         this.addEventListener('mouseout',      (e) => this._mouseout(e))
         
-        document.addEventListener('mouseup',   (e) => this.enddragging(e))
         this.addEventListener('change',        (e) => this._change(e))
         this.addEventListener('focusin',       (e) => this._focus(e))
         this.addEventListener('focusout',      (e) => this._focusout(e))
@@ -230,7 +229,6 @@ export class FancySlider extends HTMLSpanElement {
     enddragging(e) {
         this.mouse_down_on_me_at = null; 
         FancySlider.mouse_down_on = null;
-        document.removeEventListener('mousemove', handle_mouse_move)
         this.dragging = false
         this.classList.remove('can_drag')
         if (e && e.target==this) {
@@ -309,7 +307,6 @@ export class FancySlider extends HTMLSpanElement {
                 this.classList.add('can_drag')
                 this.mouse_down_on_me_at = e.x;
                 FancySlider.mouse_down_on = this
-                document.addEventListener('mousemove', handle_mouse_move)
                 e.stopPropagation()
             }
         }
@@ -366,11 +363,17 @@ export class FancySlider extends HTMLSpanElement {
 
     }
 
+    static handle_mouse_move(e) {
+        if (FancySlider.mouse_down_on) FancySlider.mouse_down_on._mousemove.bind(FancySlider.mouse_down_on)(e)
+    }
+
+    static handle_mouse_up(e) {
+        if (FancySlider.mouse_down_on) FancySlider.mouse_down_on.enddragging(e)
+    }
+
 }
 
-function handle_mouse_move(e) {
-    if (FancySlider.mouse_down_on) FancySlider.mouse_down_on._mousemove.bind(FancySlider.mouse_down_on)(e)
-}
+
 
 customElements.define('cp-fslider', FancySlider, {extends: 'span'})
 customElements.define('cp-fslideroptioneditor', SliderOptionEditor, {extends: 'span'})

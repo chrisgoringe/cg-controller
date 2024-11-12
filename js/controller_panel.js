@@ -5,7 +5,7 @@ import { GroupManager } from "./groups.js";
 
 import { UpdateController } from "./update_controller.js";
 import { NodeBlock } from "./nodeblock.js";
-import { observe_resizables } from "./resize_manager.js";
+import { observe_resizables, clear_resize_managers } from "./resize_manager.js";
 import { Debug } from "./debug.js";
 
 import { NodeInclusionManager } from "./node_inclusion.js";
@@ -13,15 +13,32 @@ import { get_all_setting_indices, getSettingValue, global_settings, new_controll
 import { update_node_order, add_missing_nodes } from "./settings.js"
 import { SettingIds, Timings, Texts } from "./constants.js";
 import { FancySlider } from "./input_slider.js";
+import { clear_widget_change_managers } from "./widget_change_manager.js";
+import { clean_image_manager } from "./image_manager.js";
 
 export class ControllerPanel extends HTMLDivElement {
     static instances = {}
+    static count = 0
+
+    _remove() {
+        Debug.trivia(`Removing ControllerPanel ${this.index}`)
+        Object.values(this.node_blocks).forEach((nb)=>{nb._remove()})
+        this.node_blocks = {}
+        this.remove()
+        this.resize_observer?.disconnect()
+        delete this.resize_observer
+        delete this.main
+        ControllerPanel.count -= 1
+        Debug.trivia(`ControllerPanel _remove count now ${ControllerPanel.count}`)
+    }
 
     constructor(index) {
         super()
+        ControllerPanel.count += 1
         this.progress = create('span','progress_bar')
         if (index == null) index = new_controller_setting_index()
-        if (ControllerPanel.instances[index]) { ControllerPanel.instances[index].remove(); Debug.essential(`removed index clash ${index}`) }
+        if (ControllerPanel.instances[index]) { ControllerPanel.instances[index]._remove(); Debug.essential(`removed index clash ${index}`) }
+        Debug.trivia(`Creating ControllerPanel ${index}`)
         ControllerPanel.instances[index] = this
         this.index = index
         this.settings = get_settings(index)
@@ -84,7 +101,7 @@ export class ControllerPanel extends HTMLDivElement {
         this.should_update_size = false
         this.addEventListener('mousedown', (e)=>{this.mouse_down(e)})
         
-        new ResizeObserver((x) => this.on_size_change()).observe(this)
+        this.resize_observer = new ResizeObserver((x) => this.on_size_change()).observe(this)
     }
 
     static on_progress(e) {
@@ -105,7 +122,7 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     static focus_mode_changed() {
-        Object.values(ControllerPanel.instances).forEach((cp)=>{cp.remove()})
+        Object.values(ControllerPanel.instances).forEach((cp)=>{cp._remove()})
         UpdateController.make_request('focus mode changed')
     }
 
@@ -164,7 +181,7 @@ export class ControllerPanel extends HTMLDivElement {
 
     static new_workflow() {
         Debug.extended('new_workflow')
-        Object.keys(ControllerPanel.instances).forEach((k)=>{ControllerPanel.instances[k].remove()})
+        Object.keys(ControllerPanel.instances).forEach((k)=>{ControllerPanel.instances[k]._remove()})
         ControllerPanel.instances = {}
         initialise_settings()
         ControllerPanel.add_controllers()
@@ -185,7 +202,7 @@ export class ControllerPanel extends HTMLDivElement {
 
     delete_controller() {
         delete_settings(this.settings.index)
-        this.remove()
+        this._remove()
         delete ControllerPanel.instances[this.settings.index]
     }
 
@@ -247,6 +264,9 @@ export class ControllerPanel extends HTMLDivElement {
         if (c) {
             c.redraw()
         } else {
+            clear_resize_managers()
+            clear_widget_change_managers()
+            clean_image_manager()
             Object.values(ControllerPanel.instances).forEach((cp)=>{cp.redraw()})
         }
     }
@@ -255,7 +275,7 @@ export class ControllerPanel extends HTMLDivElement {
         global_settings.hidden = !global_settings.hidden
         if (ControllerPanel.menu_button) classSet(ControllerPanel.menu_button, 'showing', !global_settings.hidden)
         if (global_settings.hidden) {
-            Object.values(ControllerPanel.instances).forEach((cp)=>{cp.remove()})
+            Object.values(ControllerPanel.instances).forEach((cp)=>{cp._remove()})
             ControllerPanel.instances = {}
         }
         if (!global_settings.hidden && Object.keys(ControllerPanel.instances).length==0) {
@@ -340,8 +360,17 @@ export class ControllerPanel extends HTMLDivElement {
     maybe_create_node_block_for_node(node_or_node_id) {
         const nd = get_node(node_or_node_id)
         if (NodeInclusionManager.include_node(nd)) {
-            const node_block = new NodeBlock(this, nd)
-            if (node_block.valid_nodeblock) this.node_blocks[nd.id] = node_block
+            if (this.node_blocks[nd.id]) {
+                this.node_blocks[nd.id]._remove()
+                delete this.node_blocks[nd.id]
+            }
+            if (NodeBlock.maybe_valid(nd)) {
+                const node_block = new NodeBlock(this, nd)
+                if (node_block.valid_nodeblock) this.node_blocks[nd.id] = node_block
+                else node_block?._remove()
+            } else {
+                let a;
+            }
         }
     }
 
@@ -373,7 +402,7 @@ export class ControllerPanel extends HTMLDivElement {
 
     consider_adding_node(node_or_node_id) {
         const node_id = node_or_node_id.id ?? node_or_node_id
-       if (NodeInclusionManager.include_node(node_or_node_id)) {             // is it still valid?
+        if (NodeInclusionManager.include_node(node_or_node_id) && GroupManager.is_node_in(this.settings.group_choice, node_id)) {  
             if (this.node_blocks[node_id] && this.node_blocks[node_id].can_reuse()) {     
                 //we already have it - we will rebuild, if needed, in set_node_visibility instead
             } else {
@@ -388,6 +417,7 @@ export class ControllerPanel extends HTMLDivElement {
     remove_absent_nodes() {
         Object.keys(this.node_blocks).forEach((node_id) => {
             if (!app.graph._nodes_by_id[node_id] || (app.graph._nodes_by_id[node_id] != this.node_blocks[node_id].node)) {
+                this.node_blocks[node_id]._remove()
                 delete this.node_blocks[node_id]
             }
         })
@@ -414,7 +444,8 @@ export class ControllerPanel extends HTMLDivElement {
                     node_block.is_hidden = (!show)
                     if (show) node_block.build_nodeblock()
                 } else {
-                    node_block.remove()
+                    node_block._remove()
+                    delete this.node_blocks[node_id]
                 }
             }
         })
@@ -587,9 +618,6 @@ export class ControllerPanel extends HTMLDivElement {
         this.new_node_id_list = []
         this.remove_absent_nodes()
         this.settings.node_order.forEach( (n) => {this.consider_adding_node(n)} )
-        //app.graph._nodes.forEach( (n) => {this.consider_adding_node(n)} )
-        //if (this.new_node_id_list.length>0) this.settings.node_order = this.new_node_id_list
-
         this.set_node_visibility()
 
         if (this.node_count == 0) {

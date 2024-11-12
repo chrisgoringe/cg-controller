@@ -16,11 +16,38 @@ export class NodeBlock extends HTMLSpanElement {
     NodeBlock represents a single node - zero or more Entry children, and zero or one images.
     If neither Entry nor images, it is not 'valid' (ie should not be included)
     */
+    static count = 0
+
+    _remove() {
+        Debug.trivia(`removing nodeblock for ${this.node?.id} from controller ${this.parent_controller?.index}`)
+        if (!this.has_been_removed) {
+            NodeBlock.count -= 1
+            this.has_been_removed = true
+        } else {
+            Debug.trivia('alreadyremoved nodeblock?')
+        }
+        this.remove()
+        this.parent_controller = null
+        this._remove_entries()
+
+        if (this.resize_observer) {
+            this.resize_observer.disconnect()
+            delete this.resize_observer
+        }
+        Debug.trivia(`NodeBlock._remove count = ${NodeBlock.count}`)
+    }
+
+    _remove_entries() {
+        Array.from(this.main.children).forEach((c)=>{c._remove?.()})
+    }
+
     constructor(parent_controller, node) { 
         super()
+        NodeBlock.count += 1
         this.parent_controller = parent_controller
         this.node = node
         this.mode = this.node.mode
+        Debug.trivia(`creating nodeblock for ${this.node?.id} on controller ${this.parent_controller?.index}`)
 
         if (!this.node.properties.controller_details) {
             this.node.properties.controller_details = {}
@@ -230,7 +257,6 @@ export class NodeBlock extends HTMLSpanElement {
         if (this.image_panel) this.image_panel.remove()
         this.image_panel = create("div", "nodeblock_image_panel nodeblock_image_empty", new_main)
 
-        this.valid_nodeblock = false
         this.widget_count = 0
         this.node.widgets?.forEach(w => {
             if (!this.node.properties.controller_widgets[w.name]) this.node.properties.controller_widgets[w.name] = {}
@@ -239,8 +265,9 @@ export class NodeBlock extends HTMLSpanElement {
             if (e.valid()) {
                 new_main.appendChild(e)
                 this[w.name] = e
-                this.valid_nodeblock = true    
                 this.widget_count += 1                
+            } else {
+                e._remove()
             }
         })
 
@@ -257,11 +284,11 @@ export class NodeBlock extends HTMLSpanElement {
         this.update_pin()
 
         this.image_image = create('img', 'nodeblock_image', this.image_panel)
-        this.image_image.addEventListener('load', this.rescale_image.bind(this))
+        this.image_image.addEventListener('load', () => {this.rescale_image()})
         
         if (!app.canvas.read_only) {
             make_resizable( this.image_panel, this.node.id, this.image_panel_id, this.node.properties.controller_widgets[this.image_panel_id] )
-            new ResizeObserver(this.rescale_image.bind(this)).observe(this.image_panel)
+            this.resize_observer = new ResizeObserver( ()=>{this.rescale_image()} ).observe(this.image_panel)
         }
 
         if (isImageNode(this.node)) {
@@ -282,6 +309,7 @@ export class NodeBlock extends HTMLSpanElement {
         }
         ImageManager.add_listener(this.node.id, this) // add ourself last to take priority
 
+        this._remove_entries()
         this.replaceChild(new_main, this.main)
         this.main = new_main
 
@@ -291,6 +319,10 @@ export class NodeBlock extends HTMLSpanElement {
         } 
 
         this.valid_nodeblock = isImageNode(this.node) || this.widget_count || (this.node.imgs && this.node.imgs.length>0)
+    }
+
+    static maybe_valid(node) {
+        return isImageNode(node) || node.widgets?.length || (node.imgs && node.imgs.length>0)
     }
 
     manage_image(url, running) {
@@ -310,6 +342,10 @@ export class NodeBlock extends HTMLSpanElement {
 
     rescale_image() {
         if (this.rescaling) return
+        if (!this.parent_controller) {
+            Debug.trivia("Nodeblock rescale_image called with no parent", true)
+            return
+        }
         if (this.parent_controller.settings.collapsed) return
         this.rescaling = true
         if (this.image_image) {

@@ -21,9 +21,18 @@ export class Entry extends HTMLDivElement {
     /*
     Entry represents a single widget within a NodeBlock
     */
+    static count = 0
+
+    _remove() {
+        this.remove()
+        Object.keys(this).forEach((k)=>{this[k]=null})
+        Entry.count -= 1
+        Debug.trivia(`Entry._remove count = ${Entry.count}`)
+    }
 
     constructor(parent_controller, parent_nodeblock, node, target_widget, properties) {
         super()
+        Entry.count += 1
         if (target_widget.disabled) return
         if (target_widget.name=='control_after_generate' && !app.ui.settings.getSettingValue(SettingIds.CONTROL_AFTER_GENERATE, false)) return
 
@@ -98,18 +107,18 @@ export class Entry extends HTMLDivElement {
             }
         }
 
-        const onRemove = target_widget.onRemove
-        target_widget.onRemove = function () {
-            onRemove?.apply(target_widget, arguments)
-            UpdateController.make_request('widget removed')
-        }
+        //const onRemove = target_widget.onRemove
+        //target_widget.onRemove = function () {
+        //    onRemove?.apply(target_widget, arguments)
+        //    UpdateController.make_request('widget removed')
+        //}
 
         WidgetChangeManager.add_listener(target_widget, this)
         this.render()
     }
 
     wcm_manager_callback() {
-        if (!this.parent_controller.contains(this)) return false;
+        if (!this.parent_controller?.contains(this)) return false;
         this.input_element.value = this.target_widget.value;
         if (this.input_element.wcm_manager_callback) this.input_element.wcm_manager_callback()
         if (this.input_element.redraw) this.input_element.redraw(true)

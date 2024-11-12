@@ -11,6 +11,7 @@ import { BASE_PATH } from "./constants.js"
 import { ImageManager } from "./image_manager.js"
 import { global_settings } from "./settings.js"
 import { NodeBlock } from "./nodeblock.js"
+import { FancySlider } from "./input_slider.js"
 
 const MINIMUM_UE = 500006
 async function check_ue() {
@@ -41,8 +42,14 @@ function on_setup() {
     api.addEventListener('executing', ControllerPanel.on_executing)
 
     window.addEventListener("resize", ControllerPanel.onWindowResize)
-    window.addEventListener('mouseup', ControllerPanel.mouse_up_anywhere)
-    window.addEventListener('mousemove', ControllerPanel.mouse_move_anywhere)
+    window.addEventListener('mouseup', (e)=>{
+        ControllerPanel.mouse_up_anywhere(e)
+        FancySlider.handle_mouse_up(e)
+    })
+    window.addEventListener('mousemove', (e)=>{
+        ControllerPanel.mouse_move_anywhere(e)
+        FancySlider.handle_mouse_move(e)
+    })
 
 
     const original_getCanvasMenuOptions = LGraphCanvas.prototype.getCanvasMenuOptions;
