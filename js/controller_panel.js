@@ -123,6 +123,7 @@ export class ControllerPanel extends HTMLDivElement {
 
     static focus_mode_changed() {
         Object.values(ControllerPanel.instances).forEach((cp)=>{cp._remove()})
+        ControllerPanel.instances = {}
         UpdateController.make_request('focus mode changed')
     }
 
