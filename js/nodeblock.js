@@ -34,6 +34,8 @@ export class NodeBlock extends HTMLSpanElement {
             this.resize_observer.disconnect()
             delete this.resize_observer
         }
+
+        if (this==NodeBlock.mouse_in) NodeBlock.mouse_in = null
         Debug.trivia(`NodeBlock._remove count = ${NodeBlock.count}`)
     }
 
