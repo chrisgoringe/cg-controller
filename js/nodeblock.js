@@ -2,7 +2,7 @@ import { app } from "../../scripts/app.js";
 
 import { ComfyWidgets } from "../../scripts/widgets.js";
 
-import { create, darken, classSet, mode_change } from "./utilities.js";
+import { create, darken, classSet, mode_change, focus_mode } from "./utilities.js";
 import { Entry } from "./panel_entry.js"
 import { make_resizable } from "./resize_manager.js";
 import { image_is_blob, ImageManager, is_image_upload_node, isImageNode } from "./image_manager.js";
@@ -78,7 +78,7 @@ export class NodeBlock extends HTMLSpanElement {
 
     static area = [0,0,0,0]
     static on_draw(ctx) {
-        if (NodeBlock.mouse_in) {
+        if (NodeBlock.mouse_in && focus_mode()=="normal") {
             const ctx = app.canvas.ctx
 
             ctx.save();

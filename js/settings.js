@@ -46,6 +46,7 @@ class _Settings {
         }
     }
     store_position() {
+        this.userposition = {}
         Object.assign(this.userposition, this.position)
     }
     retreive_position() {

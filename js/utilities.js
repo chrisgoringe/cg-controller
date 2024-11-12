@@ -129,3 +129,9 @@ export function defineProperty(instance, property, desc) {
   export function mode_change(mode, e) {
     return (mode==0) ? (e.ctrlKey ? 2 : 4) : ((e.ctrlKey && mode==4) ? 2 : 0)
   }
+
+  export function focus_mode() {
+    if (document.getElementsByClassName('graph-canvas-panel')[0]) return "normal"
+    if (document.getElementsByClassName('graph-canvas-container')[0]) return "focus"
+    return null
+  }
