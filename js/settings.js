@@ -38,6 +38,9 @@ class _Settings {
         })
     }
     set_position(x,y,w,h) {
+        if (isNaN(x)) {
+            x = 0
+        }
         this.position = {
             "x" : (x!=null) ? x : this.position.x,
             "y" : (y!=null) ? y : this.position.y,
@@ -45,13 +48,13 @@ class _Settings {
             "h" : (h!=null) ? h : this.position.h,
         }
     }
-    store_position() {
-        this.userposition = {}
-        Object.assign(this.userposition, this.position)
-    }
-    retreive_position() {
-        Object.assign(this.position, this.userposition)
-    }
+    //store_position() {
+    //    this.userposition = {}
+    //    Object.assign(this.userposition, this.position)
+    //}
+    //retreive_position() {
+    //    Object.assign(this.position, this.userposition)
+    //}
 }
 
 export function get_settings(index) {

@@ -15,6 +15,7 @@ import { SettingIds, Timings, Texts } from "./constants.js";
 import { FancySlider } from "./input_slider.js";
 import { clear_widget_change_managers } from "./widget_change_manager.js";
 import { clean_image_manager } from "./image_manager.js";
+import { SnapManager } from "./snap_manager.js";
 
 export class ControllerPanel extends HTMLDivElement {
     static instances = {}
@@ -22,6 +23,7 @@ export class ControllerPanel extends HTMLDivElement {
 
     _remove() {
         Debug.trivia(`Removing ControllerPanel ${this.index}`)
+        SnapManager.remove(this)
         Object.values(this.node_blocks).forEach((nb)=>{nb._remove()})
         this.node_blocks = {}
         this.remove()
@@ -43,6 +45,7 @@ export class ControllerPanel extends HTMLDivElement {
         this.index = index
         this.settings = get_settings(index)
         this.classList.add("controller")
+        SnapManager.register(this)
         ControllerPanel.find_controller_parent().appendChild(this)
 
         this.header = create('span','header', this)
@@ -170,10 +173,13 @@ export class ControllerPanel extends HTMLDivElement {
         this.x_click = false
         this.y_click = false
         this.should_update_size = false; 
-        this.being_dragged = false;
-        this.classList.remove('being_dragged')
         this.classList.remove('grabbed')
-        this.set_position(true)
+        if (this.being_dragged || this.being_resized) {
+            this.being_dragged = false;
+            this.being_resized = false;
+            this.classList.remove('being_dragged')
+            this.set_position()
+        }
     }
 
     redraw() {
@@ -396,6 +402,7 @@ export class ControllerPanel extends HTMLDivElement {
 
     on_size_change() {
         if (this.getBoundingClientRect().width>0 && this.should_update_size) {
+            this.being_resized = true
             this.show_overlay(`${Math.round(this.getBoundingClientRect().width)} x ${Math.round(this.getBoundingClientRect().height)}px`, this)
             this.settings.set_position(null,null,this.getBoundingClientRect().width,this.getBoundingClientRect().height)
         }
@@ -452,33 +459,8 @@ export class ControllerPanel extends HTMLDivElement {
         })
     }
 
-    check_dimensions() {
-        if (this.being_dragged) return;
-        const box = this.parentElement.getBoundingClientRect()
-        this.settings.set_position(
-            clamp(this.settings.position.x, 0),//, box.width  - this.settings.position.w),
-            clamp(this.settings.position.y, 0),//, box.height - this.settings.position.h),
-            null, null 
-        )
-    /*    this.settings.set_position( 
-            null, null, 
-            clamp(this.settings.position.w, 0, box.width  - this.settings.position.x),
-            clamp(this.settings.position.h, 0, box.height - this.settings.position.y)
-        )*/
-    }
-
-    set_position(set_by_user) {
-        /* 
-        if this change was user generated, the new positions are the desired ones.
-        Otherwise, retrieve the desired positions
-        */
-        if (set_by_user) {
-            this.settings.store_position()
-        } else {
-            this.settings.retreive_position()
-        }
-
-        this.check_dimensions()
+    set_position(skip_snapping) {
+        if (!skip_snapping) SnapManager.apply_snapping(this)
 
         if (this.settings.collapsed) {
             this.style.left   = `${this.settings.position.x}px`
@@ -504,8 +486,8 @@ export class ControllerPanel extends HTMLDivElement {
             this.classList.add('grabbed')
             this.offset_x = e.x - this.settings.position.x
             this.offset_y = e.y - this.settings.position.y
-            e.preventDefault()
-            e.stopPropagation()
+            //e.preventDefault()
+            //e.stopPropagation()
         //}
     }
     mouse_move(e) {
@@ -515,7 +497,7 @@ export class ControllerPanel extends HTMLDivElement {
             if (e.currentTarget==window) {
                 this.classList.add('being_dragged')
                 this.settings.set_position( e.x - this.offset_x, e.y - this.offset_y, null, null )
-                this.set_position(true)
+                this.set_position()
                 this.offset_x = e.x - this.settings.position.x
                 this.offset_y = e.y - this.settings.position.y
             }
@@ -529,7 +511,7 @@ export class ControllerPanel extends HTMLDivElement {
                 } else {
                     this.settings.set_position( null, null, this.settings.position.w + delta_x, null )
                 }
-                this.set_position(true)
+                this.set_position()
             } 
             if (this.y_click) {
                 var delta_y = e.y - this.down_y
@@ -540,7 +522,7 @@ export class ControllerPanel extends HTMLDivElement {
                 } else {
                     this.settings.set_position( null, null, null, this.settings.position.h + delta_y )
                 }
-                this.set_position(true)
+                this.set_position()
             }
         } else {
             const box = this.getBoundingClientRect()

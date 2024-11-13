@@ -12,6 +12,7 @@ import { ImageManager } from "./image_manager.js"
 import { global_settings } from "./settings.js"
 import { NodeBlock } from "./nodeblock.js"
 import { FancySlider } from "./input_slider.js"
+import { SnapManager } from "./snap_manager.js"
 
 const MINIMUM_UE = 500006
 async function check_ue() {
@@ -29,7 +30,8 @@ async function check_ue() {
 }
 
 function on_setup() {
-    UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh, ControllerPanel.node_change)  
+    UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh, ControllerPanel.node_change)
+    SnapManager.setup()
     NodeInclusionManager.node_change_callback = UpdateController.make_request
     api.addEventListener('graphCleared', ControllerPanel.graph_cleared) 
 
