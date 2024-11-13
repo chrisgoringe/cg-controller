@@ -15,7 +15,6 @@ import { SettingIds, Timings, Texts } from "./constants.js";
 
 export class ControllerPanel extends HTMLDivElement {
     static instances = {}
-    static button = undefined
 
     constructor(index) {
         super()
@@ -26,7 +25,7 @@ export class ControllerPanel extends HTMLDivElement {
         this.index = index
         this.settings = get_settings(index)
         this.classList.add("controller")
-        document.getElementsByClassName('graph-canvas-panel')[0].appendChild(this)
+        ControllerPanel.find_controller_parent().appendChild(this)
 
         this.header = create('span','header', this)
         this.main   = create('span','main', this)
@@ -36,16 +35,18 @@ export class ControllerPanel extends HTMLDivElement {
 
         this.addEventListener('dragstart', (e) => { this.classList.add('unrefreshable'); this.reason = 'drag happening' })
         this.addEventListener('dragend',   (e) => { 
-            update_node_order(this.settings.node_order, NodeBlock.last_dragged.node.id, NodeBlock.last_dragged.previousSibling?.node.id, NodeBlock.last_dragged.nextSibling?.node.id); 
-            this.classList.remove('unrefreshable') 
+            if (e.target.className == "nodeblock_draghandle") {
+                update_node_order(this.settings.node_order, NodeBlock.last_dragged.node.id, NodeBlock.last_dragged.previousSibling?.node.id, NodeBlock.last_dragged.nextSibling?.node.id); 
+                this.classList.remove('unrefreshable') 
+            }
         } )
         this.addEventListener('dragover',  (e) => {
             if (NodeBlock.dragged) {
                 e.dataTransfer.effectAllowed = "move";
                 e.dataTransfer.dropEffect = "move"
             } else {
-                e.dataTransfer.effectAllowed = "none" 
-                e.dataTransfer.dropEffect = "none"
+                e.dataTransfer.effectAllowed = "copy" 
+                e.dataTransfer.dropEffect = "copy"
             }
             e.preventDefault();
         })
@@ -100,6 +101,11 @@ export class ControllerPanel extends HTMLDivElement {
         this.progress.style.width = `${w}px`
         this.progress.style.top = `${top}px`
         this.progress.style.height = `${h}px`
+    }
+
+    static focus_mode_changed() {
+        Object.values(ControllerPanel.instances).forEach((cp)=>{cp.remove()})
+        UpdateController.make_request('focus mode changed')
     }
 
     static on_executing(e) {
@@ -165,17 +171,25 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     static add_controllers() {
-        get_all_setting_indices().forEach((i)=>{
-            new ControllerPanel(i).redraw()
-        })
+        if (ControllerPanel.find_controller_parent()) {
+            get_all_setting_indices().forEach((i)=>{
+                new ControllerPanel(i).redraw()
+            })
+        }
     }
 
     static onWindowResize() {
         Object.keys(ControllerPanel.instances).forEach((k)=>ControllerPanel.instances[k].set_position(false))
     }
 
+    static find_controller_parent() {
+        const show_in_focus = getSettingValue(SettingIds.SHOW_IN_FOCUS_MODE, false)
+        return document.getElementsByClassName('graph-canvas-panel')[0] ?? 
+                (show_in_focus ? (document.getElementsByClassName('graph-canvas-container')[0] ?? null) : null)
+    }
+
     static create_menu_icon() {
-        if (document.getElementsByClassName('graph-canvas-panel').length>0) {
+        if (ControllerPanel.find_controller_parent()) {
             const comfy_menu = document.getElementsByClassName('comfyui-menu')[0]
             var spacer = null
             comfy_menu.childNodes.forEach((node)=>{if (node.classList.contains('flex-grow')) spacer = node})
@@ -187,6 +201,11 @@ export class ControllerPanel extends HTMLDivElement {
             add_tooltip(ControllerPanel.menu_button, 'Toggle controllers')
             classSet(ControllerPanel.menu_button, 'showing', !global_settings.hidden) 
             ControllerPanel.menu_button.addEventListener('click', ControllerPanel.toggle)
+
+            const exit_focus_button = document.getElementsByTagName('main')[0].getElementsByTagName('button')[0]
+            exit_focus_button.addEventListener('click', () => {
+                UpdateController.make_request('exit focus', 10)
+            })
             
         } else {
             setTimeout(ControllerPanel.create_menu_icon,100)
@@ -196,6 +215,14 @@ export class ControllerPanel extends HTMLDivElement {
     static redraw(c) { 
         if (!valid_settings()) {
             ControllerPanel.new_workflow()
+            return
+        }
+        if (Object.values(ControllerPanel.instances).length>0 && !document.body.contains(Object.values(ControllerPanel.instances)[0])) {
+            // probably in focus mode
+            ControllerPanel.instances = {}
+        }
+        if (Object.values(ControllerPanel.instances).length == 0) {
+            ControllerPanel.add_controllers()
             return
         }
         if (c) {
@@ -208,13 +235,21 @@ export class ControllerPanel extends HTMLDivElement {
     static toggle() {
         global_settings.hidden = !global_settings.hidden
         if (ControllerPanel.menu_button) classSet(ControllerPanel.menu_button, 'showing', !global_settings.hidden)
-        if (!global_settings.hidden && Object.keys(ControllerPanel.instances).length==0) ControllerPanel.create_new()
+        if (global_settings.hidden) {
+            Object.values(ControllerPanel.instances).forEach((cp)=>{cp.remove()})
+            ControllerPanel.instances = {}
+        }
+        if (!global_settings.hidden && Object.keys(ControllerPanel.instances).length==0) {
+            ControllerPanel.add_controllers()
+            if (Object.keys(ControllerPanel.instances).length==0) ControllerPanel.create_new()
+        }
         UpdateController.make_request('toggle')
     }
 
     static can_refresh(c) {  // returns -1 to say "no, and don't try again", 0 to mean "go ahead!", or n to mean "wait n ms then ask again" 
         if (app.configuringGraph) { Debug.trivia("configuring"); return -1 }
-        
+        if (global_settings.hidden) return -1
+        GroupManager.check_for_changes()
         if (c) {
             return c._can_refresh()
         } else {
@@ -253,7 +288,8 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     _can_refresh() {
-        try {        
+        try {
+            if (!ControllerPanel.find_controller_parent()?.contains(this)) { return -1 }
             if (this.classList.contains('unrefreshable')) { Debug.trivia("already refreshing"); return -1 }
             if (this.contains(document.activeElement) && !document.activeElement.doesntBlockRefresh) { Debug.trivia("delay refresh because active element"); return 1 }
          
@@ -403,6 +439,7 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     header_mouse_down(e) {
+        if (app.canvas.read_only) return
         //if (e.target==this.header_tabs || e.target.parentElement==this.header_tabs) {
             this.being_dragged = true
             this.classList.add('grabbed')
@@ -413,6 +450,7 @@ export class ControllerPanel extends HTMLDivElement {
         //}
     }
     mouse_move(e) {
+        if (app.canvas.read_only) return
         if (this.being_dragged) {
             if (e.currentTarget==window) {
                 this.classList.add('being_dragged')
@@ -437,7 +475,6 @@ export class ControllerPanel extends HTMLDivElement {
     _build_controllerPanel() {
         classSet(this, 'hidden', global_settings.hidden)
         this.style.setProperty('--font-size',`${1.333*getSettingValue(SettingIds.FONT_SIZE, 12)}px`)
-        GroupManager.setup( )
         add_missing_nodes(this.settings.node_order)
 
         /* 
@@ -469,11 +506,11 @@ export class ControllerPanel extends HTMLDivElement {
             this.delete_button = create('i', 'pi pi-times header_button', this.header1_right)
         } else {
             this.add_group_button = create('i', 'pi pi-plus header_button last', this.header1_left)
-            this.remove_group_button = create('i', 'pi pi-trash header_button', this.header2_left)
             if (this.settings.group_choice != Texts.ALL_GROUPS && this.settings.group_choice != Texts.UNGROUPED) {
-                this.bypass_group_button = create('i', 'pi pi-ban header_button', this.header2_left)
+                this.group_mode_button = create('i', 'pi header_button mode', this.header2_left)
             }
             this.show_advanced_button = create('i', `pi pi-bolt header_button${this.settings.advanced ? " clicked":""}`, this.header2_left)
+            this.remove_group_button = create('i', 'pi pi-trash header_button', this.header2_right)
             this.minimise_button = create("i", `pi pi-minus header_button collapse_button`, this.header1_right)
             this.delete_button = create('i', 'pi pi-times header_button', this.header1_right)
         }
@@ -498,7 +535,13 @@ export class ControllerPanel extends HTMLDivElement {
         }
 
         this.add_button_actions()
-        
+
+        this.style.resize = app.canvas.read_only ? 'none' : 'both'
+
+        const bars = getSettingValue(SettingIds.SHOW_SCROLLBARS, "thin")
+        classSet(this, "hide_scrollbars", bars == "no")
+        classSet(this, "small_scrollbars", bars == "thin")
+
         /*
         Finalise
         */
@@ -563,6 +606,7 @@ export class ControllerPanel extends HTMLDivElement {
             this.add_group_button.addEventListener('click', (e) => {
                 e.preventDefault()
                 e.stopPropagation()
+                if (app.canvas.read_only) return
                 this.show_group_select(e)
             })
             add_tooltip(this.add_group_button, 'Add new group tab', 'right')
@@ -573,6 +617,7 @@ export class ControllerPanel extends HTMLDivElement {
             this.remove_group_button.addEventListener('click', (e) => {
                 e.preventDefault(); 
                 e.stopPropagation(); 
+                if (app.canvas.read_only) return
                 this.settings.groups = this.settings.groups.filter((g)=>g!=this.settings.group_choice)
                 if (this.settings.groups.length==0) {
                     this.delete_controller()
@@ -582,24 +627,28 @@ export class ControllerPanel extends HTMLDivElement {
             add_tooltip(this.remove_group_button, 'Remove active group tab', 'right')
         }
 
-        if (this.bypass_group_button) {
-            const bypass = GroupManager.bypassed(this.settings.group_choice)
-            this.bypass_group_button.addEventListener('click', (e) => {
+        if (this.group_mode_button) {
+            const node_mode = GroupManager.group_node_mode(this.settings.group_choice)
+            this.group_mode_button.addEventListener('click', (e) => {
                 e.preventDefault(); 
                 e.stopPropagation(); 
-                GroupManager.toggle_bypass(this.settings.group_choice)
+                if (app.canvas.read_only) return
+                GroupManager.change_group_mode(this.settings.group_choice, node_mode, e)
                 app.canvas.setDirty(true,true)
-                UpdateController.make_single_request('bypass button', this)
+                UpdateController.make_single_request('group mode button', this)
             })
-            add_tooltip(this.bypass_group_button, `${bypass.all ? 'enable' : 'bypass'} group nodes`, 'right')
+            add_tooltip(this.group_mode_button, Texts.MODE_TOOLTIP[node_mode], 'right')
             
-            classSet(this.bypass_group_button, 'all_bypassed', bypass.any && bypass.all)
-            classSet(this.bypass_group_button, 'some_bypassed', bypass.any && !bypass.all)
-            classSet(this.bypass_group_button, 'none_bypassed', !bypass.any)
+            classSet(this.group_mode_button, 'mode_0', node_mode==0)
+            classSet(this.group_mode_button, 'mode_2', node_mode==2)
+            classSet(this.group_mode_button, 'mode_4', node_mode==4)
+            classSet(this.group_mode_button, 'mode_9', node_mode==9)
+
         }
 
         if (this.show_advanced_button) {
             this.show_advanced_button.addEventListener('click', (e) => {
+                if (app.canvas.read_only) return
                 this.settings.advanced = !this.settings.advanced
                 this.redraw()
                 e.stopPropagation()    
@@ -612,6 +661,7 @@ export class ControllerPanel extends HTMLDivElement {
             this.minimise_button.addEventListener("click", (e)=>{ 
                 e.preventDefault(); 
                 e.stopPropagation(); 
+                if (app.canvas.read_only) return
                 this.settings.collapsed = (!this.settings.collapsed)
                 UpdateController.make_single_request('collapse', this) 
             })
@@ -620,16 +670,11 @@ export class ControllerPanel extends HTMLDivElement {
 
         if (this.delete_button) {
             this.delete_button.addEventListener('click', (e) => {
+                if (app.canvas.read_only) return
                 this.delete_controller()    
             })
         }
     }
-
-   // save_node_order() {
-   //     const node_id_list = []
-   //     this.main.childNodes.forEach((child)=>{if (child?.node?.id) node_id_list.push(child.node.id)})
-   //     this.settings.node_order = node_id_list
-   // }
 
     show_group_select(e, replace) {
         const the_select = create('span','group_add_select', document.body)

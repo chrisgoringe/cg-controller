@@ -1,9 +1,10 @@
 import { app } from "../../scripts/app.js"
 import { NodeInclusionManager } from "./node_inclusion.js"
 import { Colors, Texts } from "./constants.js"
+import { mode_change } from "./utilities.js"
 
 export class GroupManager {
-    static instance = null
+    static _instance = null
     constructor() {
         this.groups = {}  // maps group name to Set of node ids
         const ungrouped = new Set()
@@ -28,9 +29,16 @@ export class GroupManager {
             })
         })
         if (ungrouped.size>0) this.groups[Texts.UNGROUPED] = ungrouped
+
+        this.jsoned = JSON.stringify(this)
     }
 
-    static setup() { GroupManager.instance = new GroupManager() }
+    static check_for_changes() {
+        const gm2 = new GroupManager()
+        if (gm2.jsoned==GroupManager.instance.jsoned) return false
+        GroupManager._instance = gm2
+        return true
+    }
 
     static list_group_names() {
         const names = [Texts.ALL_GROUPS,]
@@ -42,25 +50,23 @@ export class GroupManager {
         return GroupManager.instance.colors[group_name] ?? Colors.DARK_BACKGROUND
     }
 
-    static bypassed(group_name) {
-        var any = false
-        var all = true
+    static group_node_mode(group_name) {
+        const modes = {0:0,2:0,4:0}
         app.graph._groups.forEach((group) => {
             if (group.title == group_name) {
                 group._nodes.forEach((node) => {
-                    any = any || (node.mode!=0)
-                    all = all && (node.mode!=0)
+                    modes[node.mode] += 1
                 })
             }
         })
-        return {"any":any, "all":all}
+        if (modes[2]==0 && modes[4]==0) return 0
+        if (modes[0]==0 && modes[4]==0) return 2
+        if (modes[0]==0 && modes[2]==0) return 4
+        return 9
     }
 
-    static toggle_bypass(group_name) {
-        GroupManager.set_bypass(group_name, !(GroupManager.bypassed(group_name).all))
-    }
-    static set_bypass(group_name, value) {
-        value = value ? 4 : 0
+    static change_group_mode(group_name, current_mode, e) {
+        const value = mode_change(current_mode,e)
         app.graph._groups.forEach((group) => {
             if (group.title == group_name) {
                 group._nodes.forEach((node) => {
@@ -77,3 +83,10 @@ export class GroupManager {
 
     static any_groups() { return (Object.keys(GroupManager.instance.groups).length > 0) }
 }
+
+Object.defineProperty(GroupManager, "instance", {
+    get : () => {
+        if (!GroupManager._instance) GroupManager._instance = new GroupManager()
+        return GroupManager._instance
+    }
+})

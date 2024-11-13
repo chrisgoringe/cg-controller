@@ -19,12 +19,10 @@ The Controller is toggled using a button in the top menu. When the sliders icon 
 
 ![top](images/top.png)
 
-To create a Controller window, right click on the background and select "New Controller" from the menu (if it isn't there, check the Controller is active!).
+There will normally be one controller window created for you. If not, or to add more, 
+right click on the background and select "New Controller" from the menu (if it isn't there, check the Controller is active!).
 
 At first, the Controller will be empty. To add nodes to it, right-click on the node and in the Controller Panel menu select "Include this node".
-
-The button next to the Controller toggle is the refresh. Not all changes in the workflow are automatically picked up by the controller, 
-so sometimes after you make a change you will need to click this.
 
 ![menu](images/menu.png)
 
@@ -34,15 +32,12 @@ so when you look at the workflow you can easily see which nodes are included.
 The node, with all standard widgets (we'll work to include the most popular custom widgets in future releases!) will now appear in the controller
 as a panel with the same title and colour as the node, underneath which are all the widgets. 
 
-|Controller|Node|
-|-|-|
-|![nodeblock](images/nodeblock.png)|![node](images/ksampler.png)|
-||Where is the control_before_generate? It's hidden, but you can change that in the settings|
+![widgets](images/widgets.png)
 
 If you now edit the values in those widgets, the changes will be reflected in the workflow (and vica versa). 
 Combo boxes, toggle switches, buttons, and text fields all work just as you would expect. 
 
-Numeric fields (like cfg in the image) a represented using an editable slider. 
+Numeric fields (like width in the image) a represented using an editable slider. 
 Click on the slider and drag left or right, and the value will change between the minimum and maximum values.
 You can also just hover the mouse over the slider and move the value up or down with your mouse scrollwheel.
 To enter a precise value, double click and the slider turns into a text entry box where you can type the value you want.
@@ -69,39 +64,44 @@ doesn't bring up the menu any more). If you want to get rid of a tab, switch to 
 
 ## The other icons
 
+![other icons](images/other_icons.png)
+
+The play button indicates that all of the nodes in this group are currently active (not bypassed or muted).
+You can use it to bypass or mute a group. (Mute is refered to as 'never' in some places)
+
+|Icon|Meaning|Click will...|Ctrl-click will...|
+|-|-|-|-|
+|![0](images/0.png)|Group nodes active|Bypass group|Mute group|
+|![2](images/2.png)|Group nodes muted|Activate group|Activate group|
+|![4](images/4.png)|Group nodes bypassed|Activate group|Mute group|
+|![29](images/9.png)|Mixed state in group|Activate group|Activate group|
+
 The little lightning bolt icon is used to show/hide any nodes that were added as advanced controls. 
 If there are no advanced control, this icon won't be shown.
 
-The no-entry sign (circle with slash) is a placeholder - in a forthcoming release it will be
-used to toggle the group between active and bypassed.
-
-In the top right there is a minimise button, and a close button which can be used to minimise or close
-this controller window. A minimised controller just shows the tab name and the 'X':
-
-![minimised](images/minimised.png)
-
-click the tab name to restore the controller to full size.
+Nodes which include an image also have a pin in the top right corner: ![pin](images/pin.png)
+When this is active (blue, the default) the image will be shown at the full width of the controller. 
+If you unpin the image, you will find a handle at the bottom right of the image that can be used to resize it (vertically).
 
 ## Other things to explore
 
-### Rearrange the nodes
+### Multiple controllers
 
-<img src="images/drag.png" style="padding-right:8px;"/>
+Remember, you can add more controllers any time by right clicking on the canvas. You can also close controllers with the 'X',
+or minimise them with the '_'.
+
+### Rearrange the nodes
 
 You can rearrange the node panels in the controller by clicking on the node panel title bar and dragging it up or down.
 
 ### Collapse nodes
 
-<img src="images/collapse.png" style="padding-right:8px;"/>
-
-You can save space by collapsing the node panels, just like you can collapse nodes in the workflow. Just click the square
-at the left-hand side of the title bar, click it again to expand.
+You can save space by collapsing the node panels, just like you can collapse nodes in the workflow. 
+Click on the title bar without dragging to collapse, click it again to expand.
 
 ### Resize text and images
 
-<img src="images/resize.png" style="padding-right:8px;"/>
-
-Multiline text fields and image displays can be rescaled up or down using the resize handle in the bottom right hand corner of the widget.
+Multiline text fields and (unpinned) image displays can be rescaled up or down using the resize handle in the bottom right hand corner of the widget.
 As you drag the height is shown as an overlay, in case you want to make things the same size.
 
 ### The workflow is still there
@@ -111,11 +111,6 @@ The Controller is just a way of viewing it (and changing widgets values).
 
 Some changes that you make will not be immediately reflected in the Controller (for instance, if you change the colour of a node), 
 but you just need to click the refresh button (top right of the Controller) to bring it up to date.
-
-### Images
-
-The Controller works with Load, Save and Preview image nodes. The image preview nodes also show the interim images shown in the sampler, if you
-have that feature turned on.
 
 ### Settings
 
@@ -142,12 +137,12 @@ in future releases, probably starting with rgthree's Power Lora Loader.
 Future features will depend on community feedback, but some of the top contenders right now are...
 
 - Visual links between the controller and workflow (highlight node on hover)
-- Toggling bypass 
 - Selecting which widgets on a node to show
+- 'Snapping' controller windows to each other and the edges of the display
 
 For more details of what's under consideration, take a look at the [issues list](https://github.com/chrisgoringe/cg-controller/issues), 
 and feel free to add your ideas there, or 
-jump into the discussion [here](https://github.com/chrisgoringe/cg-controller/discussions/210).
+jump into the discussion [here](https://github.com/chrisgoringe/cg-controller/discussions).
 
 # Bug reports
 

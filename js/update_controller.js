@@ -1,6 +1,7 @@
 import { app } from "../../scripts/app.js"
 import { Timings } from "./constants.js"
 import { Debug } from "./debug.js"
+import { GroupManager } from "./groups.js"
 
 function message(wait_time) {
     if (wait_time==0) return ""
@@ -10,14 +11,16 @@ function message(wait_time) {
 }
 
 export class UpdateController {
-    static callback      = ()=>{}
-    static permission    = ()=>{return false}
-    static pause_stack = 0
+    static callback     = ()=>{}
+    static permission   = ()=>{return false}
+    static single_node  = (node_id, info)=>{}
+    static pause_stack  = 0
     static _configuring = false
 
-    static setup(callback, permission) {
+    static setup(callback, permission, single_node) {
         UpdateController.callback    = callback
         UpdateController.permission  = permission
+        UpdateController.single_node = single_node
     }
 
     static push_pause() { UpdateController.pause_stack += 1 }
@@ -35,7 +38,7 @@ export class UpdateController {
         if (UpdateController._configuring) {
             Debug.extended(`make_request_unless_configuring ${label} ignored because still configuring`)
         } else {      
-            UpdateController.make_request  (label, after_ms, noretry, controller)
+            UpdateController.make_request(label, after_ms, noretry, controller)
         }
     }
     static make_request(label, after_ms, noretry, controller) {
@@ -78,17 +81,38 @@ export class UpdateController {
         UpdateController.requesting = false
         UpdateController.make_request(label, null, null, controller)
     }
+}
 
+export class OnChangeController {
     static gap_request_stack = 0
-    static request_when_gap(ms, label) {
-        UpdateController.gap_request_stack += 1
-        Debug.trivia(`${label} gap stack ${UpdateController.gap_request_stack}`)
-        setTimeout(UpdateController._gap_timeout_end, ms, label)
+    static on_change() {
+        OnChangeController.gap_request_stack += 1
+        setTimeout(OnChangeController._on_change, Timings.ON_CHANGE)
     }
-    static _gap_timeout_end(label) {
-        UpdateController.gap_request_stack -= 1
-        if (UpdateController.gap_request_stack == 0) {
-            UpdateController.make_request(`After gap as requested by ${label}`)
+    static _on_change() {
+        OnChangeController.gap_request_stack -= 1
+        if (OnChangeController.gap_request_stack == 0) {
+            if (GroupManager.check_for_changes()) {
+                UpdateController.make_request("on_change, change in groups")
+            } else {
+                const changed_nodes = []
+                app.graph._nodes.forEach((node)=>{
+                    if (node.bgcolor != node._controller_bgcolor || node.title != node._controller_title) {
+                        changed_nodes.push(node.id)
+                        node._controller_bgcolor = node.bgcolor
+                        node._controller_title = node.title
+                    } 
+                })
+                if (changed_nodes.length > 1) {
+                    UpdateController.make_request("on_change, multiple nodes changed")
+                } else if (changed_nodes.length == 1) {
+                    UpdateController.single_node(changed_nodes[0], "on_change")
+                } else {
+                    Debug.trivia("on_change, no changes", true)
+                }
+            }
+        } else {
+            Debug.trivia("on_change, too soon", true)
         }
     }
 

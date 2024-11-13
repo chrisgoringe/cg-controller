@@ -100,7 +100,7 @@ export class Entry extends HTMLDivElement {
 
         const onRemove = target_widget.onRemove
         target_widget.onRemove = function () {
-            onRemove.apply(target_widget, arguments)
+            onRemove?.apply(target_widget, arguments)
             UpdateController.make_request('widget removed')
         }
 

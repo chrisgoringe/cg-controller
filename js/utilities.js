@@ -91,6 +91,7 @@ export function classSet(element, name, add) {
 }
 
 export function add_tooltip(element, text, extra_classes) {
+    if (app.canvas.read_only) return
     if (getSettingValue(SettingIds.TOOLTIPS, true)) {
         element.classList.add('tooltip')
         if (extra_classes) extra_classes.split(" ").forEach((s) => element.classList.add(s))
@@ -123,4 +124,8 @@ export function defineProperty(instance, property, desc) {
       desc.writable = desc.writable ?? existingDesc?.writable ?? true;
     }
     return Object.defineProperty(instance, property, desc);
+  }
+
+  export function mode_change(mode, e) {
+    return (mode==0) ? (e.ctrlKey ? 2 : 4) : ((e.ctrlKey && mode==4) ? 2 : 0)
   }

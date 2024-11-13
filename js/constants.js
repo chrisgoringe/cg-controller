@@ -6,6 +6,9 @@ export class SettingIds {
     static DEBUG_LEVEL = "Controller.debug.level"
     static FONT_SIZE = "Controller.options.font_size"
     static TOOLTIPS = "Controller.options.tooltips"
+    static DEFAULT_APPLY_TO_SIMILAR = "Controller.options.default_apply_to_similar"
+    static SHOW_SCROLLBARS = "Controller.options.show_scrollbars"
+    static SHOW_IN_FOCUS_MODE = "Controller.options.show_in_focus_mode"
 }
 
 export class InclusionOptions {
@@ -27,6 +30,8 @@ export class Timings { // ms
     static GROUP_SELECT_NOSELECT_WAIT = 5000
     static PAUSE_STACK_WAIT = 101
     static HOLDER_RESIZED_WAIT = 2000
+
+    static ON_CHANGE = 200
 }
 
 export class Colors {
@@ -38,6 +43,12 @@ export class Texts {
     static ALL_GROUPS = "All"
     static UNGROUPED = "Ungrouped"
     static CONTEXT_MENU = "Controller Panel"
+    static MODE_TOOLTIP = {
+        0 : "Click to bypass</br>ctrl&#8209;click to mute",
+        2 : "Group muted.</br>Click to activate",
+        4 : "Group bypassed.</br>Click to activate",
+        9 : "Some nodes muted or bypassed.</br>Click to activate"
+    }
 }
 
 export const BASE_PATH = "extensions/cg-controller"

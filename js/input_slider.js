@@ -83,7 +83,7 @@ class SliderOptionEditor extends HTMLSpanElement {
             const n = this.other_like_node.length
             this.apply_also_panel = create('span',  'option_setting_panel', this)
             create('span', 'option_setting_label', this.apply_also_panel, {"innerHTML":`Apply to ${n} similar node${n>1?"s":"" }`})
-            this.apply_also_checkbox = create('input', 'option_setting_also_checkbox', this.apply_also_panel, {'type':'checkbox', "checked":true})
+            this.apply_also_checkbox = create('input', 'option_setting_also_checkbox', this.apply_also_panel, {'type':'checkbox', "checked":getSettingValue(SettingIds.DEFAULT_APPLY_TO_SIMILAR, true)})
         }
 
         this.buttons       = create('span',  'option_setting_buttons', this)
@@ -247,12 +247,13 @@ export class FancySlider extends HTMLSpanElement {
         this.classList.add('unrefreshable')
         this.reason = "slider in text edit mode"
         this.redraw()
-        setTimeout(this.text_edit.focus,100)
+        setTimeout(()=>{this.text_edit.focus()},100)
     }
 
     switch_to_graphicaledit() {
         if (FancySlider.in_textedit == this) FancySlider.in_textedit = null
         this.displaying = "graphic"
+        this.redraw()
     }
 
     edit_min_max(e) {

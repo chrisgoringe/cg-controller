@@ -5,11 +5,12 @@ import { ControllerPanel } from "./controller_panel.js"
 import { create, defineProperty } from "./utilities.js"
 import { add_controls } from "./controller_controls.js"
 import { add_control_panel_options, NodeInclusionManager,  } from "./node_inclusion.js"
-import { UpdateController } from "./update_controller.js"
+import { OnChangeController, UpdateController } from "./update_controller.js"
 import { Debug } from "./debug.js"
 import { BASE_PATH } from "./constants.js"
 import { ImageManager } from "./image_manager.js"
 import { global_settings } from "./settings.js"
+import { NodeBlock } from "./nodeblock.js"
 
 const MINIMUM_UE = 500006
 async function check_ue() {
@@ -27,7 +28,7 @@ async function check_ue() {
 }
 
 function on_setup() {
-    UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh)  
+    UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh, ControllerPanel.node_change)  
     NodeInclusionManager.node_change_callback = UpdateController.make_request
     api.addEventListener('graphCleared', ControllerPanel.graph_cleared) 
 
@@ -89,17 +90,21 @@ app.registerExtension({
             {'rel':'stylesheet', 'type':'text/css', 'href':`${BASE_PATH}/slider.css` } )
 
         // Allow our elements to do any setup they want
+        try {
         on_setup()
+        } catch (e) { Debug.error("on setup");console.error(e) }
 
         // add to the canvas menu, and keyboard shortcuts
+        try {
         add_controls()
+        } catch (e) { Debug.error("add controls");console.error(e) }
 
         try {
             const on_change = app.graph.on_change
             app.graph.on_change = function () {
                 try {
                     on_change?.apply(this,arguments)
-                    UpdateController.request_when_gap(100, 'on_change')
+                    OnChangeController.on_change()
                 } catch (e) {
                     Debug.error("*** EXCEPTION HANDLING on_change")
                     console.error(e)
@@ -111,19 +116,46 @@ app.registerExtension({
             console.error(e)
         }
 
-        const rcin = app.refreshComboInNodes
-        app.refreshComboInNodes = async function () {
-            try {
-                if (rcin) await rcin.bind(app)()
-            } catch (e) {
-                console.error(e)
-            } finally {
-                UpdateController.make_request('refreshComboInNodes')
-            }
-
+        const draw = app.canvas.onDrawForeground;
+        app.canvas.onDrawForeground = function(ctx, visible) {
+            draw?.apply(this,arguments);
+            NodeBlock.on_draw(ctx);
         }
 
+        /* look for dialog boxes appearing or disappearing */
+        new MutationObserver((mutations)=>{
+            var need_update = ""
+            mutations.forEach((mutation)=>{
+                mutation.addedNodes.forEach((n)=>{
+                    if (n.classList?.contains?.('p-dialog-mask')) need_update = "dialog added"
+                })
+                mutation.removedNodes.forEach((n)=>{
+                    if (n.classList?.contains?.('p-dialog-mask')) need_update = "dialog removed"
+                })
+            })
+            if (need_update != "") UpdateController.make_request(`mutation: ${need_update}`)
+        }).observe(document.body, {"childList":true})
+
+        /* look for focus mode start or stop */
+        new MutationObserver((mutations)=>{
+            var focus_change = false 
+            mutations.forEach((mutation)=>{
+                mutation.addedNodes.forEach((n)=>{
+                    if (n.$pc?.name == "Splitter") focus_change = true
+                })
+                mutation.removedNodes.forEach((n)=>{
+                    if (n.$pc?.name == "Splitter") focus_change = true
+                })
+            })
+            if (focus_change) ControllerPanel.focus_mode_changed()
+        }).observe(document.getElementsByClassName('graph-canvas-container')[0], {"childList":true})
+
         check_ue()
+    },
+
+    async refreshComboInNodes() {
+        UpdateController.make_request('refreshComboInNodes')
+        UpdateController.make_request('refreshComboInNodes delayed',1000)        
     },
 
     async init() {
@@ -173,14 +205,16 @@ app.registerExtension({
             UpdateController.make_request("node_removed", 20)
         }
 
-        node._imgs = node.imgs
-        defineProperty(node, 'imgs', {
-            get: () => { return node._imgs },
-            set: (v) => { 
-                node._imgs = v; 
-                if (v && v.length>0) ImageManager.node_has_img(node, v[0])
+        const onDrawForeground = node.onDrawForeground
+        node.onDrawForeground = function() {
+            onDrawForeground?.apply(this,arguments)
+
+            if (node._controller_imgs !== node.imgs && node.imgs && node.imgs.length>0) {
+                ImageManager.node_img_change(node)
             }
-        })
+            node._controller_imgs = node.imgs
+
+        }
 
         UpdateController.make_request_unless_configuring("node_created", 20)
     },
