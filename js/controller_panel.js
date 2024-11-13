@@ -193,7 +193,7 @@ export class ControllerPanel extends HTMLDivElement {
         initialise_settings()
         ControllerPanel.add_controllers()
         if (ControllerPanel.menu_button) classSet(ControllerPanel.menu_button, 'showing', !global_settings.hidden) 
-        if (!global_settings.hidden && Object.keys(ControllerPanel.instances).length==0) ControllerPanel.create_new()
+        if (!global_settings.hidden && Object.keys(ControllerPanel.instances).length==0 && ControllerPanel.find_controller_parent()) ControllerPanel.create_new()
         UpdateController.make_request('new workflow', 100)
     }
 

@@ -27,7 +27,7 @@ export class Entry extends HTMLDivElement {
         this.remove()
         Object.keys(this).forEach((k)=>{this[k]=null})
         Entry.count -= 1
-        Debug.trivia(`Entry._remove count = ${Entry.count}`)
+        //Debug.trivia(`Entry._remove count = ${Entry.count}`)
     }
 
     constructor(parent_controller, parent_nodeblock, node, target_widget, properties) {

@@ -48,13 +48,14 @@ class _Settings {
             "h" : (h!=null) ? h : this.position.h,
         }
     }
-    //store_position() {
-    //    this.userposition = {}
-    //    Object.assign(this.userposition, this.position)
-    //}
-    //retreive_position() {
-    //    Object.assign(this.position, this.userposition)
-    //}
+    delta_position(x,y,w,h) {
+        this.set_position( 
+            x ? x + this.position.x : null,
+            y ? y + this.position.y : null,
+            w ? w + this.position.w : null,
+            h ? h + this.position.h : null,
+         )
+    }
 }
 
 export function get_settings(index) {

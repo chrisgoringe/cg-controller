@@ -36,7 +36,7 @@ export class NodeBlock extends HTMLSpanElement {
         }
 
         if (this==NodeBlock.mouse_in) NodeBlock.mouse_in = null
-        Debug.trivia(`NodeBlock._remove count = ${NodeBlock.count}`)
+        //Debug.trivia(`NodeBlock._remove count = ${NodeBlock.count}`)
     }
 
     _remove_entries() {
