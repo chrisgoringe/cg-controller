@@ -1,4 +1,4 @@
-import { clamp } from "./utilities.js"
+import { clamp, create, find_controller_parent } from "./utilities.js"
 import { Debug } from "./debug.js"
 import { Pixels } from "./constants.js"
 
@@ -59,6 +59,8 @@ export class SnapManager {
     static last_dim = {}
     static mouse_is_down = false
     static child_types = {}
+    static gutter_overlay = null
+
     static setup() {
         window.addEventListener('mousedown', ()=>{SnapManager.mouse_is_down = true})
         window.addEventListener('mouseup', ()=>{SnapManager.mouse_is_down = false})
@@ -105,7 +107,7 @@ export class SnapManager {
     static call_depth = 0
     static moved = {}
     static apply_snapping(panel) {
-        SnapManager.call_depth += 1 
+        SnapManager.call_depth += 1         
         try {
             if (SnapManager.call_depth==1) {
                 SnapManager.moved[panel.index] = "xywh"
@@ -113,8 +115,44 @@ export class SnapManager {
             SnapManager._apply_snapping(panel)
         } finally {
             SnapManager.call_depth -= 1 
-            if (SnapManager.call_depth==0) SnapManager.moved = {}
+            if (SnapManager.call_depth==0) {
+                SnapManager.moved = {}
+                SnapManager.on_stack_empty()
+            }
         }
+    }
+
+    static create_overlap(t,h,l,w) {
+        const overlap = create('span', 'gutter_overlap', SnapManager.gutter_overlay)
+        overlap.style.top    = `${t}px`
+        overlap.style.height = `${h}px`
+        overlap.style.left   = `${l}px`
+        overlap.style.width  = `${w}px`        
+    }
+
+    static on_stack_empty() {
+        Debug.extended('SnapManager on_stack_empty')
+        SnapManager.gutter_overlay?.remove()       
+        if (SnapManager.mouse_is_down) return
+        SnapManager.gutter_overlay = create('span', 'gutter_overlay', find_controller_parent())
+        const b = SnapManager.gutter_overlay.getBoundingClientRect()
+
+        Object.keys(SnapManager.panels).forEach((i)=>{
+            const b1 = SnapManager.panels[i].getBoundingClientRect()
+            if (b1.y == b.y) SnapManager.create_overlap(0, Pixels.BORDER_WIDTH, b1.left - b.left, b1.width)
+            if (b1.x == b.x) SnapManager.create_overlap(b1.top - b.top, b1.height, 0, Pixels.BORDER_WIDTH)
+            Object.keys(SnapManager.panels).filter( (j)=>(j!=i) ).forEach((j)=>{
+                const b2 = SnapManager.panels[j].getBoundingClientRect()
+                if (SnapManager.child_types[i][j].joined_x) {
+                    SnapManager.create_overlap(Math.max(b1.top, b2.top) - b.top, Math.min(b1.bottom, b2.bottom) - Math.max(b1.top, b2.top), b2.left - b.left, Pixels.BORDER_WIDTH)
+                    Debug.extended(`${i} and ${j} joined in x`)
+                }
+                if (SnapManager.child_types[i][j].joined_y) {
+                    SnapManager.create_overlap(b2.top - b.top, Pixels.BORDER_WIDTH, Math.max(b1.left, b2.left) - b.left, Math.min(b1.right, b2.right) - Math.max(b1.left, b2.left))
+                    Debug.extended(`${i} and ${j} joined in y`)
+                }
+            })
+        })
     }
 
     static tidy_up(panel) {

@@ -1,6 +1,6 @@
 import { app } from "../../scripts/app.js";
 
-import { create, get_node, add_tooltip, clamp, classSet, defineProperty } from "./utilities.js";
+import { create, get_node, add_tooltip, clamp, classSet, defineProperty, find_controller_parent } from "./utilities.js";
 import { GroupManager } from "./groups.js";
 
 import { UpdateController } from "./update_controller.js";
@@ -46,12 +46,12 @@ export class ControllerPanel extends HTMLDivElement {
         this.settings = get_settings(index)
         this.classList.add("controller")
         SnapManager.register(this)
-        ControllerPanel.find_controller_parent().appendChild(this)
+        find_controller_parent().appendChild(this)
 
         this.header = create('span','header', this)
         this.main   = create('span','main', this)
         this.footer = create('span','footer', this)
-        this.style.borderWidth = `${Pixels.BORDER_WIDTH}px`
+        this.style.setProperty('--border_width',`${Pixels.BORDER_WIDTH}px`)
         
         this.node_blocks = {}   
 
@@ -194,7 +194,7 @@ export class ControllerPanel extends HTMLDivElement {
         initialise_settings()
         ControllerPanel.add_controllers()
         if (ControllerPanel.menu_button) classSet(ControllerPanel.menu_button, 'showing', !global_settings.hidden) 
-        if (!global_settings.hidden && Object.keys(ControllerPanel.instances).length==0 && ControllerPanel.find_controller_parent()) ControllerPanel.create_new()
+        if (!global_settings.hidden && Object.keys(ControllerPanel.instances).length==0 && find_controller_parent()) ControllerPanel.create_new()
         UpdateController.make_request('new workflow', 100)
     }
 
@@ -215,7 +215,7 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     static add_controllers() {
-        if (ControllerPanel.find_controller_parent()) {
+        if (find_controller_parent()) {
             get_all_setting_indices().forEach((i)=>{
                 new ControllerPanel(i).redraw()
             })
@@ -226,14 +226,8 @@ export class ControllerPanel extends HTMLDivElement {
         Object.keys(ControllerPanel.instances).forEach((k)=>ControllerPanel.instances[k].set_position(false))
     }
 
-    static find_controller_parent() {
-        const show_in_focus = getSettingValue(SettingIds.SHOW_IN_FOCUS_MODE, false)
-        return document.getElementsByClassName('graph-canvas-panel')[0] ?? 
-                (show_in_focus ? (document.getElementsByClassName('graph-canvas-container')[0] ?? null) : null)
-    }
-
     static create_menu_icon() {
-        if (ControllerPanel.find_controller_parent()) {
+        if (find_controller_parent()) {
             const comfy_menu = document.getElementsByClassName('comfyui-menu')[0]
             var spacer = null
             comfy_menu.childNodes.forEach((node)=>{if (node.classList.contains('flex-grow')) spacer = node})
@@ -336,7 +330,7 @@ export class ControllerPanel extends HTMLDivElement {
 
     _can_refresh() {
         try {
-            if (!ControllerPanel.find_controller_parent()?.contains(this)) { 
+            if (!find_controller_parent()?.contains(this)) { 
                 Debug.trivia("not visible"); 
                 return -1 
             }
@@ -624,7 +618,7 @@ export class ControllerPanel extends HTMLDivElement {
         this.header = this._header
         this.main = this._main
         
-        this.set_position(true)
+        this.set_position()
         observe_resizables( this, this.on_child_height_change.bind(this) )
     }
 

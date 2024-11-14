@@ -135,3 +135,9 @@ export function defineProperty(instance, property, desc) {
     if (document.getElementsByClassName('graph-canvas-container')[0]) return "focus"
     return null
   }
+
+  export function find_controller_parent() {
+    const show_in_focus = getSettingValue(SettingIds.SHOW_IN_FOCUS_MODE, false)
+    return document.getElementsByClassName('graph-canvas-panel')[0] ?? 
+            (show_in_focus ? (document.getElementsByClassName('graph-canvas-container')[0] ?? null) : null)
+}

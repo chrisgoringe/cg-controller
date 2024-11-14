@@ -45,6 +45,8 @@
 
     --progress-color: green;
     --active-color: green;
+
+    --border_width: 4px;
     
     font-size: var(--font-size);
     height:100%;
@@ -54,7 +56,7 @@
     position: absolute;
     min-width: 130px;
     overflow: clip scroll;
-    /*border-width: set programatically */
+    border-width: var(--border_width);
     border-style: solid;
     border-color: var(--main-border-color);
     border-radius: 4px;
@@ -78,6 +80,22 @@
     overflow: clip;
     min-width: 0px;
     padding: 0px;
+}
+
+.gutter_overlay {
+    position: absolute;
+    background-color: transparent;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index:999;
+}
+
+.gutter_overlap {
+    position:absolute;
+    pointer-events: none;
+    background-color: #999999;
+    border-radius: 2px;
 }
 
 
