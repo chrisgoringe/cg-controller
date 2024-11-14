@@ -25,7 +25,7 @@
     --muted-fore-color: #999999;
 
     --deep-back-color: #000000;
-    --main-back-color: #1c1c1cee;
+    --main-back-color: #1c1c1cfa;
     --second-back-color: #222222;
     --third-back-color:  #353535;
 
@@ -41,7 +41,7 @@
     --toggle-on: #8899aa;
     --toggle-off: #333333;
 
-    --main-border-color: rgb(83 83 83);
+    --main-border-color: rgb(53 53 53);
 
     --progress-color: green;
     --active-color: green;
@@ -52,7 +52,7 @@
     height:100%;
     min-height: 42px;
     background: var(--main-back-color);
-    padding: 0 0 0 2px;
+    padding: 0 4px 0 4px;
     position: absolute;
     min-width: 130px;
     overflow: clip scroll;
@@ -73,7 +73,6 @@
 
 .controller.hide_scrollbars {
     scrollbar-width: none;
-    padding-right: 2px;
 }
 
 .controller.collapsed {

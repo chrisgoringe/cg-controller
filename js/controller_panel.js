@@ -270,7 +270,7 @@ export class ControllerPanel extends HTMLDivElement {
             clear_widget_change_managers()
             clean_image_manager()
             Object.values(ControllerPanel.instances).forEach((cp)=>{cp.redraw()})
-            SnapManager.on_stack_empty()
+            //SnapManager.on_stack_empty()
         }
     }
 

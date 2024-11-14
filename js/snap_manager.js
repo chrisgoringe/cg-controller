@@ -117,11 +117,11 @@ export class SnapManager {
             SnapManager.call_depth -= 1 
             if (SnapManager.call_depth==0) {
                 SnapManager.moved = {}
-                SnapManager.on_stack_empty()
+                //SnapManager.on_stack_empty()
             }
         }
     }
-
+/*
     static create_overlap(t,h,l,w) {
         const overlap = create('span', 'gutter_overlap', SnapManager.gutter_overlay)
         overlap.style.top    = `${t}px`
@@ -153,7 +153,7 @@ export class SnapManager {
                 }
             })
         })
-    }
+    }*/
 
     static tidy_up(panel) {
         Debug.extended(`Tidy up called for ${panel.index}`)
@@ -175,9 +175,9 @@ export class SnapManager {
             }
         })
 
-        panel.settings.set_position( clamp(me.position.x,0), clamp(me.position.y,0), null, null )
-        if (me.position.x < THRESHOLD) panel.settings.set_position( 0, null, null, null )
-        if (me.position.y < THRESHOLD) panel.settings.set_position( null, 0, null, null )
+        panel.settings.set_position( clamp(me.position.x,-OVERLAP), clamp(me.position.y,-OVERLAP), null, null )
+        if (me.position.x < THRESHOLD) panel.settings.set_position( -OVERLAP, null, null, null )
+        if (me.position.y < THRESHOLD) panel.settings.set_position( null, -OVERLAP, null, null )
 
         Object.keys(SnapManager.panels).forEach((k)=>{
             if (k!=panel.index && SnapManager.child_types[panel.index][k].move_with) {
