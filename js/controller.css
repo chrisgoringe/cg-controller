@@ -108,7 +108,7 @@
     display: flex;
     width: var(--element_width);
     justify-content: space-between;
-    margin: 0px;
+    margin: 0px 0px 4px 0px;
     align-items: center;
     flex-wrap: wrap;
     z-index:1;
@@ -132,6 +132,7 @@
 
 .subheader2 {
     padding-top:2px;
+    margin-bottom:0px;
 }
 
 .subheader .left {
