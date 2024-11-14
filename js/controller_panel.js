@@ -11,7 +11,7 @@ import { Debug } from "./debug.js";
 import { NodeInclusionManager } from "./node_inclusion.js";
 import { get_all_setting_indices, getSettingValue, global_settings, new_controller_setting_index, get_settings, delete_settings, initialise_settings, valid_settings } from "./settings.js";
 import { update_node_order, add_missing_nodes } from "./settings.js"
-import { SettingIds, Timings, Texts } from "./constants.js";
+import { SettingIds, Timings, Texts, Pixels } from "./constants.js";
 import { FancySlider } from "./input_slider.js";
 import { clear_widget_change_managers } from "./widget_change_manager.js";
 import { clean_image_manager } from "./image_manager.js";
@@ -51,6 +51,7 @@ export class ControllerPanel extends HTMLDivElement {
         this.header = create('span','header', this)
         this.main   = create('span','main', this)
         this.footer = create('span','footer', this)
+        this.style.borderWidth = `${Pixels.BORDER_WIDTH}px`
         
         this.node_blocks = {}   
 

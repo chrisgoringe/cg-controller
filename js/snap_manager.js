@@ -1,8 +1,9 @@
 import { clamp } from "./utilities.js"
 import { Debug } from "./debug.js"
+import { Pixels } from "./constants.js"
 
 const THRESHOLD = 5
-const OVERLAP = 5
+const OVERLAP = Pixels.BORDER_WIDTH
 
 class ChildType {
     anything() {
@@ -14,6 +15,14 @@ class ChildType {
     share_bottom() { this.shared_b = true; }
     share_left()   { this.shared_l = true; }
     share_right()  { this.shared_r = true; }
+
+    describe() {
+        var desc = ""
+        Object.keys(this).forEach((k)=>{if (this[k]) desc += `${k} `})
+        return desc
+    }
+
+    static none() { return new ChildType() }
 }
 
 function get_child_type(p1, p2) {
@@ -70,7 +79,11 @@ export class SnapManager {
         Object.keys(SnapManager.panels).forEach((i)=>{
             SnapManager.child_types[i] = {}
             Object.keys(SnapManager.panels).filter((j)=>(i!=j)).forEach((j)=>{
-                SnapManager.child_types[i][j] = get_child_type(SnapManager.panels[j].settings.position, SnapManager.panels[i].settings.position) 
+                if (SnapManager.panels[i].settings.collapsed || SnapManager.panels[j].settings.collapsed) {
+                    SnapManager.child_types[i][j] = ChildType.none()
+                } else {
+                    SnapManager.child_types[i][j] = get_child_type(SnapManager.panels[j].settings.position, SnapManager.panels[i].settings.position) 
+                }
             })
         })
 
@@ -105,6 +118,7 @@ export class SnapManager {
     }
 
     static tidy_up(panel) {
+        Debug.extended(`Tidy up called for ${panel.index}`)
         const me = panel.settings
         panel.settings.set_position( clamp(me.position.x,0), clamp(me.position.y,0), null, null )
         if (me.position.x < THRESHOLD) panel.settings.set_position( 0, null, null, null )
@@ -112,15 +126,18 @@ export class SnapManager {
 
         Object.keys(SnapManager.panels).filter( (k)=>(k!=panel.index) ).forEach((k)=>{
             const you = SnapManager.panels[k].settings
-            const your_r = you.position.x + you.position.w - OVERLAP
-            const your_b = you.position.y + you.position.h - OVERLAP
             const child_type = get_child_type(me.position, you.position)
-            if (child_type.shared_x) me.set_position( your_r, null, null, null )
-            if (child_type.shared_y) me.set_position( null, your_b, null, null )
-            if (child_type.shared_l) me.set_position( you.position.x, null, null, null )
-            if (child_type.shared_t) me.set_position( null, you.position.y, null, null )
-            if (child_type.shared_r) me.set_position( null, null, you.position.x + you.position.w - me.position.x, null )
-            if (child_type.shared_b) me.set_position( null, null, null, you.position.y + you.position.h - me.position.y )
+            if (child_type.anything()) {
+                Debug.extended(`${panel.index} tidy_up: ${k} has child_type ${child_type.describe()}`)
+                const your_r = you.position.x + you.position.w - OVERLAP
+                const your_b = you.position.y + you.position.h - OVERLAP
+                if (child_type.joined_x) me.set_position( your_r, null, null, null )
+                if (child_type.joined_y) me.set_position( null, your_b, null, null )
+                if (child_type.shared_l) me.set_position( you.position.x, null, null, null )
+                if (child_type.shared_t) me.set_position( null, you.position.y, null, null )
+                if (child_type.shared_r) me.set_position( null, null, you.position.x + you.position.w - me.position.x, null )
+                if (child_type.shared_b) me.set_position( null, null, null, you.position.y + you.position.h - me.position.y )
+            }
         })
         SnapManager.last_dim[panel.index] = {...me.position}
     }

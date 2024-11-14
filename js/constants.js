@@ -34,6 +34,10 @@ export class Colors {
     static MENU_HIGHLIGHT = '#C08080'
 }
 
+export class Pixels {
+    static BORDER_WIDTH = 4
+}
+
 export class Texts {
     static ALL_GROUPS = "All"
     static UNGROUPED = "Ungrouped"
