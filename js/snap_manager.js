@@ -2,7 +2,7 @@ import { clamp } from "./utilities.js"
 import { Debug } from "./debug.js"
 import { Pixels } from "./constants.js"
 
-const THRESHOLD = 5
+const THRESHOLD = 8
 const OVERLAP = Pixels.BORDER_WIDTH
 
 class ChildType {
