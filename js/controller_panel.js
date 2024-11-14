@@ -270,6 +270,7 @@ export class ControllerPanel extends HTMLDivElement {
             clear_widget_change_managers()
             clean_image_manager()
             Object.values(ControllerPanel.instances).forEach((cp)=>{cp.redraw()})
+            SnapManager.on_stack_empty()
         }
     }
 
@@ -279,12 +280,14 @@ export class ControllerPanel extends HTMLDivElement {
         if (global_settings.hidden) {
             Object.values(ControllerPanel.instances).forEach((cp)=>{cp._remove()})
             ControllerPanel.instances = {}
+            SnapManager.gutter_overlay.remove()
         }
         if (!global_settings.hidden && Object.keys(ControllerPanel.instances).length==0) {
             ControllerPanel.add_controllers()
             if (Object.keys(ControllerPanel.instances).length==0) ControllerPanel.create_new()
         }
         UpdateController.make_request('toggle')
+        
     }
 
     static can_refresh(c) {  // returns -1 to say "no, and don't try again", 0 to mean "go ahead!", or n to mean "wait n ms then ask again" 
