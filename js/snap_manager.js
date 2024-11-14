@@ -120,9 +120,6 @@ export class SnapManager {
     static tidy_up(panel) {
         Debug.extended(`Tidy up called for ${panel.index}`)
         const me = panel.settings
-        panel.settings.set_position( clamp(me.position.x,0), clamp(me.position.y,0), null, null )
-        if (me.position.x < THRESHOLD) panel.settings.set_position( 0, null, null, null )
-        if (me.position.y < THRESHOLD) panel.settings.set_position( null, 0, null, null )
 
         Object.keys(SnapManager.panels).filter( (k)=>(k!=panel.index) ).forEach((k)=>{
             const you = SnapManager.panels[k].settings
@@ -139,6 +136,18 @@ export class SnapManager {
                 if (child_type.shared_b) me.set_position( null, null, null, you.position.y + you.position.h - me.position.y )
             }
         })
+
+        panel.settings.set_position( clamp(me.position.x,0), clamp(me.position.y,0), null, null )
+        if (me.position.x < THRESHOLD) panel.settings.set_position( 0, null, null, null )
+        if (me.position.y < THRESHOLD) panel.settings.set_position( null, 0, null, null )
+
+        Object.keys(SnapManager.panels).forEach((k)=>{
+            if (k!=panel.index && SnapManager.child_types[panel.index][k].move_with) {
+                SnapManager.tidy_up(SnapManager.panels[k])
+            }
+        })
+        
+        panel.set_position(true)
         SnapManager.last_dim[panel.index] = {...me.position}
     }
 
