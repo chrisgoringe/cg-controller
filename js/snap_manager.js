@@ -2,7 +2,7 @@ import { clamp, create, find_controller_parent } from "./utilities.js"
 import { Debug } from "./debug.js"
 import { Pixels } from "./constants.js"
 
-const THRESHOLD = 8
+const THRESHOLD = 16
 const OVERLAP = Pixels.BORDER_WIDTH
 
 class ChildType {
