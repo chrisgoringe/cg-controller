@@ -32,7 +32,7 @@
     --overlay-background:  #ffffff66;
     --overlay-foreground: #353535;
 
-    --mute-button-color:red;
+    --mute-button-color:#ff6e6e;
     --bypass-button-color: #d179ff;
 
     --mute-overlay-color: #ffffff30;
@@ -279,7 +279,7 @@
     width: var(--element_width);
     min-height: 40px;
     display:block;
-    padding-bottom: 4px;
+    padding-bottom: 2px;
     border: 1px solid transparent;
 }
 
@@ -315,7 +315,7 @@
 }
 
 .nodeblock_titlebar_left .pi {
-    font-size:0.95em;
+    font-size:1.05em;
 }
 
 .minimised .entry { display: none; }
@@ -351,7 +351,11 @@
 .nodeblock_title {
     text-align: left;
     pointer-events: none;
-    padding-left: 3px;
+    padding-left: 4px;
+}
+.nodeblock_title::after {
+    content: " ";
+    font-size: 1.25em;
 }
 
 .nodeblock_image_panel {
@@ -397,7 +401,7 @@
 
 .entry {
     position: relative;
-    padding:4px 4px 0px 4px;
+    padding:4px 2px 0px 2px;
 }
 
 .entry_label {
@@ -408,7 +412,7 @@
     background: var(--second-back-color);
     color: var(--mid-fore-color);
     text-align: left;
-    left: 8px;
+    left: 6px;
     font-size: 70%;
     pointer-events: none;
     width: calc(var(--element_width) - 40px);
