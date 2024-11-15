@@ -280,7 +280,7 @@ export class ControllerPanel extends HTMLDivElement {
         if (global_settings.hidden) {
             Object.values(ControllerPanel.instances).forEach((cp)=>{cp._remove()})
             ControllerPanel.instances = {}
-            SnapManager.gutter_overlay.remove()
+            SnapManager.gutter_overlay?.remove()
         }
         if (!global_settings.hidden && Object.keys(ControllerPanel.instances).length==0) {
             ControllerPanel.add_controllers()
