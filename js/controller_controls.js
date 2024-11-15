@@ -68,6 +68,14 @@ export function add_controls() {
     })
 
     app.ui.settings.addSetting({
+        id: SettingIds.SCROLL_REVERSED,
+        name: "Scrollwheel reversed for sliders",
+        tooltip: "Scroll up to reduce value",
+        type: "boolean",
+        defaultValue: false           
+    })
+
+    app.ui.settings.addSetting({
         id: SettingIds.SHOW_SCROLLBARS,
         name: "Controller scrollbars",
         tooltip: "If off, can still scroll with scrollwheel",

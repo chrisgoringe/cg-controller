@@ -265,7 +265,8 @@ export class FancySlider extends HTMLSpanElement {
             const shift_setting = getSettingValue(SettingIds.SCROLL_MOVES_SLIDERS, "yes")
             if ( shift_setting=="yes" || (shift_setting=="shift" && e.shiftKey) || (shift_setting=="ctrl" && e.ctrlKey) ) {
                 this.wheeling = true
-                const new_value =  this.value + this.options.step * (e.wheelDelta>0 ? 1 : -1)
+                const reverse = getSettingValue(SettingIds.SCROLL_REVERSED, false) ? -1 : 1
+                const new_value =  this.value + reverse * this.options.step * (e.wheelDelta>0 ? 1 : -1)
                 WidgetChangeManager.set_widget_value(this.widget, new_value)
                 e.preventDefault()
                 e.stopPropagation() 
