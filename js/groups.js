@@ -41,8 +41,10 @@ export class GroupManager {
     }
 
     static list_group_names() {
-        const names = [Texts.ALL_GROUPS,]
-        Object.keys(GroupManager.instance.groups).forEach((gp) => {names.push(gp)})
+        const names = Object.keys(GroupManager.instance.groups)
+        //Object.keys(GroupManager.instance.groups).forEach((gp) => {names.push(gp)})
+        names.sort()
+        names.unshift(Texts.ALL_GROUPS)
         return names
     }
 
