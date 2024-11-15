@@ -193,7 +193,7 @@ export class ControllerPanel extends HTMLDivElement {
         ControllerPanel.instances = {}
         initialise_settings()
         ControllerPanel.add_controllers()
-        if (ControllerPanel.menu_button) classSet(ControllerPanel.menu_button, 'showing', !global_settings.hidden) 
+        if (ControllerPanel.menu_button) classSet(ControllerPanel.menu_button, 'litup', !global_settings.hidden) 
         if (!global_settings.hidden && Object.keys(ControllerPanel.instances).length==0 && find_controller_parent()) ControllerPanel.create_new()
         UpdateController.make_request('new workflow', 100)
     }
@@ -232,20 +232,20 @@ export class ControllerPanel extends HTMLDivElement {
             var spacer = null
             comfy_menu.childNodes.forEach((node)=>{if (node.classList.contains('flex-grow')) spacer = node})
             if (!spacer) spacer = comfy_menu.firstChild
-            const buttons = create('span', 'controller_menu_buttons')
-            spacer.after(buttons)
+            ControllerPanel.buttons = create('span', 'controller_menu_buttons')
+            spacer.after(ControllerPanel.buttons)
 
-            ControllerPanel.menu_button = create('i', 'pi pi-sliders-h controller_menu_button', buttons)
+            ControllerPanel.menu_button = create('i', 'pi pi-sliders-h controller_menu_button', ControllerPanel.buttons)
             add_tooltip(ControllerPanel.menu_button, 'Toggle controllers')
-            classSet(ControllerPanel.menu_button, 'showing', !global_settings.hidden) 
+            classSet(ControllerPanel.menu_button, 'litup', !global_settings.hidden) 
             ControllerPanel.menu_button.addEventListener('click', ControllerPanel.toggle)
 
-            ControllerPanel.search_button = create('i', 'pi pi-search controller_menu_button', buttons)
+            ControllerPanel.search_button = create('i', 'pi pi-search controller_menu_button hideable', ControllerPanel.buttons)
             add_tooltip(ControllerPanel.search_button, 'Highlight nodes in workflow')
-            classSet(ControllerPanel.search_button, 'showing', global_settings.highlight) 
+            classSet(ControllerPanel.search_button, 'litup', global_settings.highlight) 
             ControllerPanel.search_button.addEventListener('click', ()=>{ 
                 global_settings.highlight = !global_settings.highlight;
-                classSet(ControllerPanel.search_button, 'showing', global_settings.highlight) 
+                classSet(ControllerPanel.search_button, 'litup', global_settings.highlight) 
              })
 
             const exit_focus_button = document.getElementsByTagName('main')[0].getElementsByTagName('button')[0]
@@ -284,7 +284,10 @@ export class ControllerPanel extends HTMLDivElement {
 
     static toggle() {
         global_settings.hidden = !global_settings.hidden
-        if (ControllerPanel.menu_button) classSet(ControllerPanel.menu_button, 'showing', !global_settings.hidden)
+        if (ControllerPanel.buttons) {
+            classSet(ControllerPanel.menu_button, 'litup', !global_settings.hidden)
+            classSet(ControllerPanel.buttons, 'hide', global_settings.hidden)
+        }
         if (global_settings.hidden) {
             Object.values(ControllerPanel.instances).forEach((cp)=>{cp._remove()})
             ControllerPanel.instances = {}

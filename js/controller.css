@@ -12,8 +12,12 @@
     border-radius: 6px;
 }
 
-.showing {
+.controller_menu_button.litup {
     color: var(--p-button-text-primary-color);
+}
+
+.hide .hideable {
+    display: none;
 }
 
 .controller {
