@@ -198,6 +198,7 @@ export class ControllerPanel extends HTMLDivElement {
         if (ControllerPanel.menu_button) classSet(ControllerPanel.menu_button, 'litup', !global_settings.hidden) 
         if (!global_settings.hidden && Object.keys(ControllerPanel.instances).length==0 && find_controller_parent()) ControllerPanel.create_new()
         UpdateController.make_request('new workflow', 100)
+        ControllerPanel.update_buttons()
     }
 
     static graph_cleared() {
@@ -221,6 +222,14 @@ export class ControllerPanel extends HTMLDivElement {
             get_all_setting_indices().forEach((i)=>{
                 new ControllerPanel(i).redraw()
             })
+        }
+        ControllerPanel.update_buttons()
+    }
+
+    static update_buttons() {
+        if (ControllerPanel.buttons) {
+            classSet(ControllerPanel.menu_button, 'litup', !global_settings.hidden)
+            classSet(ControllerPanel.buttons, 'hide', (global_settings.hidden || Object.keys(ControllerPanel.instances).length==0))
         }
     }
 
@@ -254,6 +263,8 @@ export class ControllerPanel extends HTMLDivElement {
             exit_focus_button.addEventListener('click', () => {
                 UpdateController.make_request('exit focus', 10)
             })
+
+            ControllerPanel.update_buttons()
             
         } else {
             setTimeout(ControllerPanel.create_menu_icon,100)
@@ -280,16 +291,12 @@ export class ControllerPanel extends HTMLDivElement {
             clear_widget_change_managers()
             clean_image_manager()
             Object.values(ControllerPanel.instances).forEach((cp)=>{cp.redraw()})
-            //SnapManager.on_stack_empty()
         }
+        ControllerPanel.update_buttons()
     }
 
     static toggle() {
         global_settings.hidden = !global_settings.hidden
-        if (ControllerPanel.buttons) {
-            classSet(ControllerPanel.menu_button, 'litup', !global_settings.hidden)
-            classSet(ControllerPanel.buttons, 'hide', global_settings.hidden)
-        }
         if (global_settings.hidden) {
             Object.values(ControllerPanel.instances).forEach((cp)=>{cp._remove()})
             ControllerPanel.instances = {}
@@ -300,7 +307,7 @@ export class ControllerPanel extends HTMLDivElement {
             if (Object.keys(ControllerPanel.instances).length==0) ControllerPanel.create_new()
         }
         UpdateController.make_request('toggle')
-        
+        ControllerPanel.update_buttons()
     }
 
     static can_refresh(c) {  // returns -1 to say "no, and don't try again", 0 to mean "go ahead!", or n to mean "wait n ms then ask again" 
