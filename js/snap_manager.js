@@ -155,7 +155,11 @@ export class SnapManager {
         })
     }*/
 
-    static tidy_up(panel) {
+    static tidy_up(panel, insist) {
+        if (!(panel.needs_tidy || insist)) {
+            Debug.trivia(`Tidy up not needed for ${panel.index}`)
+            return
+        }
         Debug.extended(`Tidy up called for ${panel.index}`)
         const me = panel.settings
 
@@ -181,12 +185,13 @@ export class SnapManager {
 
         Object.keys(SnapManager.panels).forEach((k)=>{
             if (k!=panel.index && SnapManager.child_types[panel.index][k].move_with) {
-                SnapManager.tidy_up(SnapManager.panels[k])
+                SnapManager.tidy_up(SnapManager.panels[k], true)
             }
         })
         
         panel.set_position(true)
         SnapManager.last_dim[panel.index] = {...me.position}
+        panel.needs_tidy = false
     }
 
     static _apply_snapping(panel) {
@@ -228,10 +233,12 @@ export class SnapManager {
                     if (changed) {
                         SnapManager.panels[i].set_position()
                         SnapManager.last_dim[i] = {...you.position}
+                        SnapManager.panels[i].needs_tidy = true
                     }
                 }
             })
             SnapManager.last_dim[panel.index] = {...me.position}
+            SnapManager.panels[panel.index].needs_tidy = true
         }
     }
 

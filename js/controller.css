@@ -34,6 +34,7 @@
 
     --mute-button-color:#ff6e6e;
     --bypass-button-color: #d179ff;
+    --mixed-button-color:#99aa99;
 
     --mute-overlay-color: #ffffff30;
     --bypass-overlay-color: #d179ff30;
@@ -244,6 +245,7 @@
 }
 .header_button.mode_9:before {
     content: "\e959";
+    color: var(--mixed-button-color);
 }
 
 
@@ -313,10 +315,12 @@
 
 .nodeblock_titlebar_right .pi {
     font-size:1.25em;
+    vertical-align: middle;
 }
 
 .nodeblock_titlebar_left .pi {
     font-size:1.05em;
+    vertical-align: middle;
 }
 
 .minimised .entry { display: none; }
