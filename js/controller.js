@@ -13,6 +13,7 @@ import { global_settings } from "./settings.js"
 import { NodeBlock } from "./nodeblock.js"
 import { FancySlider } from "./input_slider.js"
 import { SnapManager } from "./snap_manager.js"
+import { Highlighter } from "./highlighter.js"
 
 const MINIMUM_UE = 500006
 async function check_ue() {
@@ -128,7 +129,7 @@ app.registerExtension({
         const draw = app.canvas.onDrawForeground;
         app.canvas.onDrawForeground = function(ctx, visible) {
             draw?.apply(this,arguments);
-            NodeBlock.on_draw(ctx);
+            Highlighter.on_draw(ctx);
         }
 
         /* look for dialog boxes appearing or disappearing */

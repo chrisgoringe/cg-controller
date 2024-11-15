@@ -16,6 +16,7 @@ import { FancySlider } from "./input_slider.js";
 import { clear_widget_change_managers } from "./widget_change_manager.js";
 import { clean_image_manager } from "./image_manager.js";
 import { SnapManager } from "./snap_manager.js";
+import { Highlighter } from "./highlighter.js";
 
 export class ControllerPanel extends HTMLDivElement {
     static instances = {}
@@ -31,6 +32,7 @@ export class ControllerPanel extends HTMLDivElement {
         delete this.resize_observer
         delete this.main
         ControllerPanel.count -= 1
+        Highlighter.group(null)
         Debug.trivia(`ControllerPanel _remove count now ${ControllerPanel.count}`)
     }
 
@@ -650,6 +652,8 @@ export class ControllerPanel extends HTMLDivElement {
             const tab = create('span','tab',this.header1_left,{"innerHTML":nm.replaceAll(' ','&nbsp;')})
             classSet(tab,'selected',(this.settings.group_choice == nm))
             tab.style.setProperty('--base-color', GroupManager.group_color(nm))
+            tab.addEventListener('mouseenter', ()=>{Highlighter.group(nm)})
+            tab.addEventListener('mouseleave', ()=>{Highlighter.group(null)})
             tab.addEventListener('mousedown', (e) => {
                 this.mouse_down_at_x = e.x
                 this.mouse_down_at_y = e.y

@@ -8,7 +8,7 @@ import { make_resizable } from "./resize_manager.js";
 import { image_is_blob, ImageManager, is_image_upload_node, isImageNode } from "./image_manager.js";
 import { UpdateController } from "./update_controller.js";
 import { Debug } from "./debug.js";
-import { global_settings } from "./settings.js";
+import { Highlighter } from "./highlighter.js";
 
 function is_single_image(data) { return (data && data.items && data.items.length==1 && data.items[0].type.includes("image")) }
 
@@ -36,7 +36,7 @@ export class NodeBlock extends HTMLSpanElement {
             delete this.resize_observer
         }
 
-        if (this==NodeBlock.mouse_in) NodeBlock.mouse_in = null
+        if (this.node==Highlighter.highlight_node) Highlighter.highlight_node = null
         //Debug.trivia(`NodeBlock._remove count = ${NodeBlock.count}`)
     }
 
@@ -75,46 +75,8 @@ export class NodeBlock extends HTMLSpanElement {
         this.addEventListener('dragend',   function (e) { NodeBlock.drag_end(e)     } )
         this.addEventListener('dragenter', function (e) { e.preventDefault()        } )
 
-        this.addEventListener('mouseenter', (e) => {this.mouseover(true)})
-        this.addEventListener('mouseleave', (e) => {this.mouseover(false)})
-    }
-
-    static area = [0,0,0,0]
-    static on_draw(ctx) {
-        if (NodeBlock.mouse_in && focus_mode()=="normal" && global_settings.highlight) {
-            const ctx = app.canvas.ctx
-
-            ctx.save();
-            try {
-                ctx.translate(NodeBlock.mouse_in.node.pos[0], NodeBlock.mouse_in.node.pos[1]);
-
-                NodeBlock.mouse_in.node.measure(NodeBlock.area);
-                NodeBlock.area[0] -= NodeBlock.mouse_in.node.pos[0];
-                NodeBlock.area[1] -= NodeBlock.mouse_in.node.pos[1];
-
-                ctx.strokeStyle = "white"
-                ctx.lineWidth   = 1
-                ctx.shadowColor = "white"
-                ctx.shadowBlur  = 4
-                ctx.fillStyle   = "#ffd70040"
-
-                ctx.beginPath()
-                ctx.roundRect(NodeBlock.area[0], NodeBlock.area[1], NodeBlock.area[2], NodeBlock.area[3], 6)
-                ctx.stroke()
-                ctx.fill()
-            } finally {
-                ctx.restore()
-            }
-        }
-    }
-
-    mouseover(isin) {
-        if (isin) {
-            NodeBlock.mouse_in = this
-        } else {
-            NodeBlock.mouse_in = null
-        }
-        app.canvas.setDirty(true, true)
+        this.addEventListener('mouseenter', (e) => {Highlighter.node(this.node)})
+        this.addEventListener('mouseleave', (e) => {Highlighter.node(null)})
     }
 
     add_handle_drag_handlers(draghandle) {
