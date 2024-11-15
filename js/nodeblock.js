@@ -8,6 +8,7 @@ import { make_resizable } from "./resize_manager.js";
 import { image_is_blob, ImageManager, is_image_upload_node, isImageNode } from "./image_manager.js";
 import { UpdateController } from "./update_controller.js";
 import { Debug } from "./debug.js";
+import { global_settings } from "./settings.js";
 
 function is_single_image(data) { return (data && data.items && data.items.length==1 && data.items[0].type.includes("image")) }
 
@@ -80,7 +81,7 @@ export class NodeBlock extends HTMLSpanElement {
 
     static area = [0,0,0,0]
     static on_draw(ctx) {
-        if (NodeBlock.mouse_in && focus_mode()=="normal") {
+        if (NodeBlock.mouse_in && focus_mode()=="normal" && global_settings.highlight) {
             const ctx = app.canvas.ctx
 
             ctx.save();

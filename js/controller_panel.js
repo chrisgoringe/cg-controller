@@ -240,6 +240,14 @@ export class ControllerPanel extends HTMLDivElement {
             classSet(ControllerPanel.menu_button, 'showing', !global_settings.hidden) 
             ControllerPanel.menu_button.addEventListener('click', ControllerPanel.toggle)
 
+            ControllerPanel.search_button = create('i', 'pi pi-search controller_menu_button', buttons)
+            add_tooltip(ControllerPanel.search_button, 'Highlight nodes in workflow')
+            classSet(ControllerPanel.search_button, 'showing', global_settings.highlight) 
+            ControllerPanel.search_button.addEventListener('click', ()=>{ 
+                global_settings.highlight = !global_settings.highlight;
+                classSet(ControllerPanel.search_button, 'showing', global_settings.highlight) 
+             })
+
             const exit_focus_button = document.getElementsByTagName('main')[0].getElementsByTagName('button')[0]
             exit_focus_button.addEventListener('click', () => {
                 UpdateController.make_request('exit focus', 10)

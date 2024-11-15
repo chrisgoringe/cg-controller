@@ -16,6 +16,7 @@ const KEYS = Object.keys(DEFAULTS)
 
 const GLOBAL = {
     "hidden"        : true,
+    "highlight"     : true,
     "version"       : 2,
     "default_order" : []
 }
