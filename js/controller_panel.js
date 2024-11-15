@@ -597,7 +597,9 @@ export class ControllerPanel extends HTMLDivElement {
                 this.group_mode_button = create('i', 'pi header_button mode', this.header2_left)
             }
             this.show_advanced_button = create('i', `pi pi-bolt header_button${this.settings.advanced ? " clicked":""}`, this.header2_left)
-            this.remove_group_button = create('i', 'pi pi-trash header_button', this.header2_right)
+            if (this.settings.groups.length>1) {
+                this.remove_group_button = create('i', 'pi pi-trash header_button', this.header2_right)
+            }
             this.minimise_button = create("i", `pi pi-minus header_button collapse_button`, this.header1_right)
             this.delete_button = create('i', 'pi pi-times header_button', this.header1_right)
         }
@@ -701,9 +703,9 @@ export class ControllerPanel extends HTMLDivElement {
                 e.stopPropagation(); 
                 if (app.canvas.read_only) return
                 this.settings.groups = this.settings.groups.filter((g)=>g!=this.settings.group_choice)
-                if (this.settings.groups.length==0) {
-                    this.delete_controller()
-                }
+                //if (this.settings.groups.length==0) {
+                //    this.delete_controller()
+                //}
                 UpdateController.make_single_request('group removed', this)
             })
             add_tooltip(this.remove_group_button, 'Remove active group tab', 'right')
