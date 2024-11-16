@@ -283,11 +283,8 @@ export class NodeBlock extends HTMLSpanElement {
             //ImageManager.node_img_change(this.node)
         } 
 
-        this.valid_nodeblock = isImageNode(this.node) || this.widget_count || (this.node.imgs && this.node.imgs.length>0)
-    }
-
-    static maybe_valid(node) {
-        return isImageNode(node) || node.widgets?.length || (node.imgs && node.imgs.length>0)
+        this.valid_nodeblock = true 
+        if (!(isImageNode(this.node) || this.widget_count || (this.node.imgs && this.node.imgs.length>0))) this.minimised = true
     }
 
     manage_image(url, running) {

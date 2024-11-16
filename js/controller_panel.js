@@ -389,13 +389,9 @@ export class ControllerPanel extends HTMLDivElement {
                 this.node_blocks[nd.id]._remove()
                 delete this.node_blocks[nd.id]
             }
-            if (NodeBlock.maybe_valid(nd)) {
-                const node_block = new NodeBlock(this, nd)
-                if (node_block.valid_nodeblock) this.node_blocks[nd.id] = node_block
-                else node_block?._remove()
-            } else {
-                let a;
-            }
+            const node_block = new NodeBlock(this, nd)
+            if (node_block.valid_nodeblock) this.node_blocks[nd.id] = node_block
+            else node_block?._remove()
         }
     }
 
