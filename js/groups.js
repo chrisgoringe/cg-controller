@@ -16,7 +16,7 @@ export class GroupManager {
             if (!group.graph) {
                 group.graph = app.graph
             }
-            group.recomputeInsideNodes()
+            if (!app.canvas.selected_group_moving) group.recomputeInsideNodes()
             group._nodes.forEach((node) => {
                 if (NodeInclusionManager.node_includable(node)) {
                     if (!this.groups[group.title]) {
