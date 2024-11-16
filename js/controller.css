@@ -286,7 +286,7 @@
     width: var(--element_width);
     min-height: 40px;
     display:block;
-    padding-bottom: 2px;
+    padding-bottom: 3px;
     border: 1px solid transparent;
 }
 
@@ -413,7 +413,7 @@
 
 .entry {
     position: relative;
-    padding:4px 2px 0px 2px;
+    padding:4px 3px 0px 3px;
 }
 
 .entry_label {
