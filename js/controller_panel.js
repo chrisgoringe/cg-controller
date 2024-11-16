@@ -331,6 +331,12 @@ export class ControllerPanel extends HTMLDivElement {
         Object.values(ControllerPanel.instances).forEach((cp)=>{cp._node_change(node_id, moreinfo)})
     }
 
+    static group_change(group_name) {
+        Object.values(ControllerPanel.instances).filter((cp)=>(cp.settings.group_choice==group_name)).forEach((cp)=>{
+            UpdateController.make_single_request(`group ${group_name} changed`,cp)
+        })
+    }
+
     have_node(nid) {
         return (this.node_blocks[nid] && this.node_blocks[nid].parentElement)
     }
@@ -338,8 +344,6 @@ export class ControllerPanel extends HTMLDivElement {
     _node_change(node_id, moreinfo) {
         if (this.have_node(node_id)) UpdateController.make_single_request(`node ${node_id} changed ${moreinfo ?? ""}`,this)
     }
-
-
 
     choose_suitable_initial_group() {
         const all_options = GroupManager.list_group_names()
@@ -726,7 +730,7 @@ export class ControllerPanel extends HTMLDivElement {
                 if (app.canvas.read_only) return
                 GroupManager.change_group_mode(this.settings.group_choice, node_mode, e)
                 app.canvas.setDirty(true,true)
-                UpdateController.make_single_request('group mode button', this)
+                ControllerPanel.group_change(this.settings.group_choice)
             })
             add_tooltip(this.group_mode_button, Texts.MODE_TOOLTIP[node_mode], 'right')
             
