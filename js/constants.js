@@ -37,6 +37,7 @@ export class Colors {
 
 export class Pixels {
     static BORDER_WIDTH = 4
+    static FOOTER = 4
 }
 
 export class Texts {

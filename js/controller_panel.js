@@ -401,7 +401,7 @@ export class ControllerPanel extends HTMLDivElement {
 
     on_child_height_change(element, delta) {
         if (delta != 0) {
-            if ((this.footer_height - delta) > 20) {
+            if ((this.footer_height - delta) > Pixels.FOOTER) {
                 this.footer_height -= delta
             }
             this.show_overlay(`${Math.round(element.getBoundingClientRect().height)}px`, element.parentElement)
@@ -492,8 +492,8 @@ export class ControllerPanel extends HTMLDivElement {
             this.style.width  = `${this.settings.position.w}px`
             this.style.height = `${this.settings.position.h}px`
             this.classList.remove('collapsed')
-            this.footer.style.height = '20px'
-            this.footer_height = 20
+            this.footer.style.height = `${Pixels.FOOTER}px`
+            this.footer_height = Pixels.FOOTER
         }
     }
 
