@@ -11,7 +11,6 @@ function selected_groups_and_childgroups() {
         Array.from(g.children).filter((c)=>(c instanceof LGraphGroup)).forEach((c)=>{add_groups_recursively(c)})
     }
     app.graph._nodes.filter((g)=>(g.selected)).forEach((g)=>{add_groups_recursively(g)})
-    add_groups_recursively()
     return sgac
 }
 
