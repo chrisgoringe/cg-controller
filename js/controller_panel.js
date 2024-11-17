@@ -501,6 +501,7 @@ export class ControllerPanel extends HTMLDivElement {
         if (app.canvas.read_only) return
         //if (e.target==this.header_tabs || e.target.parentElement==this.header_tabs) {
             this.being_dragged = true
+            this.drag_threshold = false
             this.classList.add('grabbed')
             this.offset_x = e.x - this.settings.position.x
             this.offset_y = e.y - this.settings.position.y
@@ -513,11 +514,14 @@ export class ControllerPanel extends HTMLDivElement {
         this.style.cursor = ''
         if (this.being_dragged) {
             if (e.currentTarget==window) {
-                this.classList.add('being_dragged')
-                this.settings.set_position( e.x - this.offset_x, e.y - this.offset_y, null, null )
-                this.set_position()
-                this.offset_x = e.x - this.settings.position.x
-                this.offset_y = e.y - this.settings.position.y
+                this.drag_threshold = this.drag_threshold || ((Math.abs(e.x - this.settings.position.x - this.offset_x) + Math.abs(e.y - this.settings.position.y - this.offset_y))>20) 
+                if (this.drag_threshold) {
+                    this.classList.add('being_dragged')
+                    this.settings.set_position( e.x - this.offset_x, e.y - this.offset_y, null, null )
+                    this.set_position()
+                    this.offset_x = e.x - this.settings.position.x
+                    this.offset_y = e.y - this.settings.position.y
+                }
             }
         } else if (this.x_click || this.y_click) {
             if (this.x_click) {
