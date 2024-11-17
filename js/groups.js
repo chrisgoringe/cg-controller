@@ -10,7 +10,7 @@ function selected_groups_and_childgroups() {
         sgac.add(g)
         if (g.children) Array.from(g.children).filter((c)=>(c instanceof LGraphGroup)).forEach((c)=>{add_groups_recursively(c)})
     }
-    app.graph._nodes.filter((g)=>(g.selected)).forEach((g)=>{add_groups_recursively(g)})
+    app.graph._groups.filter((g)=>(g.selected)).forEach((g)=>{add_groups_recursively(g)})
     return sgac
 }
 
@@ -43,7 +43,7 @@ export class GroupManager {
         })
         if (ungrouped.size>0) this.groups[Texts.UNGROUPED] = ungrouped
 
-        this.jsoned = JSON.stringify(this)
+        this.jsoned = JSON.stringify(this,(_key, value) => (value instanceof Set ? [...value] : value))
     }
 
     static check_for_changes() {
