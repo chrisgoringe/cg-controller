@@ -5,7 +5,7 @@ import { mode_change } from "./utilities.js"
 import { Debug } from "./debug.js"
 
 function selected_groups_and_childgroups() {
-    const sgac = Set()
+    const sgac = new Set()
     function add_groups_recursively(g) {
         sgac.add(g)
         Array.from(g.children).filter((c)=>(c instanceof LGraphGroup)).forEach((c)=>{add_groups_recursively(c)})
