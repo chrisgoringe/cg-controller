@@ -8,7 +8,7 @@ function selected_groups_and_childgroups() {
     const sgac = new Set()
     function add_groups_recursively(g) {
         sgac.add(g)
-        Array.from(g.children).filter((c)=>(c instanceof LGraphGroup)).forEach((c)=>{add_groups_recursively(c)})
+        if (g.children) Array.from(g.children).filter((c)=>(c instanceof LGraphGroup)).forEach((c)=>{add_groups_recursively(c)})
     }
     app.graph._nodes.filter((g)=>(g.selected)).forEach((g)=>{add_groups_recursively(g)})
     return sgac
