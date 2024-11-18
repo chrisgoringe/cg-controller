@@ -4,14 +4,14 @@ import { Colors, Texts } from "./constants.js"
 import { mode_change } from "./utilities.js"
 import { Debug } from "./debug.js"
 
-function selected_groups_and_childgroups() {
-    const sgac = new Set()
-    function add_groups_recursively(g) {
-        sgac.add(g)
-        if (g.children) Array.from(g.children).filter((c)=>(c instanceof LGraphGroup)).forEach((c)=>{add_groups_recursively(c)})
-    }
-    app.graph._groups.filter((g)=>(g.selected)).forEach((g)=>{add_groups_recursively(g)})
-    return sgac
+function recompute_safely(group) {
+    const _g = [...group._nodes]
+    const _c = new Set(group._children)
+    group.recomputeInsideNodes()
+    const nodes = [...group._nodes]
+    group._nodes = _g
+    group._children = _c
+    return nodes
 }
 
 export class GroupManager {
@@ -19,7 +19,6 @@ export class GroupManager {
     constructor() {
         this.groups = {}  // maps group name to Set of node ids
         const ungrouped = new Set()
-        const selected = selected_groups_and_childgroups()
         app.graph._nodes.forEach((node)=>{
             if (NodeInclusionManager.node_includable(node)) ungrouped.add(node.id)
         })
@@ -28,9 +27,7 @@ export class GroupManager {
             if (!group.graph) {
                 group.graph = app.graph
             }
-            if (!selected.has(group)) group.recomputeInsideNodes()
-            else Debug.trivia(`Not updating group ${group.title} because it is selected`)
-            group._nodes.forEach((node) => {
+            recompute_safely(group).forEach((node) => {
                 if (NodeInclusionManager.node_includable(node)) {
                     if (!this.groups[group.title]) {
                         this.groups[group.title] = new Set()
