@@ -81,6 +81,7 @@ export class GroupManager {
         const value = mode_change(current_mode,e)
         app.graph._groups.forEach((group) => {
             if (group.title == group_name) {
+                group.recomputeInsideNodes()
                 group._nodes.forEach((node) => {
                     node.mode = value
                 })
