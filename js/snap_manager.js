@@ -172,10 +172,10 @@ export class SnapManager {
                 const your_b = you.position.y + you.position.h - OVERLAP
                 if (child_type.joined_x) me.set_position( your_r, null, null, null )
                 if (child_type.joined_y) me.set_position( null, your_b, null, null )
-                if (child_type.shared_l) me.set_position( you.position.x, null, null, null )
-                if (child_type.shared_t) me.set_position( null, you.position.y, null, null )
-                if (child_type.shared_r) me.set_position( null, null, you.position.x + you.position.w - me.position.x, null )
-                if (child_type.shared_b) me.set_position( null, null, null, you.position.y + you.position.h - me.position.y )
+                if (child_type.shared_l && child_type.joined_y) me.set_position( you.position.x, null, null, null )
+                if (child_type.shared_t && child_type.joined_x) me.set_position( null, you.position.y, null, null )
+                if (child_type.shared_r && child_type.joined_y) me.set_position( null, null, you.position.x + you.position.w - me.position.x, null )
+                if (child_type.shared_b && child_type.joined_x) me.set_position( null, null, null, you.position.y + you.position.h - me.position.y )
             }
         })
 
