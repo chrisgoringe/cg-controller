@@ -102,12 +102,12 @@ app.registerExtension({
         // Allow our elements to do any setup they want
         try {
         on_setup()
-        } catch (e) { Debug.error("on setup");console.error(e) }
+        } catch (e) { Debug.error("on setup", e) }
 
         // add to the canvas menu, and keyboard shortcuts
         try {
         add_controls()
-        } catch (e) { Debug.error("add controls");console.error(e) }
+        } catch (e) { Debug.error("add controls", e) }
 
         try {
             const on_change = app.graph.on_change
@@ -116,20 +116,23 @@ app.registerExtension({
                     on_change?.apply(this,arguments)
                     OnChangeController.on_change()
                 } catch (e) {
-                    Debug.error("*** EXCEPTION HANDLING on_change")
-                    console.error(e)
+                    Debug.error("on==_change", e)
                 }
             }
             Debug.trivia("*** in setup, ADDED on_change")
         } catch (e) {
-            Debug.error("*** EXCEPTION ADDING on_change")
+            Debug.error("ADDING on_change", e)
             console.error(e)
         }
 
         const draw = app.canvas.onDrawForeground;
         app.canvas.onDrawForeground = function(ctx, visible) {
             draw?.apply(this,arguments);
-            Highlighter.on_draw(ctx);
+            try {
+                Highlighter.on_draw(ctx);
+            } catch (e) {
+                Debug.error('onDrawForeground', e)
+            }
         }
 
         /* look for dialog boxes appearing or disappearing */
