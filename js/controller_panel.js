@@ -1,7 +1,7 @@
 import { app } from "../../scripts/app.js";
 
 import { create, get_node, add_tooltip, clamp, classSet, defineProperty, find_controller_parent } from "./utilities.js";
-import { GroupManager } from "./groups.js";
+import { family_names, GroupManager } from "./groups.js";
 
 import { UpdateController } from "./update_controller.js";
 import { NodeBlock } from "./nodeblock.js";
@@ -332,7 +332,8 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     static group_change(group_name) {
-        Object.values(ControllerPanel.instances).filter((cp)=>(cp.settings.group_choice==group_name)).forEach((cp)=>{
+        const names = family_names(group_name)
+        Object.values(ControllerPanel.instances).filter((cp)=>(names.has(cp.settings.group_choice))).forEach((cp)=>{
             UpdateController.make_single_request(`group ${group_name} changed`,cp)
         })
     }

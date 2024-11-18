@@ -14,6 +14,17 @@ function recompute_safely(group) {
     return nodes
 }
 
+export function family_names(group_name) {
+    /* Given the name of a group, return a list of the names of all parents and children of all groups with this name */
+    const names = new Set([group_name,])
+    app.graph._groups.filter((g)=>(g.title==group_name)).forEach((g)=>{
+        g.recomputeInsideNodes()
+        Array.from(g._children).filter((c)=>(c instanceof LGraphGroup)).forEach((c)=>{names.add(c.title)})
+        app.graph._groups.filter((p)=>(p._children.has(g))).forEach((p)=>{names.add(p.title)})
+    })
+    return names
+}
+
 export class GroupManager {
     static _instance = null
     constructor() {
