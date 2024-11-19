@@ -144,13 +144,13 @@ export class ControllerPanel extends HTMLDivElement {
         })
     }
 
-    static mouse_up_anywhere() {
+    static handle_mouse_up() {
         Object.keys(ControllerPanel.instances).forEach((k)=>{
             ControllerPanel.instances[k].mouse_up()
         })
     }
 
-    static mouse_move_anywhere(e) {
+    static handle_mouse_move(e) {
         Object.keys(ControllerPanel.instances).forEach((k)=>{
             ControllerPanel.instances[k].mouse_move(e)
         })

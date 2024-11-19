@@ -1,8 +1,7 @@
 import { app } from "../../scripts/app.js"
 import { api } from "../../scripts/api.js" 
 import { ControllerPanel } from "./controller_panel.js"
-//import { CGControllerNode } from "./controller_node.js"   
-import { create, defineProperty } from "./utilities.js"
+import { create, defineProperty, mouse_change } from "./utilities.js"
 import { add_controls } from "./controller_controls.js"
 import { add_control_panel_options, NodeInclusionManager,  } from "./node_inclusion.js"
 import { OnChangeController, UpdateController } from "./update_controller.js"
@@ -32,7 +31,6 @@ async function check_ue() {
 
 function on_setup() {
     UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh, ControllerPanel.node_change)
-    SnapManager.setup()
     NodeInclusionManager.node_change_callback = UpdateController.make_request
     api.addEventListener('graphCleared', ControllerPanel.graph_cleared) 
 
@@ -45,12 +43,14 @@ function on_setup() {
     api.addEventListener('executing', ControllerPanel.on_executing)
 
     window.addEventListener("resize", SnapManager.onWindowResize)
+    window.addEventListener('mousedown', (e)=>{mouse_change(true)})
     window.addEventListener('mouseup', (e)=>{
-        ControllerPanel.mouse_up_anywhere(e)
+        mouse_change(false)
+        ControllerPanel.handle_mouse_up(e)
         FancySlider.handle_mouse_up(e)
     })
     window.addEventListener('mousemove', (e)=>{
-        ControllerPanel.mouse_move_anywhere(e)
+        ControllerPanel.handle_mouse_move(e)
         FancySlider.handle_mouse_move(e)
     })
 

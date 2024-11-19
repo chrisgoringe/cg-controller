@@ -1,5 +1,5 @@
 import { app } from "../../scripts/app.js"
-import { SettingIds } from "./constants.js"
+import { SettingIds, VERSION } from "./constants.js"
 
 export class Debug {
     static last_message = null
@@ -7,7 +7,7 @@ export class Debug {
         if ((message == Debug.last_message && !repeatok) ||
             level > app.ui.settings.getSettingValue(SettingIds.DEBUG_LEVEL, 1)) return
         Debug.last_message = message
-        console.log(message)
+        console.log(`Controller ${VERSION}: ${message}`)
     }
     static error(message, e)     { Debug._log(message, 0, true); console.error(e) }
     static essential(message, repeatok) { Debug._log(message, 0, repeatok) }

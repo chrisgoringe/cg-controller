@@ -1,11 +1,11 @@
 import { app } from "../../scripts/app.js"
-import { SettingIds } from "./constants.js";
+import { SettingIds, SettingNames, Tooltips, Generic } from "./constants.js";
 import { ControllerPanel } from "./controller_panel.js";
 
 export function add_controls() {
     app.ui.settings.addSetting({
         id: SettingIds.KEYBOARD_TOGGLE,
-        name: "Toggle controller visibility:",
+        name: SettingNames.KEYBOARD_TOGGLE,
         type: "combo",
         options: [ {value:0, text:"Off"}, {value:"c", text:"c"}, {value:"C", text:"shift-C"}, 
                                           {value:"o", text:"o"}, {value:"O", text:"shift-O"}],
@@ -14,8 +14,8 @@ export function add_controls() {
 
     app.ui.settings.addSetting({
         id: SettingIds.FONT_SIZE,
-        name: "Controller font base size:",
-        tooltip: "All font sizes will be scaled relative to this value",
+        name: SettingNames.FONT_SIZE,
+        tooltip: Tooltips.FONT_SIZE,
         type: "slider",
         attrs: {
             min: 10,
@@ -26,70 +26,70 @@ export function add_controls() {
 
     app.ui.settings.addSetting({
         id: SettingIds.CONTROL_AFTER_GENERATE,
-        name: "Show control after generate",
-        tooltip: "Allow the control_after_generate widget to be shown",
+        name: SettingNames.CONTROL_AFTER_GENERATE,
+        tooltip: Tooltips.CONTROL_AFTER_GENERATE,
         type: "boolean",
         defaultValue: true
     })
 
     app.ui.settings.addSetting({
         id: SettingIds.TOOLTIPS,
-        name: "Show tooltips",
-        tooltip: "Refresh controller after changing",
+        name: SettingNames.TOOLTIPS,   
+        tooltip: Tooltips.TOOLTIPS, 
         type: "boolean",
         defaultValue: true
     })
 
     app.ui.settings.addSetting({
         id: SettingIds.DEFAULT_APPLY_TO_SIMILAR,
-        name: "Default apply to similar",
-        tooltip: "Default setting of 'apply to similar' checkbox",
+        name: SettingNames.DEFAULT_APPLY_TO_SIMILAR,
+        tooltip: Tooltips.DEFAULT_APPLY_TO_SIMILAR,
         type: "boolean",
         defaultValue: true        
     })
 
     app.ui.settings.addSetting({
         id: SettingIds.SHOW_IN_FOCUS_MODE,
-        name: "Show controllers in focus mode",
+        name: SettingNames.SHOW_IN_FOCUS_MODE,
         type: "boolean",
         defaultValue: false        
     })
 
     app.ui.settings.addSetting({
         id: SettingIds.SCROLL_MOVES_SLIDERS,
-        name: "Scrollwheel changes sliders",
+        name: SettingNames.SCROLL_MOVES_SLIDERS,
         type: "combo",
-        options: [ {value:"no", text:"Never"}, 
-                {value:"yes", text:"Always"}, 
-                {value:"shift", text:"When shift key pressed"},
-                {value:"ctrl", text:"When ctrl key pressed"},
+        options: [ {value:"no", text:Generic.NEVER}, 
+                {value:"yes", text:Generic.ALWAYS}, 
+                {value:"shift", text:Generic.SHIFT},
+                {value:"ctrl", text:Generic.CTRL},
              ],
         defaultValue: "yes",
     })
 
     app.ui.settings.addSetting({
         id: SettingIds.SCROLL_REVERSED,
-        name: "Scrollwheel reversed for sliders",
-        tooltip: "Scroll up to reduce value",
+        name: SettingNames.SCROLL_REVERSED,
+        tooltip: Tooltips.SCROLL_REVERSED,
         type: "boolean",
         defaultValue: false           
     })
 
     app.ui.settings.addSetting({
         id: SettingIds.SHOW_SCROLLBARS,
-        name: "Controller scrollbars",
-        tooltip: "If off, can still scroll with scrollwheel",
+        name: SettingNames.SHOW_SCROLLBARS,
+        tooltip: Tooltips.SHOW_SCROLLBARS,
         type: "combo",
-        options: [ {value:"no", text:"Off"}, 
-                {value:"thin", text:"Thin"}, 
-                {value:"full", text:"Normal"},
+        options: [ {value:"no", text:Generic.OFF}, 
+                {value:"thin", text:Generic.THIN}, 
+                {value:"full", text:Generic.NORMAL},
              ],
         defaultValue: "thin",     
     })
 
     app.ui.settings.addSetting({
         id: SettingIds.EDIT_SLIDERS,
-        name: "Edit slider limits",
+        name: SettingNames.EDIT_SLIDERS,
         type: "combo",
         options: [ 
                 {value:"shift", text:"shift-click"},
@@ -100,13 +100,13 @@ export function add_controls() {
 
     app.ui.settings.addSetting({
         id: SettingIds.DEBUG_LEVEL,
-        name: "Debug level",
-        tooltip: "Press f12 for js console",
+        name: SettingNames.DEBUG_LEVEL,
+        tooltip: Tooltips.DEBUG_LEVEL,
         type: "combo",
-        options: [ {value:0, text:"Critical only"}, 
-                   {value:1, text:"Important messages"}, 
-                   {value:2, text:"Extra information"}, 
-                                          {value:3, text:"Verbose"} ],
+        options: [ {value:0, text:Generic.D0}, 
+                   {value:1, text:Generic.D1}, 
+                   {value:2, text:Generic.D2}, 
+                   {value:3, text:Generic.D3} ],
         defaultValue: "1"
     })
 

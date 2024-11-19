@@ -1,4 +1,4 @@
-import { clamp, create, find_controller_parent } from "./utilities.js"
+import { clamp, mouse_is_down } from "./utilities.js"
 import { Debug } from "./debug.js"
 import { Pixels } from "./constants.js"
 
@@ -57,14 +57,8 @@ function get_child_type(p1, p2) {
 export class SnapManager {
     static panels = {}
     static last_dim = {}
-    static mouse_is_down = false
     static child_types = {}
     static gutter_overlay = null
-
-    static setup() {
-        window.addEventListener('mousedown', ()=>{SnapManager.mouse_is_down = true})
-        window.addEventListener('mouseup', ()=>{SnapManager.mouse_is_down = false})
-    }
 
     static register(panel) {
         SnapManager.panels[panel.index]   = panel
@@ -189,7 +183,7 @@ export class SnapManager {
         If the mouse is up, snap ourselves to any new parent or edge on left or top
         */
         
-        if (!SnapManager.mouse_is_down) {
+        if (!mouse_is_down) {
             SnapManager.tidy_up(panel)
             SnapManager.update_child_list()
             SnapManager.moved[panel.index] = "xywh"
