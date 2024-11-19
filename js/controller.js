@@ -44,7 +44,7 @@ function on_setup() {
     api.addEventListener('progress', ControllerPanel.on_progress)
     api.addEventListener('executing', ControllerPanel.on_executing)
 
-    window.addEventListener("resize", ControllerPanel.onWindowResize)
+    window.addEventListener("resize", SnapManager.onWindowResize)
     window.addEventListener('mouseup', (e)=>{
         ControllerPanel.mouse_up_anywhere(e)
         FancySlider.handle_mouse_up(e)

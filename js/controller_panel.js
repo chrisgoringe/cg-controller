@@ -233,10 +233,6 @@ export class ControllerPanel extends HTMLDivElement {
         }
     }
 
-    static onWindowResize() {
-        Object.keys(ControllerPanel.instances).forEach((k)=>ControllerPanel.instances[k].set_position(false))
-    }
-
     static create_menu_icon() {
         if (find_controller_parent()) {
             const comfy_menu = document.getElementsByClassName('comfyui-menu')[0]

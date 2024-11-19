@@ -121,6 +121,17 @@ export class SnapManager {
         }
     }
 
+    static onWindowResize() {
+    
+        Object.values(SnapManager.panels).filter((p)=>(p.settings.fullheight || p.settings.fullwidth)).forEach((panel)=>{
+            const w = panel.parentElement.getBoundingClientRect().width + 2 * OVERLAP
+            const h = panel.parentElement.getBoundingClientRect().height + 2 * OVERLAP
+            const me = panel.settings
+            me.set_position( null, null, (me.fullwidth) ? w : null, (me.fullheight) ? h : null )
+            panel.set_position(true)  
+        })
+    }
+
     static tidy_up(panel, insist) {
         if (!(panel.needs_tidy || insist)) {
             Debug.trivia(`Tidy up not needed for ${panel.index}`)
@@ -145,9 +156,22 @@ export class SnapManager {
             }
         })
 
-        panel.settings.set_position( clamp(me.position.x,-OVERLAP), clamp(me.position.y,-OVERLAP), null, null )
-        if (me.position.x < THRESHOLD) panel.settings.set_position( -OVERLAP, null, null, null )
-        if (me.position.y < THRESHOLD) panel.settings.set_position( null, -OVERLAP, null, null )
+        me.set_position( clamp(me.position.x,-OVERLAP), clamp(me.position.y,-OVERLAP), null, null )
+        if (me.position.x < THRESHOLD) {
+            me.set_position( -OVERLAP, null, null, null )
+            if (me.position.x + me.position.w + THRESHOLD > panel.parentElement.getBoundingClientRect().width) {
+                me.fullwidth = true
+                me.set_position( null, null, panel.parentElement.getBoundingClientRect().width + 2 * OVERLAP, null )
+            } else { me.fullwidth = false }
+        } else { me.fullwidth = false }
+
+        if (me.position.y < THRESHOLD) {
+            me.set_position( null, -OVERLAP, null, null )
+            if (me.position.y + me.position.h + THRESHOLD > panel.parentElement.getBoundingClientRect().height) {
+                me.fullheight = true
+                me.set_position( null, null, null, panel.parentElement.getBoundingClientRect().height + 2 * OVERLAP )
+            } else { me.fullheight = false }
+        } else { me.fullheight = false }
 
         Object.keys(SnapManager.panels).forEach((k)=>{
             if (k!=panel.index && SnapManager.child_types[panel.index][k].move_with) {
