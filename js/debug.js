@@ -9,7 +9,7 @@ export class Debug {
         Debug.last_message = message
         console.log(message)
     }
-    static error(message, repeatok)     { Debug._log(message, 0, repeatok) }
+    static error(message, e)     { Debug._log(message, 0, true); console.error(e) }
     static essential(message, repeatok) { Debug._log(message, 0, repeatok) }
     static important(message, repeatok) { Debug._log(message, 1, repeatok) }
     static extended(message, repeatok)  { Debug._log(message, 2, repeatok) }

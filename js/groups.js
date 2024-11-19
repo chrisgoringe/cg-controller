@@ -2,6 +2,28 @@ import { app } from "../../scripts/app.js"
 import { NodeInclusionManager } from "./node_inclusion.js"
 import { Colors, Texts } from "./constants.js"
 import { mode_change } from "./utilities.js"
+import { Debug } from "./debug.js"
+
+function recompute_safely(group) {
+    const _g = [...group._nodes]
+    const _c = new Set(group._children)
+    group.recomputeInsideNodes()
+    const nodes = [...group._nodes]
+    group._nodes = _g
+    group._children = _c
+    return nodes
+}
+
+export function family_names(group_name) {
+    /* Given the name of a group, return a list of the names of all parents and children of all groups with this name */
+    const names = new Set([group_name,])
+    app.graph._groups.filter((g)=>(g.title==group_name)).forEach((g)=>{
+        g.recomputeInsideNodes()
+        Array.from(g._children).filter((c)=>(c instanceof LGraphGroup)).forEach((c)=>{names.add(c.title)})
+        app.graph._groups.filter((p)=>(p._children.has(g))).forEach((p)=>{names.add(p.title)})
+    })
+    return names
+}
 
 export class GroupManager {
     static _instance = null
@@ -16,8 +38,7 @@ export class GroupManager {
             if (!group.graph) {
                 group.graph = app.graph
             }
-            group.recomputeInsideNodes()
-            group._nodes.forEach((node) => {
+            recompute_safely(group).forEach((node) => {
                 if (NodeInclusionManager.node_includable(node)) {
                     if (!this.groups[group.title]) {
                         this.groups[group.title] = new Set()
@@ -30,7 +51,7 @@ export class GroupManager {
         })
         if (ungrouped.size>0) this.groups[Texts.UNGROUPED] = ungrouped
 
-        this.jsoned = JSON.stringify(this)
+        this.jsoned = JSON.stringify(this,(_key, value) => (value instanceof Set ? [...value] : value))
     }
 
     static check_for_changes() {
@@ -41,8 +62,10 @@ export class GroupManager {
     }
 
     static list_group_names() {
-        const names = [Texts.ALL_GROUPS,]
-        Object.keys(GroupManager.instance.groups).forEach((gp) => {names.push(gp)})
+        const names = Object.keys(GroupManager.instance.groups)
+        //Object.keys(GroupManager.instance.groups).forEach((gp) => {names.push(gp)})
+        names.sort()
+        names.unshift(Texts.ALL_GROUPS)
         return names
     }
 
@@ -54,6 +77,7 @@ export class GroupManager {
         const modes = {0:0,2:0,4:0}
         app.graph._groups.forEach((group) => {
             if (group.title == group_name) {
+                group.recomputeInsideNodes()
                 group._nodes.forEach((node) => {
                     modes[node.mode] += 1
                 })
@@ -69,6 +93,7 @@ export class GroupManager {
         const value = mode_change(current_mode,e)
         app.graph._groups.forEach((group) => {
             if (group.title == group_name) {
+                group.recomputeInsideNodes()
                 group._nodes.forEach((node) => {
                     node.mode = value
                 })

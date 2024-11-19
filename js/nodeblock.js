@@ -2,12 +2,13 @@ import { app } from "../../scripts/app.js";
 
 import { ComfyWidgets } from "../../scripts/widgets.js";
 
-import { create, darken, classSet, mode_change } from "./utilities.js";
+import { create, darken, classSet, mode_change, focus_mode } from "./utilities.js";
 import { Entry } from "./panel_entry.js"
 import { make_resizable } from "./resize_manager.js";
 import { image_is_blob, ImageManager, is_image_upload_node, isImageNode } from "./image_manager.js";
 import { UpdateController } from "./update_controller.js";
 import { Debug } from "./debug.js";
+import { Highlighter } from "./highlighter.js";
 
 function is_single_image(data) { return (data && data.items && data.items.length==1 && data.items[0].type.includes("image")) }
 
@@ -16,11 +17,40 @@ export class NodeBlock extends HTMLSpanElement {
     NodeBlock represents a single node - zero or more Entry children, and zero or one images.
     If neither Entry nor images, it is not 'valid' (ie should not be included)
     */
+    static count = 0
+
+    _remove() {
+        Debug.trivia(`removing nodeblock for ${this.node?.id} from controller ${this.parent_controller?.index}`)
+        if (!this.has_been_removed) {
+            NodeBlock.count -= 1
+            this.has_been_removed = true
+        } else {
+            Debug.trivia('alreadyremoved nodeblock?')
+        }
+        this.remove()
+        this.parent_controller = null
+        this._remove_entries()
+
+        if (this.resize_observer) {
+            this.resize_observer.disconnect()
+            delete this.resize_observer
+        }
+
+        if (this.node==Highlighter.highlight_node) Highlighter.highlight_node = null
+        //Debug.trivia(`NodeBlock._remove count = ${NodeBlock.count}`)
+    }
+
+    _remove_entries() {
+        Array.from(this.main.children).forEach((c)=>{c._remove?.()})
+    }
+
     constructor(parent_controller, node) { 
         super()
+        NodeBlock.count += 1
         this.parent_controller = parent_controller
         this.node = node
         this.mode = this.node.mode
+        Debug.trivia(`creating nodeblock for ${this.node?.id} on controller ${this.parent_controller?.index}`)
 
         if (!this.node.properties.controller_details) {
             this.node.properties.controller_details = {}
@@ -45,46 +75,8 @@ export class NodeBlock extends HTMLSpanElement {
         this.addEventListener('dragend',   function (e) { NodeBlock.drag_end(e)     } )
         this.addEventListener('dragenter', function (e) { e.preventDefault()        } )
 
-        this.addEventListener('mouseenter', (e) => {this.mouseover(true)})
-        this.addEventListener('mouseleave', (e) => {this.mouseover(false)})
-    }
-
-    static area = [0,0,0,0]
-    static on_draw(ctx) {
-        if (NodeBlock.mouse_in) {
-            const ctx = app.canvas.ctx
-
-            ctx.save();
-            try {
-                ctx.translate(NodeBlock.mouse_in.node.pos[0], NodeBlock.mouse_in.node.pos[1]);
-
-                NodeBlock.mouse_in.node.measure(NodeBlock.area);
-                NodeBlock.area[0] -= NodeBlock.mouse_in.node.pos[0];
-                NodeBlock.area[1] -= NodeBlock.mouse_in.node.pos[1];
-
-                ctx.strokeStyle = "white"
-                ctx.lineWidth   = 1
-                ctx.shadowColor = "white"
-                ctx.shadowBlur  = 4
-                ctx.fillStyle   = "#ffd70040"
-
-                ctx.beginPath()
-                ctx.roundRect(NodeBlock.area[0], NodeBlock.area[1], NodeBlock.area[2], NodeBlock.area[3], 6)
-                ctx.stroke()
-                ctx.fill()
-            } finally {
-                ctx.restore()
-            }
-        }
-    }
-
-    mouseover(isin) {
-        if (isin) {
-            NodeBlock.mouse_in = this
-        } else {
-            NodeBlock.mouse_in = null
-        }
-        app.canvas.setDirty(true, true)
+        this.addEventListener('mouseenter', (e) => {Highlighter.node(this.node)})
+        this.addEventListener('mouseleave', (e) => {Highlighter.node(null)})
     }
 
     add_handle_drag_handlers(draghandle) {
@@ -100,6 +92,7 @@ export class NodeBlock extends HTMLSpanElement {
     static last_dragged = null
 
     drag_me(e) {
+        if (app.canvas.read_only) return
         NodeBlock.dragged = this
         NodeBlock.last_dragged = this
         NodeBlock.dragged.classList.add("being_dragged")
@@ -107,6 +100,7 @@ export class NodeBlock extends HTMLSpanElement {
     }
 
     toggle_minimise() {
+        if (app.canvas.read_only) return
         this.node.properties.controller_details.minimised = (!!!this.node.properties.controller_details.minimised)
         this.minimised = this.node.properties.controller_details.minimised
         classSet(this, 'minimised', this.minimised)
@@ -198,6 +192,7 @@ export class NodeBlock extends HTMLSpanElement {
 
         this.mode_button  = create('i', `pi mode_button mode_button_${this.mode}`, this.title_bar_left)
         this.mode_button.addEventListener('click', (e)=>{
+            if (app.canvas.read_only) return
             e.preventDefault(); 
             e.stopPropagation(); 
             this.node.mode = mode_change(this.node.mode,e)
@@ -209,6 +204,7 @@ export class NodeBlock extends HTMLSpanElement {
 
         this.image_pin = create('i', 'pi pi-thumbtack hidden', this.title_bar_right)
         this.image_pin.addEventListener('click', (e) => {
+            if (app.canvas.read_only) return
             this.node.properties.controller_widgets[this.image_panel_id].pinned = !this.node.properties.controller_widgets[this.image_panel_id].pinned
             this.update_pin()
         })
@@ -226,7 +222,6 @@ export class NodeBlock extends HTMLSpanElement {
         if (this.image_panel) this.image_panel.remove()
         this.image_panel = create("div", "nodeblock_image_panel nodeblock_image_empty", new_main)
 
-        this.valid_nodeblock = false
         this.widget_count = 0
         this.node.widgets?.forEach(w => {
             if (!this.node.properties.controller_widgets[w.name]) this.node.properties.controller_widgets[w.name] = {}
@@ -235,8 +230,9 @@ export class NodeBlock extends HTMLSpanElement {
             if (e.valid()) {
                 new_main.appendChild(e)
                 this[w.name] = e
-                this.valid_nodeblock = true    
                 this.widget_count += 1                
+            } else {
+                e._remove()
             }
         })
 
@@ -253,10 +249,12 @@ export class NodeBlock extends HTMLSpanElement {
         this.update_pin()
 
         this.image_image = create('img', 'nodeblock_image', this.image_panel)
-        this.image_image.addEventListener('load', this.rescale_image.bind(this))
+        this.image_image.addEventListener('load', () => {this.rescale_image()})
         
-        make_resizable( this.image_panel, this.node.id, this.image_panel_id, this.node.properties.controller_widgets[this.image_panel_id] )
-        new ResizeObserver(this.rescale_image.bind(this)).observe(this.image_panel)
+        if (!app.canvas.read_only) {
+            make_resizable( this.image_panel, this.node.id, this.image_panel_id, this.node.properties.controller_widgets[this.image_panel_id] )
+            this.resize_observer = new ResizeObserver( ()=>{this.rescale_image()} ).observe(this.image_panel)
+        }
 
         if (isImageNode(this.node)) {
             const add_upstream = (nd) => {
@@ -276,6 +274,7 @@ export class NodeBlock extends HTMLSpanElement {
         }
         ImageManager.add_listener(this.node.id, this) // add ourself last to take priority
 
+        this._remove_entries()
         this.replaceChild(new_main, this.main)
         this.main = new_main
 
@@ -284,7 +283,8 @@ export class NodeBlock extends HTMLSpanElement {
             //ImageManager.node_img_change(this.node)
         } 
 
-        this.valid_nodeblock = isImageNode(this.node) || this.widget_count || (this.node.imgs && this.node.imgs.length>0)
+        this.valid_nodeblock = true 
+        if (!(isImageNode(this.node) || this.widget_count || (this.node.imgs && this.node.imgs.length>0))) this.minimised = true
     }
 
     manage_image(url, running) {
@@ -304,6 +304,10 @@ export class NodeBlock extends HTMLSpanElement {
 
     rescale_image() {
         if (this.rescaling) return
+        if (!this.parent_controller) {
+            Debug.trivia("Nodeblock rescale_image called with no parent", true)
+            return
+        }
         if (this.parent_controller.settings.collapsed) return
         this.rescaling = true
         if (this.image_image) {

@@ -166,9 +166,9 @@ class SliderOptionEditor extends HTMLSpanElement {
 
 export class FancySlider extends HTMLSpanElement {
 
-    static in_textedit = null
-
+    static in_textedit   = null
     static mouse_down_on = null
+    static currently_active = null
 
     constructor(parent_controller, node, widget, properties) {
         super()
@@ -196,7 +196,6 @@ export class FancySlider extends HTMLSpanElement {
         this.addEventListener('wheel',         (e) => this._wheel(e))
         this.addEventListener('mouseout',      (e) => this._mouseout(e))
         
-        document.addEventListener('mouseup',   (e) => this.enddragging(e))
         this.addEventListener('change',        (e) => this._change(e))
         this.addEventListener('focusin',       (e) => this._focus(e))
         this.addEventListener('focusout',      (e) => this._focusout(e))
@@ -206,8 +205,8 @@ export class FancySlider extends HTMLSpanElement {
             get : () => { return this._dragging},
             set : (v) => {
                 this._dragging = v
-                if (v) this.classList.add('unrefreshable')
-                else this.classList.remove('unrefreshable')
+                if (v) FancySlider.currently_active = this
+                else FancySlider.currently_active = null
             }
         })
 
@@ -216,9 +215,9 @@ export class FancySlider extends HTMLSpanElement {
             get : () => { return this._wheeling},
             set : (v) => {
                 this._wheeling = v
-                if (v) this.classList.add('unrefreshable')
+                if (v) FancySlider.currently_active = this
                 else {
-                    this.classList.remove('unrefreshable')
+                    FancySlider.currently_active = null
                     this.redraw()
                 }
             }
@@ -230,7 +229,6 @@ export class FancySlider extends HTMLSpanElement {
     enddragging(e) {
         this.mouse_down_on_me_at = null; 
         FancySlider.mouse_down_on = null;
-        document.removeEventListener('mousemove', handle_mouse_move)
         this.dragging = false
         this.classList.remove('can_drag')
         if (e && e.target==this) {
@@ -244,8 +242,7 @@ export class FancySlider extends HTMLSpanElement {
         FancySlider.in_textedit = this
         this.displaying = "text"
         this.enddragging()
-        this.classList.add('unrefreshable')
-        this.reason = "slider in text edit mode"
+        FancySlider.currently_active = this
         this.redraw()
         setTimeout(()=>{this.text_edit.focus()},100)
     }
@@ -268,7 +265,8 @@ export class FancySlider extends HTMLSpanElement {
             const shift_setting = getSettingValue(SettingIds.SCROLL_MOVES_SLIDERS, "yes")
             if ( shift_setting=="yes" || (shift_setting=="shift" && e.shiftKey) || (shift_setting=="ctrl" && e.ctrlKey) ) {
                 this.wheeling = true
-                const new_value =  this.value + this.options.step * (e.wheelDelta>0 ? 1 : -1)
+                const reverse = getSettingValue(SettingIds.SCROLL_REVERSED, false) ? -1 : 1
+                const new_value =  this.value + reverse * this.options.step * (e.wheelDelta>0 ? 1 : -1)
                 WidgetChangeManager.set_widget_value(this.widget, new_value)
                 e.preventDefault()
                 e.stopPropagation() 
@@ -291,7 +289,7 @@ export class FancySlider extends HTMLSpanElement {
     _change(e) {
         e.stopPropagation()
         this.switch_to_graphicaledit()
-        this.classList.remove('unrefreshable')
+        FancySlider.currently_active = null
     }
 
     _mousedown(e) { 
@@ -310,7 +308,6 @@ export class FancySlider extends HTMLSpanElement {
                 this.classList.add('can_drag')
                 this.mouse_down_on_me_at = e.x;
                 FancySlider.mouse_down_on = this
-                document.addEventListener('mousemove', handle_mouse_move)
                 e.stopPropagation()
             }
         }
@@ -367,11 +364,17 @@ export class FancySlider extends HTMLSpanElement {
 
     }
 
+    static handle_mouse_move(e) {
+        if (FancySlider.mouse_down_on) FancySlider.mouse_down_on._mousemove.bind(FancySlider.mouse_down_on)(e)
+    }
+
+    static handle_mouse_up(e) {
+        if (FancySlider.mouse_down_on) FancySlider.mouse_down_on.enddragging(e)
+    }
+
 }
 
-function handle_mouse_move(e) {
-    if (FancySlider.mouse_down_on) FancySlider.mouse_down_on._mousemove.bind(FancySlider.mouse_down_on)(e)
-}
+
 
 customElements.define('cp-fslider', FancySlider, {extends: 'span'})
 customElements.define('cp-fslideroptioneditor', SliderOptionEditor, {extends: 'span'})

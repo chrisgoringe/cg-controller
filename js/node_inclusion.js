@@ -54,7 +54,7 @@ function cp_callback_submenu(value, options, e, menu, node) {
         choices,
         { event: e, callback: function (v) { 
             selection.forEach((nd)=>{nd.properties["controller"] = v.replace('these nodes', 'this node')})
-            NodeInclusionManager.node_change_callback?.();
+            NodeInclusionManager.node_change_callback?.('submenu', 100);
             app.canvas.setDirty(true, true) 
         }, 
         parentMenu: menu, node:node}

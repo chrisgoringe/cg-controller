@@ -14,6 +14,14 @@ export function image_is_blob(url) {
     return url.startsWith('blob')
 }
 
+export function clean_image_manager() {
+    ImageManager.node_listener_map = {}
+    //Object.keys(ImageManager.node_listener_map).forEach((k)=>{
+    //    ImageManager.node_listener_map[k] = Set.from(ImageManager.node_listener_map[k].filter((v)=>v.parentElement))
+    //})
+}
+
+
 export class ImageManager {
     /*
     node_listener_map is a map from node_id to a Set of listeners.

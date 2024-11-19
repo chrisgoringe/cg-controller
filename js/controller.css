@@ -12,8 +12,12 @@
     border-radius: 6px;
 }
 
-.showing {
+.controller_menu_button.litup {
     color: var(--p-button-text-primary-color);
+}
+
+.hide .hideable {
+    display: none;
 }
 
 .controller {
@@ -25,15 +29,16 @@
     --muted-fore-color: #999999;
 
     --deep-back-color: #000000;
-    --main-back-color: #1c1c1cee;
+    --main-back-color: #1c1c1cfa;
     --second-back-color: #222222;
     --third-back-color:  #353535;
 
     --overlay-background:  #ffffff66;
     --overlay-foreground: #353535;
 
-    --mute-button-color:red;
+    --mute-button-color:#ff6e6e;
     --bypass-button-color: #d179ff;
+    --mixed-button-color:#99aa99;
 
     --mute-overlay-color: #ffffff30;
     --bypass-overlay-color: #d179ff30;
@@ -41,26 +46,25 @@
     --toggle-on: #8899aa;
     --toggle-off: #333333;
 
-    --main-border-color: rgb(83 83 83);
+    --main-border-color: rgb(53 53 53);
 
     --progress-color: green;
     --active-color: green;
+
+    --border_width: 4px;
     
-
-
     font-size: var(--font-size);
     height:100%;
     min-height: 42px;
     background: var(--main-back-color);
-    padding: 0 0 0 2px;
+    padding: 0 4px 0 4px;
     position: absolute;
     min-width: 130px;
     overflow: clip scroll;
-    border-width: 4px;
+    border-width: var(--border_width);
     border-style: solid;
     border-color: var(--main-border-color);
     border-radius: 4px;
-    resize: both;
     z-index:999;
     scrollbar-width: auto;
     scrollbar-color: var(--third-back-color) var(--main-back-color);
@@ -74,13 +78,28 @@
 
 .controller.hide_scrollbars {
     scrollbar-width: none;
-    padding-right: 2px;
 }
 
 .controller.collapsed {
     overflow: clip;
     min-width: 0px;
     padding: 0px;
+}
+
+.gutter_overlay {
+    position: absolute;
+    background-color: transparent;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index:999;
+}
+
+.gutter_overlap {
+    position:absolute;
+    pointer-events: none;
+    background-color: #999999;
+    border-radius: 2px;
 }
 
 
@@ -94,7 +113,7 @@
     display: flex;
     width: var(--element_width);
     justify-content: space-between;
-    margin: 0px;
+    margin: 0px 0px 4px 0px;
     align-items: center;
     flex-wrap: wrap;
     z-index:1;
@@ -118,6 +137,7 @@
 
 .subheader2 {
     padding-top:2px;
+    margin-bottom:0px;
 }
 
 .subheader .left {
@@ -193,6 +213,8 @@
     flex-shrink: 0;
 }
 
+
+
 .header_button {
     cursor: pointer;
     font-size: 12pt;
@@ -227,6 +249,7 @@
 }
 .header_button.mode_9:before {
     content: "\e959";
+    color: var(--mixed-button-color);
 }
 
 
@@ -263,7 +286,7 @@
     width: var(--element_width);
     min-height: 40px;
     display:block;
-    padding-bottom: 4px;
+    padding-bottom: 3px;
     border: 1px solid transparent;
 }
 
@@ -287,7 +310,7 @@
 .nodeblock_titlebar {
     font-size: 80%;
     display: block;
-    padding: 1px 3px 2px 2px;
+    padding: 2px 3px 2px 2px;
     color: var(--mid-fore-color);
     display: flex;
     justify-content: space-between;
@@ -296,10 +319,13 @@
 
 .nodeblock_titlebar_right .pi {
     font-size:1.25em;
+    vertical-align: middle;
 }
 
 .nodeblock_titlebar_left .pi {
-    font-size:0.95em;
+    font-size:1.05em;
+    top: 0.05em;
+    position: relative;
 }
 
 .minimised .entry { display: none; }
@@ -335,7 +361,13 @@
 .nodeblock_title {
     text-align: left;
     pointer-events: none;
-    padding-left: 3px;
+    padding-left: 4px;
+    position: relative;
+    bottom: 1px;
+}
+.nodeblock_title::after {
+    content: " ";
+    font-size: 1.25em;
 }
 
 .nodeblock_image_panel {
@@ -361,6 +393,8 @@
     height:0px !important;
 }
 
+
+
 .nodeblock .mode_button:before {
     content: "\ea14";
 }
@@ -379,7 +413,7 @@
 
 .entry {
     position: relative;
-    padding:4px 4px 0px 4px;
+    padding:4px 3px 0px 3px;
 }
 
 .entry_label {
@@ -390,7 +424,7 @@
     background: var(--second-back-color);
     color: var(--mid-fore-color);
     text-align: left;
-    left: 8px;
+    left: 6px;
     font-size: 70%;
     pointer-events: none;
     width: calc(var(--element_width) - 40px);
@@ -435,6 +469,7 @@ textarea.input {
     font-size: 85%;
     text-align: left;
     margin-bottom: -4px;
+    padding: 3px 4px 3px 4px;
 }
 
 .input option {
@@ -581,3 +616,13 @@ i {
   .tooltip:hover .tooltiptext {
     visibility: visible;
   }
+
+.read_only .mode_button {
+    opacity: 0.5;
+    cursor: unset;
+}
+
+.read_only .header_button {
+    opacity: 0.5;
+    cursor: unset;
+}

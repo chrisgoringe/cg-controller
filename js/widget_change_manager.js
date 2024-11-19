@@ -8,6 +8,8 @@ export class WidgetChangeManager {
         if (!widget.wcm_id) {
             widget.wcm_id = WidgetChangeManager.next_id
             WidgetChangeManager.next_id += 1
+        }
+        if (!WidgetChangeManager.widget_listener_map[widget.wcm_id]) {
             WidgetChangeManager.widget_listener_map[widget.wcm_id] = []
         }
         WidgetChangeManager.widget_listener_map[widget.wcm_id].push(listener)
@@ -24,4 +26,8 @@ export class WidgetChangeManager {
         if (widget.options.min != null) widget.value = clamp(widget.value, widget.options.min, widget.options.max)
         WidgetChangeManager.notify(widget)
     }
+}
+
+export function clear_widget_change_managers() {
+    WidgetChangeManager.widget_listener_map = {}
 }

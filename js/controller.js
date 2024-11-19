@@ -11,6 +11,9 @@ import { BASE_PATH } from "./constants.js"
 import { ImageManager } from "./image_manager.js"
 import { global_settings } from "./settings.js"
 import { NodeBlock } from "./nodeblock.js"
+import { FancySlider } from "./input_slider.js"
+import { SnapManager } from "./snap_manager.js"
+import { Highlighter } from "./highlighter.js"
 
 const MINIMUM_UE = 500006
 async function check_ue() {
@@ -28,7 +31,8 @@ async function check_ue() {
 }
 
 function on_setup() {
-    UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh, ControllerPanel.node_change)  
+    UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh, ControllerPanel.node_change)
+    SnapManager.setup()
     NodeInclusionManager.node_change_callback = UpdateController.make_request
     api.addEventListener('graphCleared', ControllerPanel.graph_cleared) 
 
@@ -41,8 +45,14 @@ function on_setup() {
     api.addEventListener('executing', ControllerPanel.on_executing)
 
     window.addEventListener("resize", ControllerPanel.onWindowResize)
-    window.addEventListener('mouseup', ControllerPanel.mouse_up_anywhere)
-    window.addEventListener('mousemove', ControllerPanel.mouse_move_anywhere)
+    window.addEventListener('mouseup', (e)=>{
+        ControllerPanel.mouse_up_anywhere(e)
+        FancySlider.handle_mouse_up(e)
+    })
+    window.addEventListener('mousemove', (e)=>{
+        ControllerPanel.mouse_move_anywhere(e)
+        FancySlider.handle_mouse_move(e)
+    })
 
 
     const original_getCanvasMenuOptions = LGraphCanvas.prototype.getCanvasMenuOptions;
@@ -92,12 +102,12 @@ app.registerExtension({
         // Allow our elements to do any setup they want
         try {
         on_setup()
-        } catch (e) { Debug.error("on setup");console.error(e) }
+        } catch (e) { Debug.error("on setup", e) }
 
         // add to the canvas menu, and keyboard shortcuts
         try {
         add_controls()
-        } catch (e) { Debug.error("add controls");console.error(e) }
+        } catch (e) { Debug.error("add controls", e) }
 
         try {
             const on_change = app.graph.on_change
@@ -106,20 +116,23 @@ app.registerExtension({
                     on_change?.apply(this,arguments)
                     OnChangeController.on_change()
                 } catch (e) {
-                    Debug.error("*** EXCEPTION HANDLING on_change")
-                    console.error(e)
+                    Debug.error("on==_change", e)
                 }
             }
             Debug.trivia("*** in setup, ADDED on_change")
         } catch (e) {
-            Debug.error("*** EXCEPTION ADDING on_change")
+            Debug.error("ADDING on_change", e)
             console.error(e)
         }
 
         const draw = app.canvas.onDrawForeground;
         app.canvas.onDrawForeground = function(ctx, visible) {
             draw?.apply(this,arguments);
-            NodeBlock.on_draw(ctx);
+            try {
+                Highlighter.on_draw(ctx);
+            } catch (e) {
+                Debug.error('onDrawForeground', e)
+            }
         }
 
         /* look for dialog boxes appearing or disappearing */

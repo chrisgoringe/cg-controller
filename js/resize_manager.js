@@ -14,6 +14,7 @@ class PersistSize {
 }
 
 class ResizeManager {
+    static all_rms = []
     constructor(change_callback) {
         this.change_callback = change_callback
         this.resize_observer = new ResizeObserver( (x) => {
@@ -27,6 +28,7 @@ class ResizeManager {
                 resize.target.resizable.properties.height = resize.target.getBoundingClientRect().height
             })
         } )
+        ResizeManager.all_rms.push(this)
     }
 
     recursive_observe(element) {
@@ -38,4 +40,9 @@ class ResizeManager {
 export function observe_resizables( root, change_callback ) {
     const rm = new ResizeManager(change_callback)
     rm.recursive_observe(root)
+}
+
+export function clear_resize_managers() {
+    ResizeManager.all_rms.forEach((rm)=>rm.resize_observer.disconnect())
+    ResizeManager.all_rms = []
 }
