@@ -110,6 +110,24 @@ export class ControllerPanel extends HTMLDivElement {
         this.resize_observer = new ResizeObserver((x) => this.on_size_change()).observe(this)
     }
 
+    static on_group_details_change(oldname, changes) {
+        ControllerPanel.updating_group_details = true
+        try {
+            Object.values(ControllerPanel.instances).forEach((cp)=>{cp.on_group_details_change(oldname,changes)})
+        } finally { ControllerPanel.updating_group_details = false }
+    }
+    on_group_details_change(oldname, changes) {
+        const idx = this.settings.groups.findIndex((el)=>(el==oldname))
+        if (idx>=0) {
+            if (changes.title) {
+                this.settings.groups[idx] = changes.title
+                if (this.settings.group_choice == oldname) this.settings.group_choice = changes.title
+            }
+            UpdateController.make_single_request('group change', this)
+        }
+    }
+
+
     static on_progress(e) {
         const node_id = e.detail.node
         const value = e.detail.value
@@ -309,6 +327,7 @@ export class ControllerPanel extends HTMLDivElement {
     static can_refresh(c) {  // returns -1 to say "no, and don't try again", 0 to mean "go ahead!", or n to mean "wait n ms then ask again" 
         if (app.configuringGraph) { Debug.trivia("configuring"); return -1 }
         if (global_settings.hidden) return -1
+        if (ControllerPanel.updating_group_details) return -1
         GroupManager.check_for_changes()
         if (c) {
             return c._can_refresh()

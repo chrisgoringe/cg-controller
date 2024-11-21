@@ -13,6 +13,7 @@ import { NodeBlock } from "./nodeblock.js"
 import { FancySlider } from "./input_slider.js"
 import { SnapManager, WindowResizeManager } from "./snap_manager.js"
 import { Highlighter } from "./highlighter.js"
+import { GroupManager } from "./groups.js"
 
 const MINIMUM_UE = 500006
 async function check_ue() {
@@ -32,6 +33,8 @@ async function check_ue() {
 function on_setup() {
     UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh, ControllerPanel.node_change)
     NodeInclusionManager.node_change_callback = UpdateController.make_request
+    GroupManager.change_callback = ControllerPanel.on_group_details_change
+    
     api.addEventListener('graphCleared', ControllerPanel.graph_cleared) 
 
     api.addEventListener('executed', ImageManager.on_executed)
