@@ -25,7 +25,7 @@ export class ControllerPanel extends HTMLDivElement {
     _remove() {
         Debug.trivia(`Removing ControllerPanel ${this.index}`)
         SnapManager.remove(this)
-        Object.values(this.node_blocks).forEach((nb)=>{nb._remove()})
+        if (this.node_blocks) Object.values(this.node_blocks).forEach((nb)=>{nb._remove()})
         this.node_blocks = {}
         this.remove()
         this.resize_observer?.disconnect()

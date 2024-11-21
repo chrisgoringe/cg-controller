@@ -11,7 +11,7 @@ import { ImageManager } from "./image_manager.js"
 import { global_settings } from "./settings.js"
 import { NodeBlock } from "./nodeblock.js"
 import { FancySlider } from "./input_slider.js"
-import { SnapManager } from "./snap_manager.js"
+import { SnapManager, WindowResizeManager } from "./snap_manager.js"
 import { Highlighter } from "./highlighter.js"
 
 const MINIMUM_UE = 500006
@@ -42,7 +42,7 @@ function on_setup() {
     api.addEventListener('progress', ControllerPanel.on_progress)
     api.addEventListener('executing', ControllerPanel.on_executing)
 
-    window.addEventListener("resize", SnapManager.onWindowResize)
+    window.addEventListener("resize", WindowResizeManager.onWindowResize)
     window.addEventListener('mousedown', (e)=>{mouse_change(true)})
     window.addEventListener('mouseup', (e)=>{
         mouse_change(false)

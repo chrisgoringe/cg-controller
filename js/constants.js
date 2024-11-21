@@ -69,6 +69,7 @@ export class Timings { // ms
     static PAUSE_STACK_WAIT = 101
     static ACTIVE_ELEMENT_DELAY = 234
     static ON_CHANGE_GAP = 200
+    static ON_WINDOW_RESIZE_GAP = 27
 }
 
 export class Colors {
