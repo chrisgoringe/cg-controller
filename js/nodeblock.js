@@ -62,6 +62,8 @@ export class NodeBlock extends HTMLSpanElement {
         this.main = create("span","nb_main",this)
         this.build_nodeblock()
         this.add_block_handlers()
+
+        this.progress = create('span','progress_bar')
     }
 
     can_reuse() {
@@ -175,6 +177,20 @@ export class NodeBlock extends HTMLSpanElement {
         if (NodeBlock.dragged) NodeBlock.dragged.classList.remove("being_dragged")
         NodeBlock.dragged = null
         NodeBlock.last_swap = null
+    }
+
+    image_progress_update(value, max) { this.on_progress(value, max) }
+    
+    on_progress(value, max) {
+        if (value) {
+            this.title_bar.appendChild(this.progress)
+            const w = this.getBoundingClientRect().width * value / max
+            const h = this.minimised ? 2 : 3
+            const top = this.title_bar.getBoundingClientRect().height - h
+            this.progress.style.width = `${w}px`
+            this.progress.style.top = `${top}px`
+            this.progress.style.height = `${h}px`
+        } else { this.progress.remove() }
     }
 
     build_nodeblock() {

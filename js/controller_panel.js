@@ -14,7 +14,7 @@ import { update_node_order, add_missing_nodes } from "./settings.js"
 import { SettingIds, Timings, Texts, Pixels } from "./constants.js";
 import { FancySlider } from "./input_slider.js";
 import { clear_widget_change_managers } from "./widget_change_manager.js";
-import { clean_image_manager } from "./image_manager.js";
+import { clean_image_manager, ImageManager } from "./image_manager.js";
 import { SnapManager } from "./snap_manager.js";
 import { Highlighter } from "./highlighter.js";
 
@@ -39,7 +39,6 @@ export class ControllerPanel extends HTMLDivElement {
     constructor(index) {
         super()
         ControllerPanel.count += 1
-        this.progress = create('span','progress_bar')
         if (index == null) index = new_controller_setting_index()
         if (ControllerPanel.instances[index]) { ControllerPanel.instances[index]._remove(); Debug.essential(`removed index clash ${index}`) }
         Debug.trivia(`Creating ControllerPanel ${index}`)
@@ -136,16 +135,11 @@ export class ControllerPanel extends HTMLDivElement {
         const value = e.detail.value
         const max = e.detail.max
         Object.values(ControllerPanel.instances).filter((cp)=>cp.have_node(node_id)).forEach((cp)=>cp.on_progress(node_id, value, max))
+        ImageManager.send_progress_update(node_id, value, max)
     }
 
     on_progress(node_id, value, max) {
-        this.node_blocks[node_id].title_bar?.appendChild(this.progress)
-        const w = this.node_blocks[node_id].getBoundingClientRect().width * value / max
-        const h = this.node_blocks[node_id].minimised ? 2 : 3
-        const top = this.progress.parentElement.getBoundingClientRect().height - h
-        this.progress.style.width = `${w}px`
-        this.progress.style.top = `${top}px`
-        this.progress.style.height = `${h}px`
+        this.node_blocks[node_id]?.on_progress(value, max)
     }
 
     static focus_mode_changed() {
@@ -159,9 +153,9 @@ export class ControllerPanel extends HTMLDivElement {
         Debug.trivia(`ControllerPanel.on_executing ${node_id}`)
         Object.values(ControllerPanel.instances).forEach((cp)=>{
             Object.values(cp.node_blocks).forEach((nb)=>{
+                nb.on_progress()
                 classSet(nb, 'active', nb.node.id==node_id)
             })
-            cp.progress.remove()
         })
     }
 

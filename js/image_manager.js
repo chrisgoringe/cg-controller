@@ -57,6 +57,14 @@ export class ImageManager {
         }
     }
 
+    static send_progress_update(node_id, value, max) {
+        if (ImageManager.node_listener_map[node_id]) {
+            Array.from(ImageManager.node_listener_map[node_id]).forEach((l)=>{
+                l.image_progress_update(value, max)
+            })
+        }
+    }
+
     static _set_source(node_id, src) {
         ImageManager.node_src_map[node_id] = src
         ImageManager._send(node_id)
