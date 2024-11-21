@@ -79,11 +79,10 @@ export class WindowResizeManager {
     static _onWindowResize() {
         WindowResizeManager.owr_stack -= 1
         if (WindowResizeManager.owr_stack>0) return
-        Object.values(SnapManager.panels).filter((p)=>(p.settings.fullheight || p.settings.fullwidth)).forEach((panel)=>{
+        Object.values(SnapManager.panels).filter((p)=>(p.settings.fullwidth)).forEach((panel)=>{
             const w = panel.parentElement.getBoundingClientRect().width + 2 * OVERLAP
-            const h = panel.parentElement.getBoundingClientRect().height + 2 * OVERLAP
             const me = panel.settings
-            me.set_position( null, null, (me.fullwidth) ? w : null, /*(me.fullheight) ? h : */null )
+            me.set_position( null, null, (me.fullwidth) ? w : null, null )
             update_panel_position(panel)
         })
 
