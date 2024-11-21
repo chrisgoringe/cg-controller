@@ -144,3 +144,21 @@ export function find_controller_parent() {
   return document.getElementsByClassName('graph-canvas-panel')[0] ?? 
           (show_in_focus ? (document.getElementsByClassName('graph-canvas-container')[0] ?? null) : null)
 }
+
+export function createBounds(objects, padding = 10) {
+    const bounds = new Float32Array([Infinity, Infinity, -Infinity, -Infinity]);
+    for (const obj of objects) {
+      const rect = obj.boundingRect;
+      bounds[0] = Math.min(bounds[0], rect[0]);
+      bounds[1] = Math.min(bounds[1], rect[1]);
+      bounds[2] = Math.max(bounds[2], rect[0] + rect[2]);
+      bounds[3] = Math.max(bounds[3], rect[1] + rect[3]);
+    }
+    if (!bounds.every((x2) => isFinite(x2))) return null;
+    return [
+      bounds[0] - padding,
+      bounds[1] - padding,
+      bounds[2] - bounds[0] + 2 * padding,
+      bounds[3] - bounds[1] + 2 * padding
+    ];
+  }

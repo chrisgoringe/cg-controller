@@ -1,6 +1,6 @@
 import { app } from "../../scripts/app.js";
 
-import { create, get_node, add_tooltip, clamp, classSet, defineProperty, find_controller_parent } from "./utilities.js";
+import { create, get_node, add_tooltip, clamp, classSet, defineProperty, find_controller_parent, createBounds } from "./utilities.js";
 import { family_names, GroupManager } from "./groups.js";
 
 import { UpdateController } from "./update_controller.js";
@@ -247,7 +247,7 @@ export class ControllerPanel extends HTMLDivElement {
             classSet(ControllerPanel.menu_button, 'litup', !global_settings.hidden) 
             ControllerPanel.menu_button.addEventListener('click', ControllerPanel.toggle)
 
-            ControllerPanel.search_button = create('i', 'pi pi-search controller_menu_button hideable', ControllerPanel.buttons)
+            ControllerPanel.search_button = create('i', 'pi pi-search controller_menu_button', ControllerPanel.buttons)
             add_tooltip(ControllerPanel.search_button, 'Highlight nodes in workflow')
             classSet(ControllerPanel.search_button, 'litup', global_settings.highlight) 
             ControllerPanel.search_button.addEventListener('click', ()=>{ 
@@ -663,6 +663,7 @@ export class ControllerPanel extends HTMLDivElement {
             tab.addEventListener('mouseenter', ()=>{Highlighter.group(nm)})
             tab.addEventListener('mouseleave', ()=>{Highlighter.group(null)})
             tab.addEventListener('mousedown', (e) => {
+                if (e.ctrlKey) return
                 this.mouse_down_at_x = e.x
                 this.mouse_down_at_y = e.y
                 this.mouse_down_on = tab
@@ -674,7 +675,7 @@ export class ControllerPanel extends HTMLDivElement {
                         this.settings.collapsed = false;
                         UpdateController.make_single_request('uncollapse', this) 
                     } else {
-                        if (tab.only_tab) {
+                        if (this.settings.group_choice == nm) {
                             return
                         }
                         this.settings.group_choice = nm
@@ -686,14 +687,19 @@ export class ControllerPanel extends HTMLDivElement {
                 }
                 this.mouse_down_on = null
             })
-            if (this.settings.groups.length==1) {
-                tab.only_tab = true
+            //if (this.settings.groups.length==1) {
+                //tab.only_tab = true
                 tab.addEventListener('click', (e)=>{
                     e.preventDefault()
                     e.stopPropagation()
-                    this.show_group_select(e, true)                    
+                    if (e.ctrlKey) {
+                        //app.canvas.fitViewToSelectionAnimated()
+                        app.canvas.animateToBounds(createBounds(app.graph._groups.filter((g)=>(g.title==nm))))
+                    } else {
+                        if (this.settings.groups.length==1) this.show_group_select(e, true)
+                    }
                 })
-            }
+            //}
         })
     }
 
