@@ -37,10 +37,10 @@ export class Generic {
     static OFF = "Off"
     static THIN = "Thing"
     static NORMAL = "Normal"
-    D0 = "Only show errors"
-    D1 = "Normal debugging"
-    D2 = "Extra information"
-    D3 = "Maximum information"
+    static D0 = "Only show errors"
+    static D1 = "Normal debugging"
+    static D2 = "Extra information"
+    static D3 = "Maximum information"
 }
 
 export class Tooltips {

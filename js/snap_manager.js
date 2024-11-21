@@ -256,7 +256,7 @@ export class SnapManager {
 
     static tidy_up(panel, apply_order) {
 
-        Debug.extended(`Tidy up ${panel.index}`)
+        Debug.trivia(`Tidy up ${panel.index}`)
         const me = panel.settings
         const i = panel.index
 
@@ -264,7 +264,7 @@ export class SnapManager {
             const you = SnapManager.panels[k].settings
             const child_type = SnapManager.child_types[k][i] 
 
-            Debug.extended(`${i} tidy_up ${i} is a child of ${k}, child_type '${child_type.describe()}'`)
+            Debug.trivia(`${i} tidy_up ${i} is a child of ${k}, child_type '${child_type.describe()}'`)
 
             if (child_type.move_with) {
                 if (child_type.shared_t) me.set_position( null, you.position.y, null, null )
@@ -326,21 +326,20 @@ export class SnapManager {
 
             if (effects_to_apply.anything()) {
                 Debug.trivia(`moved ${panel.index}, child ${i}, ${effects_to_apply.describe()}, ${dx}, ${dy}, ${dw}, ${dh}`)
-                var changed = false
 
                 if (dw || dh) {
-                    if ( effects_to_apply.indirect_joined_x && dx==0 ) changed = changed || SnapManager.delta( i,   dw, null, null, null )
-                    if ( effects_to_apply.indirect_joined_y && dy==0 ) changed = changed || SnapManager.delta( i, null,   dh, null, ysnap?-dh:null )
-                    if ( effects_to_apply.shared_r && dx==0 ) changed = changed || SnapManager.delta( i, null, null,   dw, null )
-                    if ( effects_to_apply.shared_b && dy==0 ) changed = changed || SnapManager.delta( i, null, null, null,   dh )  
-                    if ( effects_to_apply.shared_l && dx!=0 ) changed = changed || SnapManager.delta( i,  -dw, null,   dw, null )
-                    if ( effects_to_apply.shared_t && dy!=0 ) changed = changed || SnapManager.delta( i, null,  -dh, null,   dh )       
+                    if ( effects_to_apply.indirect_joined_x && dx==0 ) SnapManager.delta( i,   dw, null, null, null )
+                    if ( effects_to_apply.indirect_joined_y && dy==0 ) SnapManager.delta( i, null,   dh, null, ysnap?-dh:null )
+                    if ( effects_to_apply.shared_r && dx==0 )          SnapManager.delta( i, null, null,   dw, null )
+                    if ( effects_to_apply.shared_b && dy==0 )          SnapManager.delta( i, null, null, null,   dh )  
+                    if ( effects_to_apply.shared_l && dx!=0 )          SnapManager.delta( i,  -dw, null,   dw, null )
+                    if ( effects_to_apply.shared_t && dy!=0 )          SnapManager.delta( i, null,  -dh, null,   dh )       
                 } else {
-                    if ( effects_to_apply.move_with         ) changed = changed || SnapManager.delta( i,   dx,   dy, null, null ) 
+                    if ( effects_to_apply.move_with         )          SnapManager.delta( i,   dx,   dy, null, null ) 
                 }             
                                 
-                if (changed) update_panel_position( SnapManager.panels[i], true )
-                else Debug.extended("no change")
+                update_panel_position( SnapManager.panels[i], true )
+
             }
         })
         update_panel_position( panel, true )
@@ -348,6 +347,5 @@ export class SnapManager {
 
     static delta(i, x, y, w, h) {
         if (x || y || w || h) SnapManager.panels[i].settings.delta_position(x,y,w,h)
-        return (x || y || w || h)
     }
 }
