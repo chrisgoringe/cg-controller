@@ -384,11 +384,13 @@ export class NodeBlock extends HTMLSpanElement {
     }
 
     previousImage() {
+        if (this.image_index==0) return
         this.image_index -= 1
         this.show_images(this.urls)
     }
 
     nextImage() {
+        if (this.image_index+1 == this.urls.length) return
         this.image_index += 1
         this.show_images(this.urls)        
     }
