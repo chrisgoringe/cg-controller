@@ -71,6 +71,7 @@ export class Timings { // ms
     static ON_CHANGE_GAP = 200
     static ON_WINDOW_RESIZE_GAP = 27
     static GROUP_CHANGE_DELAY = 10
+    static ALLOW_LAYOUT = 1000
 }
 
 export class Colors {

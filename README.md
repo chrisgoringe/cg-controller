@@ -64,10 +64,14 @@ doesn't bring up the menu any more). If you want to get rid of a tab, switch to 
 
 ## The other icons
 
+### On the controller
+
 ![other icons](images/other_icons.png)
 
 The play button indicates that all of the nodes in this group are currently active (not bypassed or muted).
-You can use it to bypass or mute a group. (Mute is refered to as 'never' in some places)
+You can use it to bypass or mute a group. (Mute is refered to as 'never' in some places).
+
+Clicking the play button will bypass or unbypass the group, ctrl-clicking will mute or unmute.
 
 |Icon|Meaning|Click will...|Ctrl-click will...|
 |-|-|-|-|
@@ -79,11 +83,25 @@ You can use it to bypass or mute a group. (Mute is refered to as 'never' in some
 The little lightning bolt icon is used to show/hide any nodes that were added as advanced controls. 
 If there are no advanced control, this icon won't be shown.
 
+### On each nodeblock
+
+![other icons](images/nodeblock_icons.png)
+
+Each node can be independantly bypassed or muted using the arrow on the nodeblock.
+
 Nodes which include an image also have a pin in the top right corner: ![pin](images/pin.png)
 When this is active (blue, the default) the image will be shown at the full width of the controller. 
 If you unpin the image, you will find a handle at the bottom right of the image that can be used to resize it (vertically).
 
 ## Other things to explore
+
+### Hover and zoom
+
+If the magnifying glass in the top control is active ![image](images/top.png) then when you move you mouse over a node in 
+the controller it will be highlighted in the workflow, and when you move your mouse over a group tab, the group will
+be highlighted.
+
+Control-click a tab and the workflow will zoom to show the group.
 
 ### Multiple controllers
 
@@ -124,6 +142,10 @@ There's also a debug setting that I might ask you to use if you report a problem
 There is a little drag box at the bottom right of the controller that you can use to resize it. 
 You can also move it around by dragging the header.
 
+## Snapping
+
+Controllers will snap to each other and move around together. To break them apart, move the controller on the right or bottom.
+
 ## Known Limitations
 
 ### Custom widgets
@@ -134,11 +156,11 @@ in future releases, probably starting with rgthree's Power Lora Loader.
 
 # The road ahead...
 
-Future features will depend on community feedback, but some of the top contenders right now are...
+Future features will depend on community feedback, but the aim for the 1.5 release is to include
 
-- Visual links between the controller and workflow (highlight node on hover)
-- Selecting which widgets on a node to show
-- 'Snapping' controller windows to each other and the edges of the display
+- Support for some popular custom node widgets
+- Support for batches of images
+- Open the mask editor directly from the controller on an image load node
 
 For more details of what's under consideration, take a look at the [issues list](https://github.com/chrisgoringe/cg-controller/issues), 
 and feel free to add your ideas there, or 
