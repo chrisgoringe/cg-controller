@@ -50,6 +50,7 @@ export class NodeBlock extends HTMLSpanElement {
         this.parent_controller = parent_controller
         this.node = node
         this.mode = this.node.mode
+        this.image_index = null
         Debug.trivia(`creating nodeblock for ${this.node?.id} on controller ${this.parent_controller?.index}`)
 
         if (!this.node.properties.controller_details) {
@@ -180,7 +181,7 @@ export class NodeBlock extends HTMLSpanElement {
     }
 
     image_progress_update(value, max) { this.on_progress(value, max) }
-    
+
     on_progress(value, max) {
         if (value) {
             this.title_bar.appendChild(this.progress)
@@ -266,6 +267,13 @@ export class NodeBlock extends HTMLSpanElement {
 
         this.image_image = create('img', 'nodeblock_image', this.image_panel)
         this.image_image.addEventListener('load', () => {this.rescale_image()})
+        this.image_paging = create('span', 'overlay overlay_paging', this.image_panel)
+        
+        this.image_prev = create('span', 'overlay_paging_icon', this.image_paging)
+        this.image_xofy = create('span', 'overlay_paging_text', this.image_paging)
+        this.image_next = create('span', 'overlay_paging_icon', this.image_paging)
+        this.image_prev.addEventListener('click', ()=>{this.previousImage()})
+        this.image_next.addEventListener('click', ()=>{this.nextImage()})
         
         if (!app.canvas.read_only) {
             make_resizable( this.image_panel, this.node.id, this.image_panel_id, this.node.properties.controller_widgets[this.image_panel_id] )
@@ -295,19 +303,20 @@ export class NodeBlock extends HTMLSpanElement {
         this.main = new_main
 
         if (this.node.imgs && this.node.imgs.length>0) {
-            this.show_image(this.node.imgs[0].src)
-            //ImageManager.node_img_change(this.node)
+            const urls = []
+            this.node.imgs.forEach((i)=>{urls.push(i.src)})
+            this.show_images(urls)
         } 
 
         this.valid_nodeblock = true 
         if (!(isImageNode(this.node) || this.widget_count || (this.node.imgs && this.node.imgs.length>0))) this.minimised = true
     }
 
-    manage_image(url, running) {
+    manage_image(urls, running) {
         if (!this.parentElement) return false
         if (!(this.bypassed || this.hidden)) {
             /* take anything when running, or if we have nothing, or if we have a blob; otherwise reject blobs */
-            if (running || !this.image_image.src || image_is_blob(this.image_image.src) || !image_is_blob(url)) this.show_image(url)
+            if (running || !this.image_image.src || image_is_blob(this.image_image.src) || !image_is_blob(urls[0])) this.show_images(urls)
         }
         return true
     }
@@ -343,16 +352,9 @@ export class NodeBlock extends HTMLSpanElement {
                         this.image_image.style.width = `${w}px`
                     } else {
                         const scaled_height_fraction = (im_h * w) / (im_w * box.height)
-                        //if (scaled_height_fraction<=1) {
-                        //    this.image_panel.style.height = `${(im_h * w) / (im_w)}px`
-                        //    this.image_panel.style.maxHeight = `${(im_h * w) / (im_w)}px`
-                        //    this.image_image.style.height = `100%`
-                        //    this.image_image.style.width = `${w}px`
-                        //} else {
-                            this.image_panel.style.maxHeight = `unset`
-                            this.image_image.style.height = `100%`
-                            this.image_image.style.width = `${w/scaled_height_fraction}px`
-                        //}
+                        this.image_panel.style.maxHeight = `unset`
+                        this.image_image.style.height = `100%`
+                        this.image_image.style.width = `${w/scaled_height_fraction}px`
                     }
                 }
             } 
@@ -360,15 +362,37 @@ export class NodeBlock extends HTMLSpanElement {
         this.rescaling = false
     }
 
-    show_image(url) {
-        classSet(this.image_panel, 'nodeblock_image_empty', !url)
-        classSet(this.image_pin, 'hidden', !url)
+    show_images(urls) {
+        const nothing = !(urls && urls.length>0)
+        classSet(this.image_panel, 'nodeblock_image_empty', nothing)
+        classSet(this.image_pin, 'hidden', nothing)
+
+        if (this.image_index===null || this.image_index>=urls.length) this.image_index = 0
+
+        this.urls = urls
+        const url = urls[this.image_index]
 
         if (this.image_image.src != url) {
             this.image_image.src = url
             this.image_panel.style.maxHeight = ''
         }
+
+        classSet(this.image_paging, 'hidden', urls.length<2)
+        classSet(this.image_prev, 'prev', this.image_index>0)
+        this.image_xofy.innerHTML = `${this.image_index+1}/${urls.length}`
+        classSet(this.image_next, 'next', this.image_index<urls.length-1)
     }
+
+    previousImage() {
+        this.image_index -= 1
+        this.show_images(this.urls)
+    }
+
+    nextImage() {
+        this.image_index += 1
+        this.show_images(this.urls)        
+    }
+
 }
 
 

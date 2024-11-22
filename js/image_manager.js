@@ -31,27 +31,27 @@ export class ImageManager {
 
     static init() {
         ImageManager.node_listener_map = {}
-        ImageManager.node_src_map = {}
+        ImageManager.node_urls_map = {}
         ImageManager.executing_node = null
     }
 
     static node_listener_map = {}  // map to Set
-    static node_src_map      = {}  // map to url
+    static node_urls_map      = {}  // map to url
     static executing_node    = null
 
     static add_listener(node_id, listener) {
         if (!ImageManager.node_listener_map[node_id]) ImageManager.node_listener_map[node_id] = new Set()
         ImageManager.node_listener_map[node_id].add(listener)
-        const src = ImageManager.node_src_map[node_id]
-        if (src) listener.manage_image(src)
+        const urls = ImageManager.node_urls_map[node_id]
+        if (urls) listener.manage_image(urls)
     }
 
     static _send(node_id) {
-        const src = ImageManager.node_src_map[node_id]
-        if (src) {
+        const urls = ImageManager.node_urls_map[node_id]
+        if (urls) {
             if (ImageManager.node_listener_map[node_id]) {
                 Array.from(ImageManager.node_listener_map[node_id]).forEach((l)=>{
-                    if (!l.manage_image(src, (ImageManager.executing_node!=null))) ImageManager.node_listener_map[node_id].delete(node_id)
+                    if (!l.manage_image(urls, (ImageManager.executing_node!=null))) ImageManager.node_listener_map[node_id].delete(node_id)
                 })
             }
         }
@@ -65,8 +65,8 @@ export class ImageManager {
         }
     }
 
-    static _set_source(node_id, src) {
-        ImageManager.node_src_map[node_id] = src
+    static _set_sources(node_id, srcs) {
+        ImageManager.node_urls_map[node_id] = srcs
         ImageManager._send(node_id)
     }
 
@@ -74,17 +74,18 @@ export class ImageManager {
     static node_img_change(node) {
         Debug.trivia(`node_img_change called for node ${node.id} which now has ${node.imgs.length} image(s)`)
         if (node.imgs.length == 0) return
-        const v = node.imgs[0]
+        
         if (ImageManager.executing_node==null || is_image_upload_node(node)) {
-            var src = v.src ?? api.apiURL(
-                `/view?filename=${encodeURIComponent(v.filename ?? v)}&type=${v.type ?? "input"}&subfolder=${v.subfolder ?? ""}`
-            )
-            ImageManager._set_source(node.id, src)
+            const srcs = []
+            node.imgs.forEach((v)=>{
+                srcs.push(v.src ?? api.apiURL( `/view?filename=${encodeURIComponent(v.filename ?? v)}&type=${v.type ?? "input"}&subfolder=${v.subfolder ?? ""}`) )
+            })
+            ImageManager._set_sources(node.id, srcs)
         }
     }
 
     static on_execution_start() {
-        ImageManager.node_src_map = {}
+        ImageManager.node_urls_map = {}
     }
 
     static on_executing(e) {
@@ -93,16 +94,17 @@ export class ImageManager {
 
     static on_b_preview(e) {
         Debug.trivia(`ImageManager on_b_preview ${ImageManager.executing_node}`)
-        ImageManager._set_source( ImageManager.executing_node, window.URL.createObjectURL(e.detail) )
+        ImageManager._set_sources( ImageManager.executing_node, [window.URL.createObjectURL(e.detail),] )
     }
 
     static on_executed(e) {
         Debug.trivia(`ImageManager on_executed ${e.detail.node}`)
-        const v = e.detail?.output?.images?.[0]
-        if (v) {
-            ImageManager._set_source( e.detail.node, api.apiURL(
-                `/view?filename=${encodeURIComponent(v.filename ?? v)}&type=${v.type ?? "input"}&subfolder=${v.subfolder ?? ""}`
-            ) )
+        const srcs = []
+        e.detail?.output?.images?.forEach((v)=>{
+            srcs.push(api.apiURL( `/view?filename=${encodeURIComponent(v.filename ?? v)}&type=${v.type ?? "input"}&subfolder=${v.subfolder ?? ""}`) )
+        })
+        if (srcs.length>0) {
+            ImageManager._set_sources( e.detail.node, srcs )
         }
     }
 
