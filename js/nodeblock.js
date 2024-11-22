@@ -378,20 +378,18 @@ export class NodeBlock extends HTMLSpanElement {
         }
 
         classSet(this.image_paging, 'hidden', urls.length<2)
-        classSet(this.image_prev, 'prev', this.image_index>0)
+        classSet(this.image_prev, 'prev', true)
         this.image_xofy.innerHTML = `${this.image_index+1}/${urls.length}`
-        classSet(this.image_next, 'next', this.image_index<urls.length-1)
+        classSet(this.image_next, 'next', true)
     }
 
     previousImage() {
-        if (this.image_index==0) return
-        this.image_index -= 1
+        this.image_index = (this.image_index + this.urls.length - 1) % this.urls.length
         this.show_images(this.urls)
     }
 
     nextImage() {
-        if (this.image_index+1 == this.urls.length) return
-        this.image_index += 1
+        this.image_index = (this.image_index+1) % this.urls.length
         this.show_images(this.urls)        
     }
 
