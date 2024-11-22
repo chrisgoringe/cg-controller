@@ -1,6 +1,6 @@
 import { app } from "../../scripts/app.js";
 
-import { create, get_node, add_tooltip, clamp, classSet, defineProperty, find_controller_parent, createBounds } from "./utilities.js";
+import { create, get_node, add_tooltip, clamp, classSet, defineProperty, find_controller_parent, createBounds, title_if_overflowing } from "./utilities.js";
 import { family_names, GroupManager } from "./groups.js";
 
 import { UpdateController } from "./update_controller.js";
@@ -512,16 +512,14 @@ export class ControllerPanel extends HTMLDivElement {
 
     header_mouse_down(e) {
         if (app.canvas.read_only) return
-        //if (e.target==this.header_tabs || e.target.parentElement==this.header_tabs) {
-            this.being_dragged = true
-            this.drag_threshold = false
-            this.classList.add('grabbed')
-            this.offset_x = e.x - this.settings.position.x
-            this.offset_y = e.y - this.settings.position.y
-            //e.preventDefault()
-            //e.stopPropagation()
-        //}
+
+        this.being_dragged = true
+        this.drag_threshold = false
+        this.classList.add('grabbed')
+        this.offset_x = e.x - this.settings.position.x
+        this.offset_y = e.y - this.settings.position.y
     }
+
     mouse_move(e) {
         if (app.canvas.read_only) return
         this.style.cursor = ''
@@ -703,19 +701,19 @@ export class ControllerPanel extends HTMLDivElement {
                 }
                 this.mouse_down_on = null
             })
-            //if (this.settings.groups.length==1) {
-                //tab.only_tab = true
-                tab.addEventListener('click', (e)=>{
-                    e.preventDefault()
-                    e.stopPropagation()
-                    if (e.ctrlKey) {
-                        //app.canvas.fitViewToSelectionAnimated()
-                        app.canvas.animateToBounds(createBounds(app.graph._groups.filter((g)=>(g.title==nm))))
-                    } else {
-                        if (this.settings.groups.length==1) this.show_group_select(e, true)
-                    }
-                })
-            //}
+
+            tab.addEventListener('click', (e)=>{
+                e.preventDefault()
+                e.stopPropagation()
+                if (e.ctrlKey) {
+                    app.canvas.animateToBounds(createBounds(app.graph._groups.filter((g)=>(g.title==nm))))
+                } else {
+                    if (this.settings.groups.length==1) this.show_group_select(e, true)
+                }
+            })
+
+            title_if_overflowing(tab, nm)
+
         })
     }
 

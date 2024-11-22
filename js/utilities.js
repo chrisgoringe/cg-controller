@@ -1,5 +1,5 @@
 import { app } from "../../scripts/app.js"
-import { SettingIds } from "./constants.js";
+import { SettingIds, Timings } from "./constants.js";
 import { getSettingValue } from "./settings.js";
 
 export var mouse_is_down 
@@ -162,3 +162,15 @@ export function createBounds(objects, padding = 10) {
       bounds[3] - bounds[1] + 2 * padding
     ];
   }
+
+export function title_if_overflowing(element, title) {
+    setTimeout(_title_if_overflowing, Timings.ALLOW_LAYOUT, element, title)
+}
+
+function _title_if_overflowing(element, title) {
+    if (element.clientWidth < element.scrollWidth) {
+        element.title = title
+    } else {
+        if (element.title) delete element.title
+    }
+}
