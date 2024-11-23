@@ -122,8 +122,15 @@ class GlobalSettings {
     constructor() {
         GLOBAL_KEYS.forEach((k) => {
             defineProperty(this, k, {
-                get : ()  => { return app.graph.extra.controller_panel[k] },
-                set : (v) => { app.graph.extra.controller_panel[k] = v }
+                get : ()  => { 
+                    const v = app?.graph?.extra?.controller_panel?.[k] 
+                    return v ?? GLOBAL[k]
+                },
+                set : (v) => { 
+                    try {
+                        app.graph.extra.controller_panel[k] = v 
+                    } catch (e) { Debug.error("global set", e)}
+                }
             })
         })
     }
