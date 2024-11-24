@@ -5,11 +5,12 @@ import { ComfyWidgets } from "../../scripts/widgets.js";
 import { create, darken, classSet, mode_change, focus_mode } from "./utilities.js";
 import { Entry } from "./panel_entry.js"
 import { make_resizable } from "./resize_manager.js";
-import { image_is_blob, ImageManager, is_image_upload_node, isImageNode } from "./image_manager.js";
+import { get_image_url, image_is_blob, ImageManager, is_image_upload_node, isImageNode } from "./image_manager.js";
 import { UpdateController } from "./update_controller.js";
 import { Debug } from "./debug.js";
 import { Highlighter } from "./highlighter.js";
-import { new_context_menu } from "./context_menu.js";
+import { open_context_menu } from "./context_menu.js";
+import { Timings } from "./constants.js";
 
 function is_single_image(data) { return (data && data.items && data.items.length==1 && data.items[0].type.includes("image")) }
 
@@ -241,11 +242,13 @@ export class NodeBlock extends HTMLSpanElement {
         this.image_panel = create("div", "nodeblock_image_panel nodeblock_image_empty", new_main)
 
         this.widget_count = 0
+        this.entry_controlling_image = null
         this.node.widgets?.forEach(w => {
             if (!this.node.properties.controller_widgets[w.name]) this.node.properties.controller_widgets[w.name] = {}
             const properties = this.node.properties.controller_widgets[w.name]
             const e = new Entry(this.parent_controller, this, this.node, w, properties)
             if (e.valid()) {
+                if (e.combo_for_image) this.entry_controlling_image = e
                 new_main.appendChild(e)
                 this[w.name] = e
                 this.widget_count += 1                
@@ -270,7 +273,7 @@ export class NodeBlock extends HTMLSpanElement {
         this.image_image.addEventListener('load', () => {this.rescale_image()})
         this.image_image.addEventListener('click', (e)=>{
             if (e.ctrlKey) {
-                new_context_menu(e, "Image", [ 
+                open_context_menu(e, "Image", [ 
                     { 
                         "title":"Open in Mask Editor", 
                         "callback":()=>{
@@ -377,7 +380,14 @@ export class NodeBlock extends HTMLSpanElement {
         this.rescaling = false
     }
 
+    select_image(nm) {
+        this.show_images([get_image_url(nm),])
+    }
+
     show_images(urls) {
+        if (this.entry_controlling_image) setTimeout(()=>{
+            this.entry_controlling_image.update_combo_selection()
+        }, Timings.GENERIC_SHORT_DELAY)
         const nothing = !(urls && urls.length>0)
         classSet(this.image_panel, 'nodeblock_image_empty', nothing)
         classSet(this.image_pin, 'hidden', nothing)

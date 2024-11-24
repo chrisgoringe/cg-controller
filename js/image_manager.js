@@ -16,11 +16,12 @@ export function image_is_blob(url) {
 
 export function clean_image_manager() {
     ImageManager.node_listener_map = {}
-    //Object.keys(ImageManager.node_listener_map).forEach((k)=>{
-    //    ImageManager.node_listener_map[k] = Set.from(ImageManager.node_listener_map[k].filter((v)=>v.parentElement))
-    //})
 }
 
+export function get_image_url(v) {
+    if (v.src) return v.src
+    return api.apiURL( `/view?filename=${encodeURIComponent(v.filename ?? v)}&type=${v.type ?? "input"}&subfolder=${v.subfolder ?? ""}`)
+}
 
 export class ImageManager {
     /*
@@ -77,9 +78,7 @@ export class ImageManager {
         
         if (ImageManager.executing_node==null || is_image_upload_node(node)) {
             const srcs = []
-            node.imgs.forEach((v)=>{
-                srcs.push(v.src ?? api.apiURL( `/view?filename=${encodeURIComponent(v.filename ?? v)}&type=${v.type ?? "input"}&subfolder=${v.subfolder ?? ""}`) )
-            })
+            node.imgs.forEach((v)=>{ srcs.push(get_image_url(v)) })
             ImageManager._set_sources(node.id, srcs)
         }
     }
@@ -100,12 +99,8 @@ export class ImageManager {
     static on_executed(e) {
         Debug.trivia(`ImageManager on_executed ${e.detail.node}`)
         const srcs = []
-        e.detail?.output?.images?.forEach((v)=>{
-            srcs.push(api.apiURL( `/view?filename=${encodeURIComponent(v.filename ?? v)}&type=${v.type ?? "input"}&subfolder=${v.subfolder ?? ""}`) )
-        })
-        if (srcs.length>0) {
-            ImageManager._set_sources( e.detail.node, srcs )
-        }
+        e.detail?.output?.images?.forEach((v)=>{ srcs.push(get_image_url(v)) })
+        if (srcs.length>0) { ImageManager._set_sources( e.detail.node, srcs ) }
     }
 
 

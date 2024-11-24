@@ -84,6 +84,8 @@ export class Entry extends HTMLDivElement {
         }  
         
         if (!this.input_element) return
+
+        this.combo_for_image = (this.target_widget.name=='image' && this.target_widget._real_value && this.target_widget.type=="combo")
   
         switch (target_widget.type) {
             case 'button':
@@ -107,14 +109,17 @@ export class Entry extends HTMLDivElement {
             }
         }
 
-        //const onRemove = target_widget.onRemove
-        //target_widget.onRemove = function () {
-        //    onRemove?.apply(target_widget, arguments)
-        //    UpdateController.make_request('widget removed')
-        //}
-
         WidgetChangeManager.add_listener(target_widget, this)
         this.render()
+    }
+
+    update_combo_selection() {
+        if (this.input_element) {
+            this.input_element.value   = this.target_widget.value
+            this.entry_value.innerText = this.target_widget.value
+        } else {
+            Debug.important("update_combo with no input_element")
+        }
     }
 
     wcm_manager_callback() {
@@ -122,8 +127,12 @@ export class Entry extends HTMLDivElement {
         this.input_element.value = this.target_widget.value;
         if (this.input_element.wcm_manager_callback) this.input_element.wcm_manager_callback()
         if (this.input_element.redraw) this.input_element.redraw(true)
-        if (this.target_widget.name=='image' && this.target_widget._real_value && this.target_widget.type=="combo") {
-            this.parent_nodeblock.show_image(this.target_widget.value)
+        if (this.combo_for_image) {
+            try {
+                this.parent_nodeblock.select_image(this.target_widget.value)
+            } catch (e) {
+                Debug.error('wcm_manager_callback',e)
+            }
         }
         return true;
     }
