@@ -1,4 +1,4 @@
-import { app } from "../../scripts/app.js";
+import { app, ComfyApp } from "../../scripts/app.js";
 
 import { ComfyWidgets } from "../../scripts/widgets.js";
 
@@ -9,6 +9,7 @@ import { image_is_blob, ImageManager, is_image_upload_node, isImageNode } from "
 import { UpdateController } from "./update_controller.js";
 import { Debug } from "./debug.js";
 import { Highlighter } from "./highlighter.js";
+import { new_context_menu } from "./context_menu.js";
 
 function is_single_image(data) { return (data && data.items && data.items.length==1 && data.items[0].type.includes("image")) }
 
@@ -267,6 +268,20 @@ export class NodeBlock extends HTMLSpanElement {
 
         this.image_image = create('img', 'nodeblock_image', this.image_panel)
         this.image_image.addEventListener('load', () => {this.rescale_image()})
+        this.image_image.addEventListener('click', (e)=>{
+            if (e.ctrlKey) {
+                new_context_menu(e, "Image", [ 
+                    { 
+                        "title":"Open in Mask Editor", 
+                        "callback":()=>{
+                            ComfyApp.copyToClipspace(this.node)
+                            ComfyApp.clipspace_return_node = this.node
+                            ComfyApp.open_maskeditor()
+                        }
+                    },
+                ])
+            }
+        })
         this.image_paging = create('span', 'overlay overlay_paging', this.image_panel)
         
         this.image_prev = create('span', 'overlay_paging_icon', this.image_paging)
