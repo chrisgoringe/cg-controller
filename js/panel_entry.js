@@ -45,6 +45,8 @@ export class Entry extends HTMLDivElement {
         this.input_element = null
         this.properties = properties
 
+        target_widget.type = target_widget.type ?? target_widget.constructor.name
+
         switch (target_widget.type) {
             case 'text':
                 this.entry_label = create('span','entry_label text', this, {'innerText':widget_label, 'draggable':false} )  
@@ -73,6 +75,7 @@ export class Entry extends HTMLDivElement {
                     this.entry_value.innerText = this.input_element.value
                 }
                 break
+            //case 'RgthreeBetterButtonWidget':
             case 'button':
                 this.input_element = create("button", 'input', this, {"innerText":widget_label, "doesntBlockRefresh":true})
                 break
