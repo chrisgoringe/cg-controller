@@ -62,6 +62,8 @@ export class NodeBlock extends HTMLSpanElement {
         this.main = create("span","nb_main",this)
         this.build_nodeblock()
         this.add_block_handlers()
+
+        this.progress = create('span','progress_bar')
     }
 
     can_reuse() {
@@ -177,6 +179,20 @@ export class NodeBlock extends HTMLSpanElement {
         NodeBlock.last_swap = null
     }
 
+    image_progress_update(value, max) { this.on_progress(value, max) }
+    
+    on_progress(value, max) {
+        if (value) {
+            this.title_bar.appendChild(this.progress)
+            const w = this.getBoundingClientRect().width * value / max
+            const h = this.minimised ? 2 : 3
+            const top = this.title_bar.getBoundingClientRect().height - h
+            this.progress.style.width = `${w}px`
+            this.progress.style.top = `${top}px`
+            this.progress.style.height = `${h}px`
+        } else { this.progress.remove() }
+    }
+
     build_nodeblock() {
         const new_main = create("span", 'nb_main')
 
@@ -226,13 +242,17 @@ export class NodeBlock extends HTMLSpanElement {
         this.node.widgets?.forEach(w => {
             if (!this.node.properties.controller_widgets[w.name]) this.node.properties.controller_widgets[w.name] = {}
             const properties = this.node.properties.controller_widgets[w.name]
-            const e = new Entry(this.parent_controller, this, this.node, w, properties)
-            if (e.valid()) {
-                new_main.appendChild(e)
-                this[w.name] = e
-                this.widget_count += 1                
-            } else {
-                e._remove()
+            try {
+                const e = new Entry(this.parent_controller, this, this.node, w, properties)
+                if (e.valid()) {
+                    new_main.appendChild(e)
+                    this[w.name] = e
+                    this.widget_count += 1                
+                } else {
+                    e._remove()
+                }
+            } catch (e) {
+                Debug.error(`adding widget on node ${this.node.id}`, e)
             }
         })
 

@@ -1,6 +1,6 @@
 import { app } from "../../scripts/app.js";
 
-import { create, get_node, add_tooltip, clamp, classSet, defineProperty, find_controller_parent } from "./utilities.js";
+import { create, get_node, add_tooltip, clamp, classSet, defineProperty, find_controller_parent, createBounds, title_if_overflowing } from "./utilities.js";
 import { family_names, GroupManager } from "./groups.js";
 
 import { UpdateController } from "./update_controller.js";
@@ -14,7 +14,7 @@ import { update_node_order, add_missing_nodes } from "./settings.js"
 import { SettingIds, Timings, Texts, Pixels } from "./constants.js";
 import { FancySlider } from "./input_slider.js";
 import { clear_widget_change_managers } from "./widget_change_manager.js";
-import { clean_image_manager } from "./image_manager.js";
+import { clean_image_manager, ImageManager } from "./image_manager.js";
 import { SnapManager } from "./snap_manager.js";
 import { Highlighter } from "./highlighter.js";
 
@@ -25,7 +25,7 @@ export class ControllerPanel extends HTMLDivElement {
     _remove() {
         Debug.trivia(`Removing ControllerPanel ${this.index}`)
         SnapManager.remove(this)
-        Object.values(this.node_blocks).forEach((nb)=>{nb._remove()})
+        if (this.node_blocks) Object.values(this.node_blocks).forEach((nb)=>{nb._remove()})
         this.node_blocks = {}
         this.remove()
         this.resize_observer?.disconnect()
@@ -39,7 +39,6 @@ export class ControllerPanel extends HTMLDivElement {
     constructor(index) {
         super()
         ControllerPanel.count += 1
-        this.progress = create('span','progress_bar')
         if (index == null) index = new_controller_setting_index()
         if (ControllerPanel.instances[index]) { ControllerPanel.instances[index]._remove(); Debug.essential(`removed index clash ${index}`) }
         Debug.trivia(`Creating ControllerPanel ${index}`)
@@ -110,21 +109,37 @@ export class ControllerPanel extends HTMLDivElement {
         this.resize_observer = new ResizeObserver((x) => this.on_size_change()).observe(this)
     }
 
+    static on_group_details_change(oldname, changes) {
+        ControllerPanel.updating_group_details = true
+        try {
+            Object.values(ControllerPanel.instances).forEach((cp)=>{cp.on_group_details_change(oldname,changes)})
+        } finally { ControllerPanel.updating_group_details = false }
+    }
+    on_group_details_change(oldname, changes) {
+        const idx = this.settings.groups.findIndex((el)=>(el==oldname))
+        if (idx>=0) {
+            if (changes.title) {
+                this.settings.groups[idx] = changes.title
+                if (this.settings.group_choice == oldname) this.settings.group_choice = changes.title
+            }
+            if (changes.removed) {
+                this.settings.groups = this.settings.groups.filter((g)=>g!=oldname)
+            }
+            UpdateController.make_request('group change', Timings.GROUP_CHANGE_DELAY, false, this)
+        }
+    }
+
+
     static on_progress(e) {
         const node_id = e.detail.node
         const value = e.detail.value
         const max = e.detail.max
         Object.values(ControllerPanel.instances).filter((cp)=>cp.have_node(node_id)).forEach((cp)=>cp.on_progress(node_id, value, max))
+        ImageManager.send_progress_update(node_id, value, max)
     }
 
     on_progress(node_id, value, max) {
-        this.node_blocks[node_id].title_bar?.appendChild(this.progress)
-        const w = this.node_blocks[node_id].getBoundingClientRect().width * value / max
-        const h = this.node_blocks[node_id].minimised ? 2 : 3
-        const top = this.progress.parentElement.getBoundingClientRect().height - h
-        this.progress.style.width = `${w}px`
-        this.progress.style.top = `${top}px`
-        this.progress.style.height = `${h}px`
+        this.node_blocks[node_id]?.on_progress(value, max)
     }
 
     static focus_mode_changed() {
@@ -138,19 +153,19 @@ export class ControllerPanel extends HTMLDivElement {
         Debug.trivia(`ControllerPanel.on_executing ${node_id}`)
         Object.values(ControllerPanel.instances).forEach((cp)=>{
             Object.values(cp.node_blocks).forEach((nb)=>{
+                nb.on_progress()
                 classSet(nb, 'active', nb.node.id==node_id)
             })
-            cp.progress.remove()
         })
     }
 
-    static mouse_up_anywhere() {
+    static handle_mouse_up() {
         Object.keys(ControllerPanel.instances).forEach((k)=>{
             ControllerPanel.instances[k].mouse_up()
         })
     }
 
-    static mouse_move_anywhere(e) {
+    static handle_mouse_move(e) {
         Object.keys(ControllerPanel.instances).forEach((k)=>{
             ControllerPanel.instances[k].mouse_move(e)
         })
@@ -233,10 +248,6 @@ export class ControllerPanel extends HTMLDivElement {
         }
     }
 
-    static onWindowResize() {
-        Object.keys(ControllerPanel.instances).forEach((k)=>ControllerPanel.instances[k].set_position(false))
-    }
-
     static create_menu_icon() {
         if (find_controller_parent()) {
             const comfy_menu = document.getElementsByClassName('comfyui-menu')[0]
@@ -251,7 +262,7 @@ export class ControllerPanel extends HTMLDivElement {
             classSet(ControllerPanel.menu_button, 'litup', !global_settings.hidden) 
             ControllerPanel.menu_button.addEventListener('click', ControllerPanel.toggle)
 
-            ControllerPanel.search_button = create('i', 'pi pi-search controller_menu_button hideable', ControllerPanel.buttons)
+            ControllerPanel.search_button = create('i', 'pi pi-search controller_menu_button', ControllerPanel.buttons)
             add_tooltip(ControllerPanel.search_button, 'Highlight nodes in workflow')
             classSet(ControllerPanel.search_button, 'litup', global_settings.highlight) 
             ControllerPanel.search_button.addEventListener('click', ()=>{ 
@@ -313,6 +324,7 @@ export class ControllerPanel extends HTMLDivElement {
     static can_refresh(c) {  // returns -1 to say "no, and don't try again", 0 to mean "go ahead!", or n to mean "wait n ms then ask again" 
         if (app.configuringGraph) { Debug.trivia("configuring"); return -1 }
         if (global_settings.hidden) return -1
+        if (ControllerPanel.updating_group_details) return -1
         GroupManager.check_for_changes()
         if (c) {
             return c._can_refresh()
@@ -500,16 +512,14 @@ export class ControllerPanel extends HTMLDivElement {
 
     header_mouse_down(e) {
         if (app.canvas.read_only) return
-        //if (e.target==this.header_tabs || e.target.parentElement==this.header_tabs) {
-            this.being_dragged = true
-            this.drag_threshold = false
-            this.classList.add('grabbed')
-            this.offset_x = e.x - this.settings.position.x
-            this.offset_y = e.y - this.settings.position.y
-            //e.preventDefault()
-            //e.stopPropagation()
-        //}
+
+        this.being_dragged = true
+        this.drag_threshold = false
+        this.classList.add('grabbed')
+        this.offset_x = e.x - this.settings.position.x
+        this.offset_y = e.y - this.settings.position.y
     }
+
     mouse_move(e) {
         if (app.canvas.read_only) return
         this.style.cursor = ''
@@ -667,6 +677,7 @@ export class ControllerPanel extends HTMLDivElement {
             tab.addEventListener('mouseenter', ()=>{Highlighter.group(nm)})
             tab.addEventListener('mouseleave', ()=>{Highlighter.group(null)})
             tab.addEventListener('mousedown', (e) => {
+                if (e.ctrlKey) return
                 this.mouse_down_at_x = e.x
                 this.mouse_down_at_y = e.y
                 this.mouse_down_on = tab
@@ -678,7 +689,7 @@ export class ControllerPanel extends HTMLDivElement {
                         this.settings.collapsed = false;
                         UpdateController.make_single_request('uncollapse', this) 
                     } else {
-                        if (tab.only_tab) {
+                        if (this.settings.group_choice == nm) {
                             return
                         }
                         this.settings.group_choice = nm
@@ -690,14 +701,19 @@ export class ControllerPanel extends HTMLDivElement {
                 }
                 this.mouse_down_on = null
             })
-            if (this.settings.groups.length==1) {
-                tab.only_tab = true
-                tab.addEventListener('click', (e)=>{
-                    e.preventDefault()
-                    e.stopPropagation()
-                    this.show_group_select(e, true)                    
-                })
-            }
+
+            tab.addEventListener('click', (e)=>{
+                e.preventDefault()
+                e.stopPropagation()
+                if (e.ctrlKey) {
+                    app.canvas.animateToBounds(createBounds(app.graph._groups.filter((g)=>(g.title==nm))))
+                } else {
+                    if (this.settings.groups.length==1) this.show_group_select(e, true)
+                }
+            })
+
+            title_if_overflowing(tab, nm)
+
         })
     }
 

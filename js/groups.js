@@ -27,6 +27,9 @@ export function family_names(group_name) {
 
 export class GroupManager {
     static _instance = null
+    static change_callback
+    static group_properties = {}
+
     constructor() {
         this.groups = {}  // maps group name to Set of node ids
         const ungrouped = new Set()
@@ -55,6 +58,28 @@ export class GroupManager {
     }
 
     static check_for_changes() {
+        const gids = []
+        app.graph._groups.forEach((group) => {
+            const id = parseInt(group.id)
+            gids.push(id)
+            if (GroupManager.group_properties[id]) {
+                if (GroupManager.group_properties[id].color != group.color) {
+                    GroupManager.change_callback?.(GroupManager.group_properties[id].title, {"color":group.color})
+                    GroupManager.group_properties[id].color = group.color
+                }
+                if (GroupManager.group_properties[id].title != group.title) {
+                    GroupManager.change_callback?.(GroupManager.group_properties[id].title, {"title":group.title})
+                    GroupManager.group_properties[id].title = group.title
+                }
+            } else {
+                GroupManager.group_properties[id] = {"color":group.color, "title":group.title}
+            }
+        })
+        Object.keys(GroupManager.group_properties).filter((id)=>(!gids.includes(parseInt(id)))).forEach((id)=>{
+            GroupManager.change_callback?.(GroupManager.group_properties[id].title, {"removed":true})
+            delete GroupManager.group_properties[id]
+        })
+
         const gm2 = new GroupManager()
         if (gm2.jsoned==GroupManager.instance.jsoned) return false
         GroupManager._instance = gm2

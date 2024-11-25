@@ -1,6 +1,9 @@
 import { app } from "../../scripts/app.js"
-import { SettingIds } from "./constants.js";
+import { SettingIds, Timings } from "./constants.js";
 import { getSettingValue } from "./settings.js";
+
+export var mouse_is_down 
+export function mouse_change(v) { mouse_is_down = v }
 
 export function create( tag, clss, parent, properties ) {
     const nd = document.createElement(tag);
@@ -124,20 +127,50 @@ export function defineProperty(instance, property, desc) {
       desc.writable = desc.writable ?? existingDesc?.writable ?? true;
     }
     return Object.defineProperty(instance, property, desc);
+}
+
+export function mode_change(mode, e) {
+  return (mode==0) ? (e.ctrlKey ? 2 : 4) : ((e.ctrlKey && mode==4) ? 2 : 0)
+}
+
+export function focus_mode() {
+  if (document.getElementsByClassName('graph-canvas-panel')[0]) return "normal"
+  if (document.getElementsByClassName('graph-canvas-container')[0]) return "focus"
+  return null
+}
+
+export function find_controller_parent() {
+  const show_in_focus = getSettingValue(SettingIds.SHOW_IN_FOCUS_MODE, false)
+  return document.getElementsByClassName('graph-canvas-panel')[0] ?? 
+          (show_in_focus ? (document.getElementsByClassName('graph-canvas-container')[0] ?? null) : null)
+}
+
+export function createBounds(objects, padding = 10) {
+    const bounds = new Float32Array([Infinity, Infinity, -Infinity, -Infinity]);
+    for (const obj of objects) {
+      const rect = obj.boundingRect;
+      bounds[0] = Math.min(bounds[0], rect[0]);
+      bounds[1] = Math.min(bounds[1], rect[1]);
+      bounds[2] = Math.max(bounds[2], rect[0] + rect[2]);
+      bounds[3] = Math.max(bounds[3], rect[1] + rect[3]);
+    }
+    if (!bounds.every((x2) => isFinite(x2))) return null;
+    return [
+      bounds[0] - padding,
+      bounds[1] - padding,
+      bounds[2] - bounds[0] + 2 * padding,
+      bounds[3] - bounds[1] + 2 * padding
+    ];
   }
 
-  export function mode_change(mode, e) {
-    return (mode==0) ? (e.ctrlKey ? 2 : 4) : ((e.ctrlKey && mode==4) ? 2 : 0)
-  }
+export function title_if_overflowing(element, title) {
+    setTimeout(_title_if_overflowing, Timings.ALLOW_LAYOUT, element, title)
+}
 
-  export function focus_mode() {
-    if (document.getElementsByClassName('graph-canvas-panel')[0]) return "normal"
-    if (document.getElementsByClassName('graph-canvas-container')[0]) return "focus"
-    return null
-  }
-
-  export function find_controller_parent() {
-    const show_in_focus = getSettingValue(SettingIds.SHOW_IN_FOCUS_MODE, false)
-    return document.getElementsByClassName('graph-canvas-panel')[0] ?? 
-            (show_in_focus ? (document.getElementsByClassName('graph-canvas-container')[0] ?? null) : null)
+function _title_if_overflowing(element, title) {
+    if (element.clientWidth < element.scrollWidth) {
+        element.title = title
+    } else {
+        if (element.title) delete element.title
+    }
 }
