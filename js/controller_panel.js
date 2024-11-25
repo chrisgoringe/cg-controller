@@ -216,7 +216,7 @@ export class ControllerPanel extends HTMLDivElement {
         ControllerPanel.update_buttons()
     }
 
-    static graph_cleared() {
+    static on_graphCleared() {
         UpdateController.make_request("graph_cleared")
     }
 

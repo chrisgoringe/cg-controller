@@ -1,7 +1,9 @@
 import { app } from "../../scripts/app.js"
 import { Timings } from "./constants.js"
-import { Debug } from "./debug.js"
+import { _Debug } from "./debug.js"
 import { GroupManager } from "./groups.js"
+
+const Debug = new _Debug(()=>(new Date().toISOString()))
 
 function message(wait_time) {
     if (wait_time==0) return ""
@@ -102,30 +104,30 @@ function node_changed(node) {
 
 export class OnChangeController {
     static gap_request_stack = 0
-    static on_change() {
+    static on_change(details) {
         OnChangeController.gap_request_stack += 1
-        setTimeout(OnChangeController._on_change, Timings.ON_CHANGE_GAP)
+        setTimeout(OnChangeController._on_change, Timings.ON_CHANGE_GAP, details)
     }
-    static _on_change() {
+    static _on_change(details) {
         OnChangeController.gap_request_stack -= 1
         if (OnChangeController.gap_request_stack == 0) {
             if (GroupManager.check_for_changes()) {
-                UpdateController.make_request("on_change, change in groups")
+                UpdateController.make_request(`on_change (${details}), change in groups`)
             } else {
                 const changed_nodes = app.graph._nodes.filter((node)=>(node_changed(node)))
                 if (changed_nodes.length > 1) {
-                    UpdateController.make_request("on_change, multiple nodes changed")
+                    UpdateController.make_request(`on_change (${details}), ${changed_nodes.length} nodes changed`)
                 } else if (changed_nodes.length == 1) {
-                    UpdateController.single_node(changed_nodes[0], "on_change")
+                    UpdateController.single_node(changed_nodes[0], `on_change (${details}), node ${changed_nodes[0]} changed`)
                 } else if (app.canvas.read_only != app.canvas._controller_read_only) {
-                    UpdateController.make_request(`on_change, read_only ${app.canvas.read_only}`)
+                    UpdateController.make_request(`on_change (${details}), read_only changed to ${app.canvas.read_only}`)
                     app.canvas._controller_read_only = app.canvas.read_only
                 } else {
-                    Debug.trivia("on_change, no changes", true)
+                    Debug.trivia(`on_change (${details}), no changes`, true)
                 }
             } 
         } else {
-            Debug.trivia("on_change, too soon", true)
+            Debug.trivia(`on_change (${details}), too soon`, true)
         }
     }
 
