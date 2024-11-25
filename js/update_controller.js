@@ -83,6 +83,23 @@ export class UpdateController {
     }
 }
 
+function hash_node(node) {
+    /* 
+    hash all the things we want to check for changes.
+    */
+    var hash = `${node.bgcolor} ${node.title} `
+    node.inputs.forEach((i)=>{hash += `${i.name} `})
+    node.outputs.forEach((o)=>{hash += `${o.name} `})
+    return hash
+}
+
+function node_changed(node) {
+    const new_hash = hash_node(node)
+    if (new_hash == node._controller_hash) return false
+    node._controller_hash = new_hash
+    return true
+}
+
 export class OnChangeController {
     static gap_request_stack = 0
     static on_change() {
@@ -95,14 +112,7 @@ export class OnChangeController {
             if (GroupManager.check_for_changes()) {
                 UpdateController.make_request("on_change, change in groups")
             } else {
-                const changed_nodes = []
-                app.graph._nodes.forEach((node)=>{
-                    if (node.bgcolor != node._controller_bgcolor || node.title != node._controller_title) {
-                        changed_nodes.push(node.id)
-                        node._controller_bgcolor = node.bgcolor
-                        node._controller_title = node.title
-                    } 
-                })
+                const changed_nodes = app.graph._nodes.filter((node)=>(node_changed(node)))
                 if (changed_nodes.length > 1) {
                     UpdateController.make_request("on_change, multiple nodes changed")
                 } else if (changed_nodes.length == 1) {
