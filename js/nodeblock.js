@@ -246,14 +246,18 @@ export class NodeBlock extends HTMLSpanElement {
         this.node.widgets?.forEach(w => {
             if (!this.node.properties.controller_widgets[w.name]) this.node.properties.controller_widgets[w.name] = {}
             const properties = this.node.properties.controller_widgets[w.name]
-            const e = new Entry(this.parent_controller, this, this.node, w, properties)
-            if (e.valid()) {
-                if (e.combo_for_image) this.entry_controlling_image = e
-                new_main.appendChild(e)
-                this[w.name] = e
-                this.widget_count += 1                
-            } else {
-                e._remove()
+            try {
+                const e = new Entry(this.parent_controller, this, this.node, w, properties)
+                if (e.valid()) {
+                    if (e.combo_for_image) this.entry_controlling_image = e
+                    new_main.appendChild(e)
+                    this[w.name] = e
+                    this.widget_count += 1                
+                } else {
+                    e._remove()
+                }
+            } catch (e) {
+                Debug.error(`adding widget on node ${this.node.id}`, e)
             }
         })
 
