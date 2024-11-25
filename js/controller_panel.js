@@ -340,6 +340,9 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     static node_change(node_id, moreinfo) {
+        setTimeout(ControllerPanel._node_change, Timings.GENERIC_SHORT_DELAY, node_id, moreinfo)
+    }
+    static _node_change(node_id, moreinfo) {
         Object.values(ControllerPanel.instances).forEach((cp)=>{cp._node_change(node_id, moreinfo)})
     }
 

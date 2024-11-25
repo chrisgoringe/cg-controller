@@ -113,19 +113,18 @@ app.registerExtension({
         } catch (e) { Debug.error("add controls", e) }
 
         try {
-            const on_change = app.graph.on_change
-            app.graph.on_change = function () {
+            const onAfterChange = app.graph.onAfterChange
+            app.graph.onAfterChange = function () {
                 try {
-                    on_change?.apply(this,arguments)
+                    onAfterChange?.apply(this,arguments)
                     OnChangeController.on_change()
                 } catch (e) {
-                    Debug.error("on==_change", e)
+                    Debug.error("onAfterChange", e)
                 }
             }
-            Debug.trivia("*** in setup, ADDED on_change")
         } catch (e) {
-            Debug.error("ADDING on_change", e)
-            console.error(e)
+            Debug.error("ADDING onAfterChange", e)
+
         }
 
         const draw = app.canvas.onDrawForeground;
@@ -205,7 +204,19 @@ app.registerExtension({
         nodeType.prototype.onInputAdded = function () {
             onInputAdded?.apply(this,arguments)
             ControllerPanel.node_change(this.id)
+            app.graph.afterChange()
         }
+        const onOutputRemoved = nodeType.prototype.onOutputRemoved
+        nodeType.prototype.onOutputRemoved = function () {
+            onOutputRemoved?.apply(this,arguments)
+            ControllerPanel.node_change(this.id)
+        }
+        const onOutputAdded = nodeType.prototype.onOutputAdded
+        nodeType.prototype.onOutputAdded = function () {
+            onOutputAdded?.apply(this,arguments)
+            ControllerPanel.node_change(this.id)
+        }
+
         const onModeChange = nodeType.prototype.onModeChange
         nodeType.prototype.onModeChange = function () {
             onModeChange?.apply(this,arguments)

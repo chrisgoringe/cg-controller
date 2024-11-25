@@ -64,7 +64,8 @@ export class Entry extends HTMLDivElement {
                 this.entry_label = create('span','entry_label', this, {'innerText':widget_label, 'draggable':false} )  
                 this.entry_value = create('span','entry_label value', this, {'innerText':target_widget.value, 'draggable':false} )  
                 this.input_element = create("select", 'input', this, {"doesntBlockRefresh":true}) 
-                target_widget.options.values.forEach((o) => this.input_element.add(new Option(o,o)))
+                const choices = (target_widget.options.values instanceof Function) ? target_widget.options.values() : target_widget.options.values
+                choices.forEach((o) => this.input_element.add(new Option(o,o)))
                 this.input_element.addEventListener("change", (e)=>{
                     this.entry_value.innerText = e.target.value
                 })
@@ -101,10 +102,9 @@ export class Entry extends HTMLDivElement {
             target_widget.element.addEventListener('input', (e)=>{WidgetChangeManager.notify(target_widget)})
         } else {
             if (!target_widget.original_callback) target_widget.original_callback = target_widget.callback
-            target_widget.callback = () => {
-                if (target_widget.original_callback) {
-                    target_widget.original_callback(target_widget.value)
-                }
+            const callback = target_widget.original_callback
+            target_widget.callback = function() {
+                callback?.apply(this, arguments) // (target_widget.value, app.canvas, this.pa)
                 WidgetChangeManager.notify(target_widget)
             }
         }
@@ -146,7 +146,7 @@ export class Entry extends HTMLDivElement {
             const v = this.typecheck(e.target.value)
             if (v != null && this.target_widget.value != v) {
                 this.target_widget.value = v
-                this.target_widget.callback?.(v)
+                this.target_widget.callback?.(v, app.canvas, this.parent_nodeblock.node, [e.x,e.y], e)  
                 WidgetChangeManager.notify(this.target_widget)
             }
         } finally { UpdateController.pop_pause() }
