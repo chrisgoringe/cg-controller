@@ -41,6 +41,8 @@ export class Generic {
     static D1 = "Normal"
     static D2 = "Extra"
     static D3 = "Verbose"
+    static SHOW = "Show"
+    static HIDE = "Hide"
 }
 
 export class Tooltips {
@@ -95,6 +97,8 @@ export class Texts {
         4 : "Group bypassed.</br>Click to activate",
         9 : "Some nodes muted or bypassed.</br>Click to activate"
     }
+    static REMOVE = "Remove from controllers"
+    static EDIT_WV = "Edit widget visibility"
 }
 
 export const BASE_PATH = "extensions/cg-controller"

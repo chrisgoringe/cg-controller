@@ -9,8 +9,10 @@ import { get_image_url, image_is_blob, ImageManager, is_image_upload_node, isIma
 import { UpdateController } from "./update_controller.js";
 import { Debug } from "./debug.js";
 import { Highlighter } from "./highlighter.js";
-import { open_context_menu } from "./context_menu.js";
-import { Timings } from "./constants.js";
+import { close_context_menu, open_context_menu } from "./context_menu.js";
+import { Generic, Texts, Timings } from "./constants.js";
+import { InclusionOptions } from "./constants.js";
+import { NodeInclusionManager } from "./node_inclusion.js";
 
 function is_single_image(data) { return (data && data.items && data.items.length==1 && data.items[0].type.includes("image")) }
 
@@ -89,7 +91,7 @@ export class NodeBlock extends HTMLSpanElement {
         draghandle.addEventListener('dragstart', (e) =>  { this.drag_me(e) } )
         //draghandle.addEventListener('mousedown', (e)=>{ })
         draghandle.addEventListener('mouseup', (e)=>{
-            if (!NodeBlock.dragged && e.button == 0) this.toggle_minimise()
+            if (!NodeBlock.dragged && e.button == 0 && !e.ctrlKey) this.toggle_minimise()
         })
     }
 
@@ -196,10 +198,73 @@ export class NodeBlock extends HTMLSpanElement {
         } else { this.progress.remove() }
     }
 
+    set_widget_visibility(display_name, v) {
+        const wid = `${this.node.id}:${display_name}`
+        if (v) {
+            const index = this.parent_controller.settings.hidden_widgets.findIndex((e)=>(e==wid))
+            if (index>=0) this.parent_controller.settings.hidden_widgets.splice(index, 1)
+        } else {
+            this.parent_controller.settings.hidden_widgets.push(wid)
+        }
+    }
+
+    apply_widget_visibility() {
+        Array.from(this.main.children).filter((child)=>(child.display_name)).forEach((child)=>{
+            const wid = `${this.node.id}:${child.display_name}`
+            if (this.parent_controller.settings.hidden_widgets.find((e)=>(e==wid))) child.classList.add("hidden")
+        })
+    }
+
+    context_menu(e) {
+        const ewv_submenu = (value, options, e, menu, node) => {
+            const choices = []
+            const re = /(.*) '(.*)'/
+            Array.from(this.main.children).forEach((child)=>{
+                if (child.display_name && (child.display_name!="image_viewer" || !this.image_panel.classList.contains('nodeblock_image_empty'))) {
+                        choices.push(`${child.classList.contains('hidden') ? Generic.SHOW : Generic.HIDE} '${child.display_name}'`)
+                     }
+            })
+            const submenu = new LiteGraph.ContextMenu(
+                choices,
+                { event: e, callback: (v) => { 
+                    const match = v.match(re)
+                    //Debug.extended(`Toggle ${display_name}`)
+                    this.set_widget_visibility(match[2], (match[1]==Generic.SHOW))
+                    UpdateController.make_request('wve', null, null, this.parent_controller)
+                    close_context_menu()
+                }, 
+                parentMenu: menu, node:node}
+            )
+        }
+        open_context_menu(e, null, [ 
+            { 
+                "title"    : Texts.REMOVE, 
+                "callback" : ()=>{
+                    this.node.properties["controller"] = InclusionOptions.EXCLUDE
+                    NodeInclusionManager.node_change_callback?.('context_menu_remove', Timings.GENERIC_SHORT_DELAY);
+                }
+            },
+            {
+                "title"    : Texts.EDIT_WV,
+                has_submenu: true,
+                callback: ewv_submenu,
+            }
+        ], true)
+    }
+
     build_nodeblock() {
         const new_main = create("span", 'nb_main')
 
         this.title_bar = create("span", 'nodeblock_titlebar', new_main)
+
+        this.title_bar.addEventListener('click', (e)=>{
+            if (e.ctrlKey) {
+                this.context_menu(e)
+                e.stopImmediatePropagation()
+                e.preventDefault()
+            }
+        })
+
         
         this.title_bar_left = create("span", 'nodeblock_titlebar_left', this.title_bar)
         this.draghandle = create("span", 'nodeblock_draghandle', this.title_bar, { })
@@ -239,7 +304,7 @@ export class NodeBlock extends HTMLSpanElement {
         classSet(this, 'minimised', this.minimised)
 
         if (this.image_panel) this.image_panel.remove()
-        this.image_panel = create("div", "nodeblock_image_panel nodeblock_image_empty", new_main)
+        this.image_panel = create("div", "nodeblock_image_panel nodeblock_image_empty", new_main, {"display_name":"image_viewer"})
 
         this.widget_count = 0
         this.entry_controlling_image = null
@@ -323,6 +388,7 @@ export class NodeBlock extends HTMLSpanElement {
         this._remove_entries()
         this.replaceChild(new_main, this.main)
         this.main = new_main
+        this.apply_widget_visibility()
 
         if (this.node.imgs && this.node.imgs.length>0) {
             const urls = []

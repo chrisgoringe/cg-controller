@@ -37,6 +37,7 @@ export class Entry extends HTMLDivElement {
         if (target_widget.name=='control_after_generate' && !app.ui.settings.getSettingValue(SettingIds.CONTROL_AFTER_GENERATE, false)) return
 
         const widget_label = target_widget.label ?? target_widget.name
+        this.display_name = widget_label
 
         this.classList.add('entry')
         this.parent_controller = parent_controller

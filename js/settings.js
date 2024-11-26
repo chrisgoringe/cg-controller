@@ -13,6 +13,7 @@ const DEFAULTS = {
     "collapsed"    : false,
     "fullheight"   : false,
     "fullwidth"    : false,
+    "hidden_widgets" : [],
 } 
 const KEYS = Object.keys(DEFAULTS)
 
