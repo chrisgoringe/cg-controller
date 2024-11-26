@@ -99,6 +99,7 @@ export class Texts {
     }
     static REMOVE = "Remove from controllers"
     static EDIT_WV = "Edit widget visibility"
+    static IMAGE_WIDGET_NAME = "image viewer"
 }
 
 export const BASE_PATH = "extensions/cg-controller"

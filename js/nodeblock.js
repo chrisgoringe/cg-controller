@@ -220,7 +220,7 @@ export class NodeBlock extends HTMLSpanElement {
             const choices = []
             const re = /(.*) '(.*)'/
             Array.from(this.main.children).forEach((child)=>{
-                if (child.display_name && (child.display_name!="image_viewer" || !this.image_panel.classList.contains('nodeblock_image_empty'))) {
+                if (child.display_name && (child.display_name!=Texts.IMAGE_WIDGET_NAME || !this.image_panel.classList.contains('nodeblock_image_empty'))) {
                         choices.push(`${child.classList.contains('hidden') ? Generic.SHOW : Generic.HIDE} '${child.display_name}'`)
                      }
             })
@@ -304,7 +304,7 @@ export class NodeBlock extends HTMLSpanElement {
         classSet(this, 'minimised', this.minimised)
 
         if (this.image_panel) this.image_panel.remove()
-        this.image_panel = create("div", "nodeblock_image_panel nodeblock_image_empty", new_main, {"display_name":"image_viewer"})
+        this.image_panel = create("div", "nodeblock_image_panel nodeblock_image_empty", new_main, {"display_name":Texts.IMAGE_WIDGET_NAME})
 
         this.widget_count = 0
         this.entry_controlling_image = null
