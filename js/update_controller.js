@@ -103,6 +103,12 @@ function node_changed(node) {
 }
 
 export class OnChangeController {
+    constructor() {
+        setTimeout(OnChangeController.start, Timings.GENERIC_LONGER_DELAY)
+    }
+    static start() {
+        setInterval(OnChangeController.on_change, Timings.PERIODIC_CHECK, "tick")
+    }
     static gap_request_stack = 0
     static on_change(details) {
         OnChangeController.gap_request_stack += 1
@@ -130,5 +136,6 @@ export class OnChangeController {
             Debug.trivia(`on_change (${details}), too soon`, true)
         }
     }
-
 }
+
+const occ = new OnChangeController()

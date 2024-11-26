@@ -66,6 +66,8 @@ export class InclusionOptions {
 
 export class Timings { // ms
     static GENERIC_SHORT_DELAY = 20
+    static GENERIC_LONGER_DELAY = 1000
+    static PERIODIC_CHECK = 1000
     static DRAG_PAUSE_OVER_BACKGROUND = 500
     static SLIDER_ACTIVE_DELAY = 300
     static UPDATE_EXCEPTION_WAITTIME = 10000

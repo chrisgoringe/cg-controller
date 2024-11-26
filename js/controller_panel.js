@@ -125,6 +125,7 @@ export class ControllerPanel extends HTMLDivElement {
             if (changes.removed) {
                 this.settings.groups = this.settings.groups.filter((g)=>g!=oldname)
             }
+            this.settings.groups = Array.from(new Set(this.settings.groups))
             UpdateController.make_request('group change', Timings.GROUP_CHANGE_DELAY, false, this)
         }
     }
