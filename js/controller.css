@@ -33,7 +33,7 @@
     --second-back-color: #222222;
     --third-back-color:  #353535;
 
-    --overlay-background:  #ffffff66;
+    --overlay-background:  #ffffff99;
     --overlay-foreground: #353535;
 
     --mute-button-color:#ff6e6e;
@@ -574,6 +574,34 @@ i {
     padding: 3px;
     border-radius: 4px;
     font-size: 80%;
+}
+
+.overlay_paging {
+    display:flex;
+    padding-bottom: 1px;
+    bottom: unset;
+    top: 2.5em;
+}
+
+.overlay_paging_icon {
+    font-family: 'primeicons';
+    min-width: 1em;
+}
+.overlay_paging_text {
+    text-align: center;
+    min-width: 2.5em;
+    padding: 0px 4px;
+    position: relative;
+    top: -1px;
+}
+.overlay_paging_icon:before {
+
+}
+.overlay_paging_icon.prev:before {
+    content: "\e928";
+}
+.overlay_paging_icon.next:before {
+    content: "\e92a";
 }
 
 .tooltip {

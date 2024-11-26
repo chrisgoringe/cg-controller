@@ -2,23 +2,23 @@
 export const VERSION = "1.4.1"
 
 export class SettingIds {
-    static KEYBOARD_TOGGLE = "Controller.options.keyboard"
-    static CONTROL_AFTER_GENERATE = "Controller.options.control_after_generate"
-    static SCROLL_MOVES_SLIDERS = "Controller.options.scroll_moves_slider"
-    static SCROLL_REVERSED = "Controller.options.scroll_reversed_for_slider"
-    static EDIT_SLIDERS = "Controller.options.edit_slider"
-    static DEBUG_LEVEL = "Controller.debug.level"
-    static FONT_SIZE = "Controller.options.font_size"
-    static TOOLTIPS = "Controller.options.tooltips"
-    static DEFAULT_APPLY_TO_SIMILAR = "Controller.options.default_apply_to_similar"
-    static SHOW_SCROLLBARS = "Controller.options.show_scrollbars"
-    static SHOW_IN_FOCUS_MODE = "Controller.options.show_in_focus_mode"
+    static KEYBOARD_TOGGLE = "Controller.Display.keyboard"
+    static CONTROL_AFTER_GENERATE = "Controller.Display.control_after_generate"
+    static SCROLL_MOVES_SLIDERS = "Controller.Sliders.scroll_moves_slider"
+    static SCROLL_REVERSED = "Controller.Sliders.scroll_reversed_for_slider"
+    static EDIT_SLIDERS = "Controller.Sliders.edit_slider"
+    static DEBUG_LEVEL = "Controller.Debug.level"
+    static FONT_SIZE = "Controller.Display.font_size"
+    static TOOLTIPS = "Controller.Display.tooltips"
+    static DEFAULT_APPLY_TO_SIMILAR = "Controller.Sliders.default_apply_to_similar"
+    static SHOW_SCROLLBARS = "Controller.Display.show_scrollbars"
+    static SHOW_IN_FOCUS_MODE = "Controller.Display.show_in_focus_mode"
 }
 
 export class SettingNames {
     static KEYBOARD_TOGGLE = "Toggle controller visibility:"
-    static FONT_SIZE = "Controller font base size:"
-    static CONTROL_AFTER_GENERATE = "Show control after generate"
+    static FONT_SIZE = "Base font size:"
+    static CONTROL_AFTER_GENERATE = "Show 'control before/after generate'"
     static TOOLTIPS = "Show tooltips"
     static DEFAULT_APPLY_TO_SIMILAR = "Default apply to similar"
     static SHOW_IN_FOCUS_MODE = "Show controllers in focus mode"
@@ -32,15 +32,17 @@ export class SettingNames {
 export class Generic {
     static NEVER = "Never"
     static ALWAYS = "Always"
-    static SHIFT = "When shift key pressed"
-    static CTRL = "When ctrl key pressed"
+    static SHIFT = "shift key"
+    static CTRL = "ctrl key"
     static OFF = "Off"
-    static THIN = "Thing"
+    static THIN = "Thin"
     static NORMAL = "Normal"
-    static D0 = "Only show errors"
-    static D1 = "Normal debugging"
-    static D2 = "Extra information"
-    static D3 = "Maximum information"
+    static D0 = "Minimal"
+    static D1 = "Normal"
+    static D2 = "Extra"
+    static D3 = "Verbose"
+    static SHOW = "Show"
+    static HIDE = "Hide"
 }
 
 export class Tooltips {
@@ -63,6 +65,7 @@ export class InclusionOptions {
 }
 
 export class Timings { // ms
+    static GENERIC_SHORT_DELAY = 20
     static DRAG_PAUSE_OVER_BACKGROUND = 500
     static SLIDER_ACTIVE_DELAY = 300
     static UPDATE_EXCEPTION_WAITTIME = 10000
@@ -94,6 +97,9 @@ export class Texts {
         4 : "Group bypassed.</br>Click to activate",
         9 : "Some nodes muted or bypassed.</br>Click to activate"
     }
+    static REMOVE = "Remove from controllers"
+    static EDIT_WV = "Edit widget visibility"
+    static IMAGE_WIDGET_NAME = "image viewer"
 }
 
 export const BASE_PATH = "extensions/cg-controller"

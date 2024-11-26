@@ -1,81 +1,15 @@
-import { app } from "../../scripts/app.js"
 import { SettingIds, SettingNames, Tooltips, Generic } from "./constants.js";
-import { ControllerPanel } from "./controller_panel.js";
 
-export function add_controls() {
-    app.ui.settings.addSetting({
+export const OPTIONS = [
+    {
         id: SettingIds.KEYBOARD_TOGGLE,
         name: SettingNames.KEYBOARD_TOGGLE,
         type: "combo",
         options: [ {value:0, text:"Off"}, {value:"c", text:"c"}, {value:"C", text:"shift-C"}, 
                                           {value:"o", text:"o"}, {value:"O", text:"shift-O"}],
         defaultValue: "C",
-    });
-
-    app.ui.settings.addSetting({
-        id: SettingIds.FONT_SIZE,
-        name: SettingNames.FONT_SIZE,
-        tooltip: Tooltips.FONT_SIZE,
-        type: "slider",
-        attrs: {
-            min: 10,
-            max: 16
-          },
-        defaultValue: 12
-    });
-
-    app.ui.settings.addSetting({
-        id: SettingIds.CONTROL_AFTER_GENERATE,
-        name: SettingNames.CONTROL_AFTER_GENERATE,
-        tooltip: Tooltips.CONTROL_AFTER_GENERATE,
-        type: "boolean",
-        defaultValue: true
-    })
-
-    app.ui.settings.addSetting({
-        id: SettingIds.TOOLTIPS,
-        name: SettingNames.TOOLTIPS,   
-        tooltip: Tooltips.TOOLTIPS, 
-        type: "boolean",
-        defaultValue: true
-    })
-
-    app.ui.settings.addSetting({
-        id: SettingIds.DEFAULT_APPLY_TO_SIMILAR,
-        name: SettingNames.DEFAULT_APPLY_TO_SIMILAR,
-        tooltip: Tooltips.DEFAULT_APPLY_TO_SIMILAR,
-        type: "boolean",
-        defaultValue: true        
-    })
-
-    app.ui.settings.addSetting({
-        id: SettingIds.SHOW_IN_FOCUS_MODE,
-        name: SettingNames.SHOW_IN_FOCUS_MODE,
-        type: "boolean",
-        defaultValue: false        
-    })
-
-    app.ui.settings.addSetting({
-        id: SettingIds.SCROLL_MOVES_SLIDERS,
-        name: SettingNames.SCROLL_MOVES_SLIDERS,
-        type: "combo",
-        options: [ {value:"no", text:Generic.NEVER}, 
-                {value:"yes", text:Generic.ALWAYS}, 
-                {value:"shift", text:Generic.SHIFT},
-                {value:"ctrl", text:Generic.CTRL},
-             ],
-        defaultValue: "yes",
-    })
-
-    app.ui.settings.addSetting({
-        id: SettingIds.SCROLL_REVERSED,
-        name: SettingNames.SCROLL_REVERSED,
-        tooltip: Tooltips.SCROLL_REVERSED,
-        type: "boolean",
-        defaultValue: false           
-    })
-
-    app.ui.settings.addSetting({
+    },
+    {
         id: SettingIds.SHOW_SCROLLBARS,
         name: SettingNames.SHOW_SCROLLBARS,
         tooltip: Tooltips.SHOW_SCROLLBARS,
@@ -85,9 +19,59 @@ export function add_controls() {
                 {value:"full", text:Generic.NORMAL},
              ],
         defaultValue: "thin",     
-    })
+    },
+    {
+        id: SettingIds.FONT_SIZE,
+        name: SettingNames.FONT_SIZE,
+        tooltip: Tooltips.FONT_SIZE,
+        type: "slider",
+        attrs: {
+            min: 10,
+            max: 16
+          },
+        defaultValue: 12
+    },
+    {
+        id: SettingIds.CONTROL_AFTER_GENERATE,
+        name: SettingNames.CONTROL_AFTER_GENERATE,
+        tooltip: Tooltips.CONTROL_AFTER_GENERATE,
+        type: "boolean",
+        defaultValue: true
+    },
+    {
+        id: SettingIds.TOOLTIPS,
+        name: SettingNames.TOOLTIPS,   
+        tooltip: Tooltips.TOOLTIPS, 
+        type: "boolean",
+        defaultValue: true
+    },
 
-    app.ui.settings.addSetting({
+    {
+        id: SettingIds.SHOW_IN_FOCUS_MODE,
+        name: SettingNames.SHOW_IN_FOCUS_MODE,
+        type: "boolean",
+        defaultValue: false        
+    },
+    {
+        id: SettingIds.SCROLL_MOVES_SLIDERS,
+        name: SettingNames.SCROLL_MOVES_SLIDERS,
+        type: "combo",
+        options: [ {value:"no", text:Generic.NEVER}, 
+                {value:"yes", text:Generic.ALWAYS}, 
+                {value:"shift", text:Generic.SHIFT},
+                {value:"ctrl", text:Generic.CTRL},
+             ],
+        defaultValue: "yes",
+    },
+    {
+        id: SettingIds.SCROLL_REVERSED,
+        name: SettingNames.SCROLL_REVERSED,
+        tooltip: Tooltips.SCROLL_REVERSED,
+        type: "boolean",
+        defaultValue: false           
+    },
+
+    {
         id: SettingIds.EDIT_SLIDERS,
         name: SettingNames.EDIT_SLIDERS,
         type: "combo",
@@ -96,9 +80,15 @@ export function add_controls() {
                 {value:"ctrl", text:"ctrl-click"},
              ],
         defaultValue: "yes",
-    })
-
-    app.ui.settings.addSetting({
+    },
+    {
+        id: SettingIds.DEFAULT_APPLY_TO_SIMILAR,
+        name: SettingNames.DEFAULT_APPLY_TO_SIMILAR,
+        tooltip: Tooltips.DEFAULT_APPLY_TO_SIMILAR,
+        type: "boolean",
+        defaultValue: true        
+    },
+    {
         id: SettingIds.DEBUG_LEVEL,
         name: SettingNames.DEBUG_LEVEL,
         tooltip: Tooltips.DEBUG_LEVEL,
@@ -108,18 +98,5 @@ export function add_controls() {
                    {value:2, text:Generic.D2}, 
                    {value:3, text:Generic.D3} ],
         defaultValue: "1"
-    })
-
-    window.addEventListener('keypress', (e) => {
-        if (e.target.tagName=="CANVAS" || e.target.tagName=="BODY") {
-            const keysetting = app.ui.settings.getSettingValue(SettingIds.KEYBOARD_TOGGLE, "C") 
-            if (keysetting==e.key) {
-                ControllerPanel.toggle()
-                e.preventDefault()
-                e.stopImmediatePropagation()
-                return false
-            }
-        }
-    })
-
-}
+    }
+].reverse()

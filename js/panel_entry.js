@@ -37,6 +37,7 @@ export class Entry extends HTMLDivElement {
         if (target_widget.name=='control_after_generate' && !app.ui.settings.getSettingValue(SettingIds.CONTROL_AFTER_GENERATE, false)) return
 
         const widget_label = target_widget.label ?? target_widget.name
+        this.display_name = widget_label
 
         this.classList.add('entry')
         this.parent_controller = parent_controller
@@ -44,6 +45,8 @@ export class Entry extends HTMLDivElement {
         this.target_widget = target_widget
         this.input_element = null
         this.properties = properties
+
+        target_widget.type = target_widget.type ?? target_widget.constructor.name
 
         switch (target_widget.type) {
             case 'text':
@@ -64,7 +67,8 @@ export class Entry extends HTMLDivElement {
                 this.entry_label = create('span','entry_label', this, {'innerText':widget_label, 'draggable':false} )  
                 this.entry_value = create('span','entry_label value', this, {'innerText':target_widget.value, 'draggable':false} )  
                 this.input_element = create("select", 'input', this, {"doesntBlockRefresh":true}) 
-                target_widget.options.values.forEach((o) => this.input_element.add(new Option(o,o)))
+                const choices = (target_widget.options.values instanceof Function) ? target_widget.options.values() : target_widget.options.values
+                choices.forEach((o) => this.input_element.add(new Option(o,o)))
                 this.input_element.addEventListener("change", (e)=>{
                     this.entry_value.innerText = e.target.value
                 })
@@ -72,6 +76,7 @@ export class Entry extends HTMLDivElement {
                     this.entry_value.innerText = this.input_element.value
                 }
                 break
+            //case 'RgthreeBetterButtonWidget':
             case 'button':
                 this.input_element = create("button", 'input', this, {"innerText":widget_label, "doesntBlockRefresh":true})
                 break
@@ -84,6 +89,8 @@ export class Entry extends HTMLDivElement {
         }  
         
         if (!this.input_element) return
+
+        this.combo_for_image = (this.target_widget.name=='image' && this.target_widget._real_value && this.target_widget.type=="combo")
   
         switch (target_widget.type) {
             case 'button':
@@ -99,22 +106,24 @@ export class Entry extends HTMLDivElement {
             target_widget.element.addEventListener('input', (e)=>{WidgetChangeManager.notify(target_widget)})
         } else {
             if (!target_widget.original_callback) target_widget.original_callback = target_widget.callback
-            target_widget.callback = () => {
-                if (target_widget.original_callback) {
-                    target_widget.original_callback(target_widget.value)
-                }
+            const callback = target_widget.original_callback
+            target_widget.callback = function() {
+                callback?.apply(this, arguments) // (target_widget.value, app.canvas, this.pa)
                 WidgetChangeManager.notify(target_widget)
             }
         }
 
-        //const onRemove = target_widget.onRemove
-        //target_widget.onRemove = function () {
-        //    onRemove?.apply(target_widget, arguments)
-        //    UpdateController.make_request('widget removed')
-        //}
-
         WidgetChangeManager.add_listener(target_widget, this)
         this.render()
+    }
+
+    update_combo_selection() {
+        if (this.input_element) {
+            this.input_element.value   = this.target_widget.value
+            this.entry_value.innerText = this.target_widget.value
+        } else {
+            Debug.important("update_combo with no input_element")
+        }
     }
 
     wcm_manager_callback() {
@@ -122,8 +131,12 @@ export class Entry extends HTMLDivElement {
         this.input_element.value = this.target_widget.value;
         if (this.input_element.wcm_manager_callback) this.input_element.wcm_manager_callback()
         if (this.input_element.redraw) this.input_element.redraw(true)
-        if (this.target_widget.name=='image' && this.target_widget._real_value && this.target_widget.type=="combo") {
-            this.parent_nodeblock.show_image(this.target_widget.value)
+        if (this.combo_for_image) {
+            try {
+                this.parent_nodeblock.select_image(this.target_widget.value)
+            } catch (e) {
+                Debug.error('wcm_manager_callback',e)
+            }
         }
         return true;
     }
@@ -137,7 +150,7 @@ export class Entry extends HTMLDivElement {
             const v = this.typecheck(e.target.value)
             if (v != null && this.target_widget.value != v) {
                 this.target_widget.value = v
-                this.target_widget.callback?.(v)
+                this.target_widget.callback?.(v, app.canvas, this.parent_nodeblock.node, [e.x,e.y], e)  
                 WidgetChangeManager.notify(this.target_widget)
             }
         } finally { UpdateController.pop_pause() }

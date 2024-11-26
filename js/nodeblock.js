@@ -1,14 +1,18 @@
-import { app } from "../../scripts/app.js";
+import { app, ComfyApp } from "../../scripts/app.js";
 
 import { ComfyWidgets } from "../../scripts/widgets.js";
 
 import { create, darken, classSet, mode_change, focus_mode } from "./utilities.js";
 import { Entry } from "./panel_entry.js"
 import { make_resizable } from "./resize_manager.js";
-import { image_is_blob, ImageManager, is_image_upload_node, isImageNode } from "./image_manager.js";
+import { get_image_url, image_is_blob, ImageManager, is_image_upload_node, isImageNode } from "./image_manager.js";
 import { UpdateController } from "./update_controller.js";
 import { Debug } from "./debug.js";
 import { Highlighter } from "./highlighter.js";
+import { close_context_menu, open_context_menu } from "./context_menu.js";
+import { Generic, Texts, Timings } from "./constants.js";
+import { InclusionOptions } from "./constants.js";
+import { NodeInclusionManager } from "./node_inclusion.js";
 
 function is_single_image(data) { return (data && data.items && data.items.length==1 && data.items[0].type.includes("image")) }
 
@@ -50,6 +54,7 @@ export class NodeBlock extends HTMLSpanElement {
         this.parent_controller = parent_controller
         this.node = node
         this.mode = this.node.mode
+        this.image_index = null
         Debug.trivia(`creating nodeblock for ${this.node?.id} on controller ${this.parent_controller?.index}`)
 
         if (!this.node.properties.controller_details) {
@@ -86,7 +91,7 @@ export class NodeBlock extends HTMLSpanElement {
         draghandle.addEventListener('dragstart', (e) =>  { this.drag_me(e) } )
         //draghandle.addEventListener('mousedown', (e)=>{ })
         draghandle.addEventListener('mouseup', (e)=>{
-            if (!NodeBlock.dragged && e.button == 0) this.toggle_minimise()
+            if (!NodeBlock.dragged && e.button == 0 && !e.ctrlKey) this.toggle_minimise()
         })
     }
 
@@ -180,7 +185,7 @@ export class NodeBlock extends HTMLSpanElement {
     }
 
     image_progress_update(value, max) { this.on_progress(value, max) }
-    
+
     on_progress(value, max) {
         if (value) {
             this.title_bar.appendChild(this.progress)
@@ -193,10 +198,73 @@ export class NodeBlock extends HTMLSpanElement {
         } else { this.progress.remove() }
     }
 
+    set_widget_visibility(display_name, v) {
+        const wid = `${this.node.id}:${display_name}`
+        if (v) {
+            const index = this.parent_controller.settings.hidden_widgets.findIndex((e)=>(e==wid))
+            if (index>=0) this.parent_controller.settings.hidden_widgets.splice(index, 1)
+        } else {
+            this.parent_controller.settings.hidden_widgets.push(wid)
+        }
+    }
+
+    apply_widget_visibility() {
+        Array.from(this.main.children).filter((child)=>(child.display_name)).forEach((child)=>{
+            const wid = `${this.node.id}:${child.display_name}`
+            if (this.parent_controller.settings.hidden_widgets.find((e)=>(e==wid))) child.classList.add("hidden")
+        })
+    }
+
+    context_menu(e) {
+        const ewv_submenu = (value, options, e, menu, node) => {
+            const choices = []
+            const re = /(.*) '(.*)'/
+            Array.from(this.main.children).forEach((child)=>{
+                if (child.display_name && (child.display_name!=Texts.IMAGE_WIDGET_NAME || !this.image_panel.classList.contains('nodeblock_image_empty'))) {
+                        choices.push(`${child.classList.contains('hidden') ? Generic.SHOW : Generic.HIDE} '${child.display_name}'`)
+                     }
+            })
+            const submenu = new LiteGraph.ContextMenu(
+                choices,
+                { event: e, callback: (v) => { 
+                    const match = v.match(re)
+                    //Debug.extended(`Toggle ${display_name}`)
+                    this.set_widget_visibility(match[2], (match[1]==Generic.SHOW))
+                    UpdateController.make_request('wve', null, null, this.parent_controller)
+                    close_context_menu()
+                }, 
+                parentMenu: menu, node:node}
+            )
+        }
+        open_context_menu(e, null, [ 
+            { 
+                "title"    : Texts.REMOVE, 
+                "callback" : ()=>{
+                    this.node.properties["controller"] = InclusionOptions.EXCLUDE
+                    NodeInclusionManager.node_change_callback?.('context_menu_remove', Timings.GENERIC_SHORT_DELAY);
+                }
+            },
+            {
+                "title"    : Texts.EDIT_WV,
+                has_submenu: true,
+                callback: ewv_submenu,
+            }
+        ], true)
+    }
+
     build_nodeblock() {
         const new_main = create("span", 'nb_main')
 
         this.title_bar = create("span", 'nodeblock_titlebar', new_main)
+
+        this.title_bar.addEventListener('click', (e)=>{
+            if (e.ctrlKey) {
+                this.context_menu(e)
+                e.stopImmediatePropagation()
+                e.preventDefault()
+            }
+        })
+
         
         this.title_bar_left = create("span", 'nodeblock_titlebar_left', this.title_bar)
         this.draghandle = create("span", 'nodeblock_draghandle', this.title_bar, { })
@@ -236,15 +304,17 @@ export class NodeBlock extends HTMLSpanElement {
         classSet(this, 'minimised', this.minimised)
 
         if (this.image_panel) this.image_panel.remove()
-        this.image_panel = create("div", "nodeblock_image_panel nodeblock_image_empty", new_main)
+        this.image_panel = create("div", "nodeblock_image_panel nodeblock_image_empty", new_main, {"display_name":Texts.IMAGE_WIDGET_NAME})
 
         this.widget_count = 0
+        this.entry_controlling_image = null
         this.node.widgets?.forEach(w => {
             if (!this.node.properties.controller_widgets[w.name]) this.node.properties.controller_widgets[w.name] = {}
             const properties = this.node.properties.controller_widgets[w.name]
             try {
                 const e = new Entry(this.parent_controller, this, this.node, w, properties)
                 if (e.valid()) {
+                    if (e.combo_for_image) this.entry_controlling_image = e
                     new_main.appendChild(e)
                     this[w.name] = e
                     this.widget_count += 1                
@@ -270,6 +340,27 @@ export class NodeBlock extends HTMLSpanElement {
 
         this.image_image = create('img', 'nodeblock_image', this.image_panel)
         this.image_image.addEventListener('load', () => {this.rescale_image()})
+        this.image_image.addEventListener('click', (e)=>{
+            if (e.ctrlKey) {
+                open_context_menu(e, "Image", [ 
+                    { 
+                        "title":"Open in Mask Editor", 
+                        "callback":()=>{
+                            ComfyApp.copyToClipspace(this.node)
+                            ComfyApp.clipspace_return_node = this.node
+                            ComfyApp.open_maskeditor()
+                        }
+                    },
+                ])
+            }
+        })
+        this.image_paging = create('span', 'overlay overlay_paging', this.image_panel)
+        
+        this.image_prev = create('span', 'overlay_paging_icon', this.image_paging)
+        this.image_xofy = create('span', 'overlay_paging_text', this.image_paging)
+        this.image_next = create('span', 'overlay_paging_icon', this.image_paging)
+        this.image_prev.addEventListener('click', ()=>{this.previousImage()})
+        this.image_next.addEventListener('click', ()=>{this.nextImage()})
         
         if (!app.canvas.read_only) {
             make_resizable( this.image_panel, this.node.id, this.image_panel_id, this.node.properties.controller_widgets[this.image_panel_id] )
@@ -297,21 +388,23 @@ export class NodeBlock extends HTMLSpanElement {
         this._remove_entries()
         this.replaceChild(new_main, this.main)
         this.main = new_main
+        this.apply_widget_visibility()
 
         if (this.node.imgs && this.node.imgs.length>0) {
-            this.show_image(this.node.imgs[0].src)
-            //ImageManager.node_img_change(this.node)
+            const urls = []
+            this.node.imgs.forEach((i)=>{urls.push(i.src)})
+            this.show_images(urls)
         } 
 
         this.valid_nodeblock = true 
         if (!(isImageNode(this.node) || this.widget_count || (this.node.imgs && this.node.imgs.length>0))) this.minimised = true
     }
 
-    manage_image(url, running) {
+    manage_image(urls, running) {
         if (!this.parentElement) return false
         if (!(this.bypassed || this.hidden)) {
             /* take anything when running, or if we have nothing, or if we have a blob; otherwise reject blobs */
-            if (running || !this.image_image.src || image_is_blob(this.image_image.src) || !image_is_blob(url)) this.show_image(url)
+            if (running || !this.image_image.src || image_is_blob(this.image_image.src) || !image_is_blob(urls[0])) this.show_images(urls)
         }
         return true
     }
@@ -347,16 +440,9 @@ export class NodeBlock extends HTMLSpanElement {
                         this.image_image.style.width = `${w}px`
                     } else {
                         const scaled_height_fraction = (im_h * w) / (im_w * box.height)
-                        //if (scaled_height_fraction<=1) {
-                        //    this.image_panel.style.height = `${(im_h * w) / (im_w)}px`
-                        //    this.image_panel.style.maxHeight = `${(im_h * w) / (im_w)}px`
-                        //    this.image_image.style.height = `100%`
-                        //    this.image_image.style.width = `${w}px`
-                        //} else {
-                            this.image_panel.style.maxHeight = `unset`
-                            this.image_image.style.height = `100%`
-                            this.image_image.style.width = `${w/scaled_height_fraction}px`
-                        //}
+                        this.image_panel.style.maxHeight = `unset`
+                        this.image_image.style.height = `100%`
+                        this.image_image.style.width = `${w/scaled_height_fraction}px`
                     }
                 }
             } 
@@ -364,15 +450,44 @@ export class NodeBlock extends HTMLSpanElement {
         this.rescaling = false
     }
 
-    show_image(url) {
-        classSet(this.image_panel, 'nodeblock_image_empty', !url)
-        classSet(this.image_pin, 'hidden', !url)
+    select_image(nm) {
+        this.show_images([get_image_url(nm),])
+    }
+
+    show_images(urls) {
+        if (this.entry_controlling_image) setTimeout(()=>{
+            this.entry_controlling_image.update_combo_selection()
+        }, Timings.GENERIC_SHORT_DELAY)
+        const nothing = !(urls && urls.length>0)
+        classSet(this.image_panel, 'nodeblock_image_empty', nothing)
+        classSet(this.image_pin, 'hidden', nothing)
+
+        if (this.image_index===null || this.image_index>=urls.length) this.image_index = 0
+
+        this.urls = urls
+        const url = urls[this.image_index]
 
         if (this.image_image.src != url) {
             this.image_image.src = url
             this.image_panel.style.maxHeight = ''
         }
+
+        classSet(this.image_paging, 'hidden', urls.length<2)
+        classSet(this.image_prev, 'prev', true)
+        this.image_xofy.innerHTML = `${this.image_index+1}/${urls.length}`
+        classSet(this.image_next, 'next', true)
     }
+
+    previousImage() {
+        this.image_index = (this.image_index + this.urls.length - 1) % this.urls.length
+        this.show_images(this.urls)
+    }
+
+    nextImage() {
+        this.image_index = (this.image_index+1) % this.urls.length
+        this.show_images(this.urls)        
+    }
+
 }
 
 
