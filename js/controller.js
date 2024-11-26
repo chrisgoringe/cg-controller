@@ -1,7 +1,7 @@
 import { app } from "../../scripts/app.js"
 import { api } from "../../scripts/api.js" 
 import { ControllerPanel } from "./controller_panel.js"
-import { create, mouse_change } from "./utilities.js"
+import { create, mouse_change, send_graph_changed } from "./utilities.js"
 import { OPTIONS } from "./options.js"
 import { add_control_panel_options, NodeInclusionManager,  } from "./node_inclusion.js"
 import { OnChangeController, UpdateController } from "./update_controller.js"
@@ -100,6 +100,7 @@ app.registerExtension({
         try {
             ImageManager.init()
             ControllerPanel.new_workflow()
+            send_graph_changed(true)
         } catch (e) {
             console.error(e)
         } 
@@ -130,7 +131,6 @@ app.registerExtension({
             }
         } catch (e) {
             Debug.error("ADDING onAfterChange", e)
-
         }
 
         const draw = app.canvas.onDrawForeground;

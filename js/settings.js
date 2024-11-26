@@ -1,7 +1,7 @@
 import { app } from "../../scripts/app.js"
 import { Debug } from "./debug.js"
 import { Texts } from "./constants.js"
-import { defineProperty } from "./utilities.js"
+import { defineProperty, send_graph_changed } from "./utilities.js"
 
 const DEFAULTS = {
     "node_order"   : [],
@@ -37,7 +37,7 @@ class _Settings {
         KEYS.forEach((k) => {
             defineProperty(this, k, {
                 get : ()  => { return this.settings[k] },
-                set : (v) => { this.settings[k] = v /*; console.log(`${this.index} ${k} <= ${v}`)*/}
+                set : (v) => { this.settings[k] = v; send_graph_changed(); }
             })
         })
     }

@@ -1,9 +1,35 @@
 import { app } from "../../scripts/app.js"
+import { api } from "../../scripts/api.js"
 import { SettingIds, Timings } from "./constants.js";
 import { getSettingValue } from "./settings.js";
+import { Debug } from "./debug.js";
 
 export var mouse_is_down 
 export function mouse_change(v) { mouse_is_down = v }
+
+var started = false
+var sgc_stack = 0
+
+function _send_graph_changed() {
+  sgc_stack -= 1
+  if (sgc_stack == 0) {
+    Debug.extended("Sending graphChanged")
+    api.dispatchEvent(
+      new CustomEvent('graphChanged', { })
+    )
+  } else {
+    Debug.trivia("Not sending graphChanged yet")
+  }
+}
+
+export function send_graph_changed(turn_on) {
+  started = started || turn_on
+  if (started) {
+    sgc_stack += 1
+    setTimeout(_send_graph_changed, Timings.GENERIC_LONGER_DELAY)
+  }
+}
+
 
 export function create( tag, clss, parent, properties ) {
     const nd = document.createElement(tag);

@@ -2,6 +2,7 @@ import { app } from "../../scripts/app.js"
 import { Timings } from "./constants.js"
 import { _Debug } from "./debug.js"
 import { GroupManager } from "./groups.js"
+import { send_graph_changed } from "./utilities.js"
 
 const Debug = new _Debug(()=>(new Date().toISOString()))
 
@@ -60,6 +61,7 @@ export class UpdateController {
             if (wait_time == 0) {
                 Debug.extended(`Update ${cont_name} request '${label}' sent`)
                 UpdateController.callback(controller)
+                send_graph_changed()
                 return
             } else {
                 var reason_not_to_try_again = null
