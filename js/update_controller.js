@@ -91,7 +91,7 @@ function hash_node(node) {
     /* 
     hash all the things we want to check for changes.
     */
-    var hash = `${node.bgcolor} ${node.title} `
+    var hash = `${node.bgcolor} ${node.title} ${node.mode} `
     node.inputs.forEach((i)=>{hash += `${i.name} `})
     node.outputs.forEach((o)=>{hash += `${o.name} `})
     return hash
@@ -126,7 +126,7 @@ export class OnChangeController {
                 if (changed_nodes.length > 1) {
                     UpdateController.make_request(`on_change (${details}), ${changed_nodes.length} nodes changed`)
                 } else if (changed_nodes.length == 1) {
-                    UpdateController.single_node(changed_nodes[0], `on_change (${details}), node ${changed_nodes[0]} changed`)
+                    UpdateController.single_node(changed_nodes[0].id, `on_change (${details}), node ${changed_nodes[0].id} changed`)
                 } else if (app.canvas.read_only != app.canvas._controller_read_only) {
                     UpdateController.make_request(`on_change (${details}), read_only changed to ${app.canvas.read_only}`)
                     app.canvas._controller_read_only = app.canvas.read_only
