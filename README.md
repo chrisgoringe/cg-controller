@@ -161,6 +161,12 @@ You can also move it around by dragging the header.
 
 Controllers will snap to each other and move around together. To break them apart, move the controller on the right or bottom.
 
+## Supporting Custom Nodes
+
+Custom nodes which do not add specialised widgets will generally work. Some custom nodes with custom widgets are also supported:
+
+- [trung0246](https://github.com/Trung0246/ComfyUI-0246) switch
+
 ## Known Limitations
 
 ### Custom widgets
