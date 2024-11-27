@@ -125,6 +125,7 @@ export class ControllerPanel extends HTMLDivElement {
             if (changes.removed) {
                 this.settings.groups = this.settings.groups.filter((g)=>g!=oldname)
             }
+            this.settings.groups = Array.from(new Set(this.settings.groups))
             UpdateController.make_request('group change', Timings.GROUP_CHANGE_DELAY, false, this)
         }
     }
@@ -153,8 +154,12 @@ export class ControllerPanel extends HTMLDivElement {
         Debug.trivia(`ControllerPanel.on_executing ${node_id}`)
         Object.values(ControllerPanel.instances).forEach((cp)=>{
             Object.values(cp.node_blocks).forEach((nb)=>{
-                nb.on_progress()
-                classSet(nb, 'active', nb.node.id==node_id)
+                try {
+                    nb.on_progress()
+                    classSet(nb, 'active', nb.node.id==node_id)
+                } catch (e) {
+                    Debug.error(`on_executing: controller ${cp.index}, node ${node_id}`, e)
+                }
             })
         })
     }
@@ -216,7 +221,7 @@ export class ControllerPanel extends HTMLDivElement {
         ControllerPanel.update_buttons()
     }
 
-    static graph_cleared() {
+    static on_graphCleared() {
         UpdateController.make_request("graph_cleared")
     }
 
@@ -340,6 +345,9 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     static node_change(node_id, moreinfo) {
+        setTimeout(ControllerPanel._node_change, Timings.GENERIC_SHORT_DELAY, node_id, moreinfo)
+    }
+    static _node_change(node_id, moreinfo) {
         Object.values(ControllerPanel.instances).forEach((cp)=>{cp._node_change(node_id, moreinfo)})
     }
 
@@ -686,7 +694,7 @@ export class ControllerPanel extends HTMLDivElement {
             tab.addEventListener('mouseup', (e) => {
                 if (this.mouse_down_on == tab && Math.abs(this.mouse_down_at_x - e.x) < 2 && Math.abs(this.mouse_down_at_y - e.y) < 2) {
                     if (this.settings.collapsed) {
-                        this.settings.collapsed = false;
+                        this.settings.collapsed = false
                         UpdateController.make_single_request('uncollapse', this) 
                     } else {
                         if (this.settings.group_choice == nm) {
@@ -778,7 +786,7 @@ export class ControllerPanel extends HTMLDivElement {
                 e.preventDefault(); 
                 e.stopPropagation(); 
                 if (app.canvas.read_only) return
-                this.settings.collapsed = (!this.settings.collapsed)
+                this.settings.collapsed = !this.settings.collapsed
                 UpdateController.make_single_request('collapse', this) 
             })
             classSet(this.minimise_button, 'hidden', this.settings.collapsed)

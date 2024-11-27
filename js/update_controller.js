@@ -1,7 +1,10 @@
 import { app } from "../../scripts/app.js"
 import { Timings } from "./constants.js"
-import { Debug } from "./debug.js"
+import { _Debug } from "./debug.js"
 import { GroupManager } from "./groups.js"
+import { send_graph_changed } from "./utilities.js"
+
+const Debug = new _Debug(()=>(new Date().toISOString()))
 
 function message(wait_time) {
     if (wait_time==0) return ""
@@ -58,6 +61,7 @@ export class UpdateController {
             if (wait_time == 0) {
                 Debug.extended(`Update ${cont_name} request '${label}' sent`)
                 UpdateController.callback(controller)
+                send_graph_changed()
                 return
             } else {
                 var reason_not_to_try_again = null
@@ -83,40 +87,57 @@ export class UpdateController {
     }
 }
 
+function hash_node(node) {
+    /* 
+    hash all the things we want to check for changes.
+    */
+    var hash = `${node.bgcolor} ${node.title} ${node.mode} `
+    node.inputs.forEach((i)=>{hash += `${i.name} `})
+    node.outputs.forEach((o)=>{hash += `${o.name} `})
+    return hash
+}
+
+function node_changed(node) {
+    const new_hash = hash_node(node)
+    if (new_hash == node._controller_hash) return false
+    node._controller_hash = new_hash
+    return true
+}
+
 export class OnChangeController {
-    static gap_request_stack = 0
-    static on_change() {
-        OnChangeController.gap_request_stack += 1
-        setTimeout(OnChangeController._on_change, Timings.ON_CHANGE_GAP)
+    constructor() {
+        setTimeout(OnChangeController.start, Timings.GENERIC_LONGER_DELAY)
     }
-    static _on_change() {
+    static start() {
+        setInterval(OnChangeController.on_change, Timings.PERIODIC_CHECK, "tick")
+    }
+    static gap_request_stack = 0
+    static on_change(details) {
+        OnChangeController.gap_request_stack += 1
+        setTimeout(OnChangeController._on_change, Timings.ON_CHANGE_GAP, details)
+    }
+    static _on_change(details) {
         OnChangeController.gap_request_stack -= 1
         if (OnChangeController.gap_request_stack == 0) {
             if (GroupManager.check_for_changes()) {
-                UpdateController.make_request("on_change, change in groups")
+                UpdateController.make_request(`on_change (${details}), change in groups`)
             } else {
-                const changed_nodes = []
-                app.graph._nodes.forEach((node)=>{
-                    if (node.bgcolor != node._controller_bgcolor || node.title != node._controller_title) {
-                        changed_nodes.push(node.id)
-                        node._controller_bgcolor = node.bgcolor
-                        node._controller_title = node.title
-                    } 
-                })
+                const changed_nodes = app.graph._nodes.filter((node)=>(node_changed(node)))
                 if (changed_nodes.length > 1) {
-                    UpdateController.make_request("on_change, multiple nodes changed")
+                    UpdateController.make_request(`on_change (${details}), ${changed_nodes.length} nodes changed`)
                 } else if (changed_nodes.length == 1) {
-                    UpdateController.single_node(changed_nodes[0], "on_change")
+                    UpdateController.single_node(changed_nodes[0].id, `on_change (${details}), node ${changed_nodes[0].id} changed`)
                 } else if (app.canvas.read_only != app.canvas._controller_read_only) {
-                    UpdateController.make_request(`on_change, read_only ${app.canvas.read_only}`)
+                    UpdateController.make_request(`on_change (${details}), read_only changed to ${app.canvas.read_only}`)
                     app.canvas._controller_read_only = app.canvas.read_only
                 } else {
-                    Debug.trivia("on_change, no changes", true)
+                    Debug.trivia(`on_change (${details}), no changes`, true)
                 }
             } 
         } else {
-            Debug.trivia("on_change, too soon", true)
+            Debug.trivia(`on_change (${details}), too soon`, true)
         }
     }
-
 }
+
+const occ = new OnChangeController()

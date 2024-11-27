@@ -1,17 +1,16 @@
 import { app } from "../../scripts/app.js"
 import { api } from "../../scripts/api.js" 
 import { ControllerPanel } from "./controller_panel.js"
-import { create, defineProperty, mouse_change } from "./utilities.js"
-import { add_controls } from "./controller_controls.js"
+import { create, mouse_change, send_graph_changed } from "./utilities.js"
+import { OPTIONS } from "./options.js"
 import { add_control_panel_options, NodeInclusionManager,  } from "./node_inclusion.js"
 import { OnChangeController, UpdateController } from "./update_controller.js"
 import { Debug } from "./debug.js"
-import { BASE_PATH } from "./constants.js"
+import { BASE_PATH, SettingIds } from "./constants.js"
 import { ImageManager } from "./image_manager.js"
 import { global_settings } from "./settings.js"
-import { NodeBlock } from "./nodeblock.js"
 import { FancySlider } from "./input_slider.js"
-import { SnapManager, WindowResizeManager } from "./snap_manager.js"
+import { WindowResizeManager } from "./snap_manager.js"
 import { Highlighter } from "./highlighter.js"
 import { GroupManager } from "./groups.js"
 
@@ -35,7 +34,7 @@ function on_setup() {
     NodeInclusionManager.node_change_callback = UpdateController.make_request
     GroupManager.change_callback = ControllerPanel.on_group_details_change
     
-    api.addEventListener('graphCleared', ControllerPanel.graph_cleared) 
+    api.addEventListener('graphCleared', ControllerPanel.on_graphCleared) 
 
     api.addEventListener('executed', ImageManager.on_executed)
     api.addEventListener('execution_start', ImageManager.on_execution_start)
@@ -55,6 +54,17 @@ function on_setup() {
     window.addEventListener('mousemove', (e)=>{
         ControllerPanel.handle_mouse_move(e)
         FancySlider.handle_mouse_move(e)
+    })
+    window.addEventListener('keypress', (e) => {
+        if (e.target.tagName=="CANVAS" || e.target.tagName=="BODY") {
+            const keysetting = app.ui.settings.getSettingValue(SettingIds.KEYBOARD_TOGGLE, "C") 
+            if (keysetting==e.key) {
+                ControllerPanel.toggle()
+                e.preventDefault()
+                e.stopImmediatePropagation()
+                return false
+            }
+        }
     })
 
 
@@ -78,6 +88,7 @@ function on_setup() {
 
 app.registerExtension({
 	name: "cg.controller",
+    settings: OPTIONS,
 
     async beforeConfigureGraph() {
         UpdateController.configuring(true)
@@ -89,6 +100,7 @@ app.registerExtension({
         try {
             ImageManager.init()
             ControllerPanel.new_workflow()
+            send_graph_changed(true)
         } catch (e) {
             console.error(e)
         } 
@@ -107,25 +119,18 @@ app.registerExtension({
         on_setup()
         } catch (e) { Debug.error("on setup", e) }
 
-        // add to the canvas menu, and keyboard shortcuts
         try {
-        add_controls()
-        } catch (e) { Debug.error("add controls", e) }
-
-        try {
-            const on_change = app.graph.on_change
-            app.graph.on_change = function () {
+            const onAfterChange = app.graph.onAfterChange
+            app.graph.onAfterChange = function () {
                 try {
-                    on_change?.apply(this,arguments)
-                    OnChangeController.on_change()
+                    onAfterChange?.apply(this,arguments)
+                    OnChangeController.on_change('graph.onAfterChange')
                 } catch (e) {
-                    Debug.error("on==_change", e)
+                    Debug.error("onAfterChange", e)
                 }
             }
-            Debug.trivia("*** in setup, ADDED on_change")
         } catch (e) {
-            Debug.error("ADDING on_change", e)
-            console.error(e)
+            Debug.error("ADDING onAfterChange", e)
         }
 
         const draw = app.canvas.onDrawForeground;
@@ -205,7 +210,19 @@ app.registerExtension({
         nodeType.prototype.onInputAdded = function () {
             onInputAdded?.apply(this,arguments)
             ControllerPanel.node_change(this.id)
+            app.graph.afterChange()
         }
+        const onOutputRemoved = nodeType.prototype.onOutputRemoved
+        nodeType.prototype.onOutputRemoved = function () {
+            onOutputRemoved?.apply(this,arguments)
+            ControllerPanel.node_change(this.id)
+        }
+        const onOutputAdded = nodeType.prototype.onOutputAdded
+        nodeType.prototype.onOutputAdded = function () {
+            onOutputAdded?.apply(this,arguments)
+            ControllerPanel.node_change(this.id)
+        }
+
         const onModeChange = nodeType.prototype.onModeChange
         nodeType.prototype.onModeChange = function () {
             onModeChange?.apply(this,arguments)

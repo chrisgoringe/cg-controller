@@ -8,19 +8,24 @@ function recompute_safely(group) {
     const _g = [...group._nodes]
     const _c = new Set(group._children)
     group.recomputeInsideNodes()
-    const nodes = [...group._nodes]
+    group._controller_nodes = [...group._nodes]
+    group._controller_children = new Set(group._children)
     group._nodes = _g
     group._children = _c
-    return nodes
+    return group._controller_nodes
+}
+
+function recompute_all_safely() {
+    app.graph._groups.forEach((g)=>{recompute_safely(g)})
 }
 
 export function family_names(group_name) {
+    recompute_all_safely()
     /* Given the name of a group, return a list of the names of all parents and children of all groups with this name */
     const names = new Set([group_name,])
     app.graph._groups.filter((g)=>(g.title==group_name)).forEach((g)=>{
-        g.recomputeInsideNodes()
-        Array.from(g._children).filter((c)=>(c instanceof LGraphGroup)).forEach((c)=>{names.add(c.title)})
-        app.graph._groups.filter((p)=>(p._children.has(g))).forEach((p)=>{names.add(p.title)})
+        Array.from(g._controller_children).filter((c)=>(c instanceof LGraphGroup)).forEach((c)=>{names.add(c.title)})
+        app.graph._groups.filter((p)=>(p._controller_children.has(g))).forEach((p)=>{names.add(p.title)})
     })
     return names
 }
@@ -102,8 +107,7 @@ export class GroupManager {
         const modes = {0:0,2:0,4:0}
         app.graph._groups.forEach((group) => {
             if (group.title == group_name) {
-                group.recomputeInsideNodes()
-                group._nodes.forEach((node) => {
+                recompute_safely(group).forEach((node) => {
                     modes[node.mode] += 1
                 })
             }
@@ -118,8 +122,7 @@ export class GroupManager {
         const value = mode_change(current_mode,e)
         app.graph._groups.forEach((group) => {
             if (group.title == group_name) {
-                group.recomputeInsideNodes()
-                group._nodes.forEach((node) => {
+                recompute_safely(group).forEach((node) => {
                     node.mode = value
                 })
             }

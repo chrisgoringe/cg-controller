@@ -95,6 +95,21 @@ If you unpin the image, you will find a handle at the bottom right of the image 
 
 ## Other things to explore
 
+### Batches
+
+![image](images/batch.png)
+
+If you have a batch of images, you can click through them on the preview using the control in the top right corner.
+
+### Mask Editor
+
+ctrl-click on an image in the controller to bring up a context menu, from which you can launch the mask editor.
+
+### Selectively hide widgets
+
+ctrl-click on the title of a nodeblock and you can hide/show specific widgets. Note that hide/show is specific to the controller, 
+so you can have the same node showing different widgets on different controllers if you want!
+
 ### Hover and zoom
 
 If the magnifying glass in the top control is active ![image](images/top.png) then when you move you mouse over a node in 
@@ -146,21 +161,21 @@ You can also move it around by dragging the header.
 
 Controllers will snap to each other and move around together. To break them apart, move the controller on the right or bottom.
 
+## Supporting Custom Nodes
+
+Custom nodes which do not add specialised widgets will generally work. Some custom nodes with custom widgets are also supported:
+
+- [trung0246](https://github.com/Trung0246/ComfyUI-0246) switch
+
 ## Known Limitations
 
 ### Custom widgets
 
-At present only standard Comfy widgets are supported. We'll be working to bring some of the more popular custom node widgets to the controller
-in future releases, probably starting with rgthree's Power Lora Loader.
+At present only standard Comfy widgets and some custom ones are supported. We'll be working to bring more of the more popular custom node widgets to the controller
+in future releases.
 
 
 # The road ahead...
-
-Future features will depend on community feedback, but the aim for the 1.5 release is to include
-
-- Support for some popular custom node widgets
-- Support for batches of images
-- Open the mask editor directly from the controller on an image load node
 
 For more details of what's under consideration, take a look at the [issues list](https://github.com/chrisgoringe/cg-controller/issues), 
 and feel free to add your ideas there, or 
