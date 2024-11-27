@@ -249,7 +249,7 @@ export class NodeBlock extends HTMLSpanElement {
                 has_submenu: true,
                 callback: ewv_submenu,
             }
-        ], true)
+        ])
     }
 
     build_nodeblock() {
