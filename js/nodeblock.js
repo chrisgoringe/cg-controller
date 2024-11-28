@@ -10,7 +10,7 @@ import { OnChangeController, UpdateController } from "./update_controller.js";
 import { Debug } from "./debug.js";
 import { Highlighter } from "./highlighter.js";
 import { close_context_menu, open_context_menu } from "./context_menu.js";
-import { Generic, Texts, Timings } from "./constants.js";
+import { Generic, MAXIMUM_UPSTREAM, Texts, Timings } from "./constants.js";
 import { InclusionOptions } from "./constants.js";
 import { NodeInclusionManager } from "./node_inclusion.js";
 
@@ -381,7 +381,8 @@ export class NodeBlock extends HTMLSpanElement {
         }
 
         if (isImageNode(this.node)) {
-            const add_upstream = (nd) => {
+            const add_upstream = (nd, depth) => {
+                if (depth>MAXIMUM_UPSTREAM) return
                 if (nd==this.node || (!isImageNode(nd) && !is_image_upload_node(nd))) {
                     ImageManager.add_listener(nd.id, this)
                     //Debug.trivia(`${this.node.id} listening to ${nd.id}`)
@@ -389,12 +390,17 @@ export class NodeBlock extends HTMLSpanElement {
                         if (i.type=="IMAGE" || i.type=="LATENT") {
                             const lk = i.link
                             const upstream_id = lk ? app.graph.links[lk]?.origin_id : null
-                            if (upstream_id) add_upstream(app.graph._nodes_by_id[upstream_id])
+                            if (!upstream_id) {
+                                app.graph.extra?.ue_links?.forEach((ue_link)=>{
+                                    if (ue_link.downstream==nd.id && (ue_link.type=="IMAGE" || ue_link.type=="LATENT")) add_upstream(app.graph._nodes_by_id[ue_link.upstream], depth+1)
+                                })
+                            }
+                            if (upstream_id) add_upstream(app.graph._nodes_by_id[upstream_id], depth+1)
                         }
                     })
                 }
             }
-            add_upstream(this.node)
+            add_upstream(this.node, 0)
         }
         ImageManager.add_listener(this.node.id, this) // add ourself last to take priority
 

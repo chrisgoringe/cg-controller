@@ -1,6 +1,8 @@
 
 export const VERSION = "1.4.1"
 
+export const MAXIMUM_UPSTREAM = 4
+
 export class SettingIds {
     static KEYBOARD_TOGGLE = "Controller.Display.keyboard"
     static CONTROL_AFTER_GENERATE = "Controller.Display.control_after_generate"
