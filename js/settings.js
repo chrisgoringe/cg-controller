@@ -14,6 +14,7 @@ const DEFAULTS = {
     "fullheight"   : false,
     "fullwidth"    : false,
     "hidden_widgets" : [],
+    "minimised_blocks" : [],
 } 
 const KEYS = Object.keys(DEFAULTS)
 

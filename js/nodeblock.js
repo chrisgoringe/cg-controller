@@ -6,7 +6,7 @@ import { create, darken, classSet, mode_change, focus_mode } from "./utilities.j
 import { Entry } from "./panel_entry.js"
 import { make_resizable } from "./resize_manager.js";
 import { get_image_url, image_is_blob, ImageManager, is_image_upload_node, isImageNode } from "./image_manager.js";
-import { UpdateController } from "./update_controller.js";
+import { OnChangeController, UpdateController } from "./update_controller.js";
 import { Debug } from "./debug.js";
 import { Highlighter } from "./highlighter.js";
 import { close_context_menu, open_context_menu } from "./context_menu.js";
@@ -106,16 +106,6 @@ export class NodeBlock extends HTMLSpanElement {
         e.dataTransfer.setDragImage(this, e.layerX, e.layerY);
     }
 
-    toggle_minimise() {
-        if (app.canvas.read_only) return
-        this.node.properties.controller_details.minimised = (!!!this.node.properties.controller_details.minimised)
-        this.minimised = this.node.properties.controller_details.minimised
-        classSet(this, 'minimised', this.minimised)
-        if (this.minimised && this.contains(document.activeElement)) {
-            document.activeElement.blur()
-        }
-    }
-
     static drag_over_me(e, nodeblock_over, force_before) {
         nodeblock_over = nodeblock_over ?? e.currentTarget
         if (NodeBlock.dragged) {
@@ -198,6 +188,29 @@ export class NodeBlock extends HTMLSpanElement {
         } else { this.progress.remove() }
     }
 
+    get_minimised() {
+        return this.parent_controller.settings.minimised_blocks.includes(this.node.id)
+    }
+
+    toggle_minimise() {
+        this.set_minimised(!this.get_minimised())
+    }
+
+    set_minimised(v) {
+        if (v == this.get_minimised()) return
+        if (v) {
+            this.parent_controller.settings.minimised_blocks.push(this.node.id)
+        } else {
+            const index = this.parent_controller.settings.minimised_blocks.findIndex((e)=>(e==this.node.id))
+            this.parent_controller.settings.minimised_blocks.splice(index, 1)
+        }
+        this.minimised = v
+        classSet(this, 'minimised', this.minimised)
+        if (this.minimised && this.contains(document.activeElement)) {
+            document.activeElement.blur()
+        }
+    }
+
     set_widget_visibility(display_name, v) {
         const wid = `${this.node.id}:${display_name}`
         if (v) {
@@ -272,7 +285,7 @@ export class NodeBlock extends HTMLSpanElement {
 
         this.add_handle_drag_handlers(this.draghandle)
 
-        this.minimised = this.node.properties.controller_details.minimised
+        this.minimised = this.get_minimised()
 
         this.mode_button  = create('i', `pi mode_button mode_button_${this.mode}`, this.title_bar_left)
         this.mode_button.addEventListener('click', (e)=>{
@@ -281,7 +294,7 @@ export class NodeBlock extends HTMLSpanElement {
             e.stopPropagation(); 
             this.node.mode = mode_change(this.node.mode,e)
             app.canvas.setDirty(true,true)
-            UpdateController.make_request('node mode button')        
+            OnChangeController.on_change('node mode button')
         })
 
         this.title_text = create("span", 'nodeblock_title', this.draghandle, {"innerText":this.node.title, 'draggable':false})
@@ -397,7 +410,7 @@ export class NodeBlock extends HTMLSpanElement {
         } 
 
         this.valid_nodeblock = true 
-        if (!(isImageNode(this.node) || this.widget_count || (this.node.imgs && this.node.imgs.length>0))) this.minimised = true
+        if (!(isImageNode(this.node) || this.widget_count || (this.node.imgs && this.node.imgs.length>0))) this.set_minimised(true)
     }
 
     manage_image(urls, running) {
