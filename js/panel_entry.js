@@ -76,7 +76,7 @@ export class Entry extends HTMLDivElement {
                     this.entry_value.innerText = this.input_element.value
                 }
                 break
-            //case 'RgthreeBetterButtonWidget':
+            case 'RgthreeBetterButtonWidget':
             case 'button':
                 this.input_element = create("button", 'input', this, {"innerText":widget_label, "doesntBlockRefresh":true})
                 break
@@ -84,6 +84,16 @@ export class Entry extends HTMLDivElement {
                 this.input_element = new Toggle(target_widget.value, widget_label)
                 this.appendChild(this.input_element)
                 break
+            case 'converted-widget':
+                return
+            case 'RgthreeDividerWidget':
+                return
+            case 'PowerLoraLoaderHeaderWidget':
+                // toggle for all
+                return
+            case 'PowerLoraLoaderWidget':
+                // toggle, pick, strength, remove
+                return
             default:
                 return
         }  
@@ -93,8 +103,11 @@ export class Entry extends HTMLDivElement {
         this.combo_for_image = (this.target_widget.name=='image' && this.target_widget._real_value && this.target_widget.type=="combo")
   
         switch (target_widget.type) {
+            case 'RgthreeBetterButtonWidget':
             case 'button':
                 this.input_element.addEventListener('click', this.button_click_callback.bind(this)) 
+                break
+            case 'PowerLoraLoaderWidget':
                 break
             default:
                 this.input_element.addEventListener('input', this.input_callback.bind(this))  
@@ -168,7 +181,11 @@ export class Entry extends HTMLDivElement {
         Debug.trivia("button_click_callback")
         UpdateController.push_pause()
         try {
-            this.target_widget.callback(); 
+            if (this.target_widget.mouseUpCallback) {
+                this.target_widget.mouseUpCallback(e); // RgthreeBetterButtonWidget uses mouseUpCallback
+            } else {
+                this.target_widget.callback()
+            }
             app.graph.setDirtyCanvas(true,true); 
             UpdateController.make_request("button clicked")
         } finally { UpdateController.pop_pause() }
