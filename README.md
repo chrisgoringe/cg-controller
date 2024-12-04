@@ -23,6 +23,7 @@ There will normally be one controller window created for you. If not, or to add 
 right click on the background and select "New Controller" from the menu (if it isn't there, check the Controller is active!).
 
 At first, the Controller will be empty. To add nodes to it, right-click on the node and in the Controller Panel menu select "Include this node".
+You can also select multiple nodes and add them all at once.
 
 ![menu](images/menu.png)
 
@@ -37,13 +38,18 @@ as a panel with the same title and colour as the node, underneath which are all 
 If you now edit the values in those widgets, the changes will be reflected in the workflow (and vica versa). 
 Combo boxes, toggle switches, buttons, and text fields all work just as you would expect. 
 
+### Sliders for numeric values
+
 Numeric fields (like width in the image) a represented using an editable slider. 
 Click on the slider and drag left or right, and the value will change between the minimum and maximum values.
 You can also just hover the mouse over the slider and move the value up or down with your mouse scrollwheel.
 To enter a precise value, double click and the slider turns into a text entry box where you can type the value you want.
+
 If the minimum and maximum values, or the step size, aren't convenient, shift-click on the slider to change them. 
 Note that changes made here will be reflected in the actual widget as well, however, if you set a value outside 
 of the original limits the workflow may fail to validate on the server.
+
+![edit](images/slider-edit.png)
 
 You can change the way the scrollwheel interacts with the sliders, and the keys required to edit the limits, in the main settings.
 
@@ -110,9 +116,11 @@ ctrl-click on an image in the controller to bring up a context menu, from which 
 ctrl-click on the title of a nodeblock and you can hide/show specific widgets. Note that hide/show is specific to the controller, 
 so you can have the same node showing different widgets on different controllers if you want!
 
+![context](images/nodeblock-context.png)
+
 ### Hover and zoom
 
-If the magnifying glass in the top control is active ![image](images/top.png) then when you move you mouse over a node in 
+If the magnifying glass in the top control is active - ![image](images/top.png) - then when you move you mouse over a node in 
 the controller it will be highlighted in the workflow, and when you move your mouse over a group tab, the group will
 be highlighted.
 
@@ -157,7 +165,7 @@ There's also a debug setting that I might ask you to use if you report a problem
 There is a little drag box at the bottom right of the controller that you can use to resize it. 
 You can also move it around by dragging the header.
 
-## Snapping
+### Snapping
 
 Controllers will snap to each other and move around together. To break them apart, move the controller on the right or bottom.
 
