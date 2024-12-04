@@ -45,7 +45,10 @@ function on_setup() {
     api.addEventListener('executing', ControllerPanel.on_executing)
 
     window.addEventListener("resize", WindowResizeManager.onWindowResize)
-    window.addEventListener('mousedown', (e)=>{mouse_change(true)})
+    window.addEventListener('mousedown', (e)=>{
+        mouse_change(true)
+        if (e.button==2) e.target.handle_right_click?.(e)
+    })
     window.addEventListener('mouseup', (e)=>{
         mouse_change(false)
         ControllerPanel.handle_mouse_up(e)

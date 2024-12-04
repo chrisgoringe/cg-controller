@@ -109,11 +109,11 @@ If you have a batch of images, you can click through them on the preview using t
 
 ### Mask Editor
 
-ctrl-click on an image in the controller to bring up a context menu, from which you can launch the mask editor.
+ctrl-click or right-click on an image in the controller to bring up a context menu, from which you can launch the mask editor.
 
 ### Selectively hide widgets
 
-ctrl-click on the title of a nodeblock and you can hide/show specific widgets. Note that hide/show is specific to the controller, 
+ctrl-click or right-click on the title of a nodeblock and you can hide/show specific widgets. Note that hide/show is specific to the controller, 
 so you can have the same node showing different widgets on different controllers if you want!
 
 ![context](images/nodeblock-context.png)

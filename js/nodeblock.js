@@ -228,7 +228,7 @@ export class NodeBlock extends HTMLSpanElement {
         })
     }
 
-    context_menu(e) {
+    show_nodeblock_context_menu(e) {
         const ewv_submenu = (value, options, e, menu, node) => {
             const choices = []
             const re = /(.*) '(.*)'/
@@ -265,6 +265,25 @@ export class NodeBlock extends HTMLSpanElement {
         ])
     }
 
+    nodeblock_context_menu(e) {
+        this.show_nodeblock_context_menu(e)
+        e.stopImmediatePropagation()
+        e.preventDefault() 
+    }
+
+    image_context_menu(e) {
+        open_context_menu(e, "Image", [ 
+            { 
+                "title":"Open in Mask Editor", 
+                "callback":()=>{
+                    ComfyApp.copyToClipspace(this.node)
+                    ComfyApp.clipspace_return_node = this.node
+                    ComfyApp.open_maskeditor()
+                }
+            },
+        ])
+    }
+
     build_nodeblock() {
         const new_main = create("span", 'nb_main')
 
@@ -272,18 +291,18 @@ export class NodeBlock extends HTMLSpanElement {
 
         this.title_bar.addEventListener('click', (e)=>{
             if (e.ctrlKey) {
-                this.context_menu(e)
-                e.stopImmediatePropagation()
-                e.preventDefault()
+                this.nodeblock_context_menu(e)
             }
         })
 
-        
         this.title_bar_left = create("span", 'nodeblock_titlebar_left', this.title_bar)
         this.draghandle = create("span", 'nodeblock_draghandle', this.title_bar, { })
         this.title_bar_right = create("span", 'nodeblock_titlebar_right', this.title_bar)
 
         this.add_handle_drag_handlers(this.draghandle)
+        this.draghandle.handle_right_click = (e)=>{
+            this.nodeblock_context_menu(e)
+        }
 
         this.minimised = this.get_minimised()
 
@@ -354,20 +373,10 @@ export class NodeBlock extends HTMLSpanElement {
         this.image_image = create('img', 'nodeblock_image', this.image_panel)
         this.image_image.addEventListener('load', () => {this.rescale_image()})
         this.image_image.addEventListener('click', (e)=>{
-            if (e.ctrlKey) {
-                open_context_menu(e, "Image", [ 
-                    { 
-                        "title":"Open in Mask Editor", 
-                        "callback":()=>{
-                            ComfyApp.copyToClipspace(this.node)
-                            ComfyApp.clipspace_return_node = this.node
-                            ComfyApp.open_maskeditor()
-                        }
-                    },
-                ])
-            }
+            if (e.ctrlKey) { this.image_context_menu(e) }
         })
         this.image_paging = create('span', 'overlay overlay_paging', this.image_panel)
+        this.image_image.handle_right_click = (e) => { this.image_context_menu(e) }
         
         this.image_prev = create('span', 'overlay_paging_icon', this.image_paging)
         this.image_xofy = create('span', 'overlay_paging_text', this.image_paging)
