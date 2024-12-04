@@ -45,6 +45,8 @@ export class Generic {
     static D3 = "Verbose"
     static SHOW = "Show"
     static HIDE = "Hide"
+    static SHOW_ALL = "[Show all widgets]"
+    static HIDE_ALL = "[Hide all widgets]"
 }
 
 export class Tooltips {

@@ -29,6 +29,12 @@ async function check_ue() {
     }
 }
 
+function stop_event(e) {
+    e.preventDefault()
+    e.stopImmediatePropagation()
+    return false
+}
+
 function on_setup() {
     UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh, ControllerPanel.node_change)
     NodeInclusionManager.node_change_callback = UpdateController.make_request
@@ -57,6 +63,9 @@ function on_setup() {
     window.addEventListener('mousemove', (e)=>{
         ControllerPanel.handle_mouse_move(e)
         FancySlider.handle_mouse_move(e)
+    })
+    window.addEventListener('contextmenu', (e)=>{
+        if (e.target.handle_right_click) return stop_event(e);
     })
     window.addEventListener('keypress', (e) => {
         if (e.target.tagName=="CANVAS" || e.target.tagName=="BODY") {

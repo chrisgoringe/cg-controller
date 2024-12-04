@@ -211,6 +211,15 @@ export class NodeBlock extends HTMLSpanElement {
         }
     }
 
+    set_all_widget_visibility(v) {
+        this.parent_controller.settings.hidden_widgets = []
+        if (!v) {
+            Array.from(this.main.children).filter((child)=>(child.display_name)).forEach((child)=>{
+                this.parent_controller.settings.hidden_widgets.push(`${this.node.id}:${child.display_name}`)
+            })
+        }
+    }
+
     set_widget_visibility(display_name, v) {
         const wid = `${this.node.id}:${display_name}`
         if (v) {
@@ -232,17 +241,27 @@ export class NodeBlock extends HTMLSpanElement {
         const ewv_submenu = (value, options, e, menu, node) => {
             const choices = []
             const re = /(.*) '(.*)'/
+            var showing = 0
+            var hidden = 0
             Array.from(this.main.children).forEach((child)=>{
                 if (child.display_name && (child.display_name!=Texts.IMAGE_WIDGET_NAME || !this.image_panel.classList.contains('nodeblock_image_empty'))) {
                         choices.push(`${child.classList.contains('hidden') ? Generic.SHOW : Generic.HIDE} '${child.display_name}'`)
+                        if (child.classList.contains('hidden')) hidden += 1
+                        else showing += 1
                      }
             })
+            if (showing>1) choices.push(Generic.HIDE_ALL)
+            if (hidden>1) choices.push(Generic.SHOW_ALL)
+
             const submenu = new LiteGraph.ContextMenu(
                 choices,
                 { event: e, callback: (v) => { 
-                    const match = v.match(re)
-                    //Debug.extended(`Toggle ${display_name}`)
-                    this.set_widget_visibility(match[2], (match[1]==Generic.SHOW))
+                    if (v==Generic.HIDE_ALL || v==Generic.SHOW_ALL) {
+                        this.set_all_widget_visibility(v==Generic.SHOW_ALL)
+                    } else {
+                        const match = v.match(re)
+                        this.set_widget_visibility(match[2], (match[1]==Generic.SHOW))
+                    }
                     UpdateController.make_request('wve', null, null, this.parent_controller)
                     close_context_menu()
                 }, 
@@ -266,9 +285,9 @@ export class NodeBlock extends HTMLSpanElement {
     }
 
     nodeblock_context_menu(e) {
-        this.show_nodeblock_context_menu(e)
         e.stopImmediatePropagation()
         e.preventDefault() 
+        this.show_nodeblock_context_menu(e)
     }
 
     image_context_menu(e) {
