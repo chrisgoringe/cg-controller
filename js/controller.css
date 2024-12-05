@@ -438,11 +438,11 @@
     right: 20px;
     height: calc(var(--font-size) - 2px);
     top: 9px;
-    left: unset;
     width: unset;
     color: var(--main-fore-color);
     max-width: calc(100% - 24px);
     overflow: clip;
+    text-overflow: ellipsis;
     text-wrap-mode: nowrap;
 }
 
