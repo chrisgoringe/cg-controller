@@ -350,7 +350,6 @@ export class NodeBlock extends HTMLSpanElement {
         } else {
             this.title_bar.classList.add("titlebar_nocolor")
         }
-        this.style.backgroundColor = this.node.bgcolor
 
         classSet(this, 'minimised', this.minimised)
 
@@ -367,7 +366,7 @@ export class NodeBlock extends HTMLSpanElement {
                 if (e.valid()) {
                     if (e.combo_for_image) this.entry_controlling_image = e
                     new_main.appendChild(e)
-                    this[w.name] = e
+                    //this[w.name] = e   // removed because it breaks when widgets are named like 'style'. Why was it here? Dates from change 12149b1
                     this.widget_count += 1                
                 } else {
                     e._remove()
