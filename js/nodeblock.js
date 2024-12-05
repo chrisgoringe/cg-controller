@@ -402,10 +402,9 @@ export class NodeBlock extends HTMLSpanElement {
         this.image_prev.addEventListener('click', ()=>{this.previousImage()})
         this.image_next.addEventListener('click', ()=>{this.nextImage()})
         
-        if (!app.canvas.read_only) {
-            make_resizable( this.image_panel, this.node.id, this.image_panel_id, this.node.properties.controller_widgets[this.image_panel_id] )
-            this.resize_observer = new ResizeObserver( ()=>{this.rescale_image()} ).observe(this.image_panel)
-        }
+        make_resizable( this.image_panel, this.node.id, this.image_panel_id, this.node.properties.controller_widgets[this.image_panel_id] )
+        this.resize_observer = new ResizeObserver( ()=>{this.rescale_image()} ).observe(this.image_panel)
+        if (app.canvas.read_only) this.image_panel.style.resize = "none"
 
         if (isImageNode(this.node)) {
             const add_upstream = (nd, depth) => {
