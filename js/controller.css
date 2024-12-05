@@ -354,8 +354,9 @@
 }
 
 .nodeblock_draghandle {
-    /*cursor: grab;*/
-    flex-grow:1;
+    flex-grow: 1;
+    flex-shrink: 1;
+    max-width: calc(100% - 15px);
 }
 
 .nodeblock_title {
@@ -364,6 +365,10 @@
     padding-left: 4px;
     position: relative;
     bottom: 1px;
+    overflow: clip;
+    text-wrap-mode: nowrap;
+    text-overflow: ellipsis;
+    display: block;
 }
 .nodeblock_title::after {
     content: " ";
