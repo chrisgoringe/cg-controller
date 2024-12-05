@@ -443,6 +443,7 @@
     color: var(--main-fore-color);
     max-width: calc(100% - 24px);
     overflow: clip;
+    text-wrap-mode: nowrap;
 }
 
 .input {
