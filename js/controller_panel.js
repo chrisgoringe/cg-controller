@@ -1,6 +1,6 @@
 import { app } from "../../scripts/app.js";
 
-import { create, get_node, add_tooltip, clamp, classSet, defineProperty, find_controller_parent, createBounds, title_if_overflowing } from "./utilities.js";
+import { create, get_node, add_tooltip, clamp, classSet, defineProperty, find_controller_parent, createBounds, tooltip_if_overflowing } from "./utilities.js";
 import { family_names, GroupManager } from "./groups.js";
 
 import { UpdateController } from "./update_controller.js";
@@ -126,7 +126,7 @@ export class ControllerPanel extends HTMLDivElement {
                 this.settings.groups = this.settings.groups.filter((g)=>g!=oldname)
             }
             this.settings.groups = Array.from(new Set(this.settings.groups))
-            UpdateController.make_request('group change', Timings.GROUP_CHANGE_DELAY, false, this)
+            UpdateController.make_request('group change', Timings.GENERIC_SHORT_DELAY, false, this)
         }
     }
 
@@ -720,7 +720,7 @@ export class ControllerPanel extends HTMLDivElement {
                 }
             })
 
-            title_if_overflowing(tab, nm)
+            tooltip_if_overflowing(tab)
 
         })
     }

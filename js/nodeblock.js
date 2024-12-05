@@ -2,7 +2,7 @@ import { app, ComfyApp } from "../../scripts/app.js";
 
 import { ComfyWidgets } from "../../scripts/widgets.js";
 
-import { create, darken, classSet, mode_change, focus_mode } from "./utilities.js";
+import { create, darken, classSet, mode_change, focus_mode, tooltip_if_overflowing } from "./utilities.js";
 import { Entry } from "./panel_entry.js"
 import { make_resizable } from "./resize_manager.js";
 import { get_image_url, image_is_blob, ImageManager, is_image_upload_node, isImageNode } from "./image_manager.js";
@@ -336,6 +336,7 @@ export class NodeBlock extends HTMLSpanElement {
         })
 
         this.title_text = create("span", 'nodeblock_title', this.draghandle, {"innerText":this.node.title, 'draggable':false})
+        tooltip_if_overflowing(this.title_text, this.title_bar)
 
         this.image_pin = create('i', 'pi pi-thumbtack hidden', this.title_bar_right)
         this.image_pin.addEventListener('click', (e) => {

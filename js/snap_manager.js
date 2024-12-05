@@ -73,7 +73,7 @@ export class WindowResizeManager {
 
     static onWindowResize() {
         WindowResizeManager.owr_stack += 1
-        setTimeout(WindowResizeManager._onWindowResize, Timings.ON_WINDOW_RESIZE_GAP)
+        setTimeout(WindowResizeManager._onWindowResize, Timings.GENERIC_SHORT_DELAY)
     }
 
     static _onWindowResize() {

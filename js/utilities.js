@@ -11,23 +11,23 @@ var started = false
 var sgc_stack = 0
 
 function _send_graph_changed() {
-  sgc_stack -= 1
-  if (sgc_stack == 0) {
-    Debug.extended("Sending graphChanged")
-    api.dispatchEvent(
-      new CustomEvent('graphChanged', { })
-    )
-  } else {
-    Debug.trivia("Not sending graphChanged yet")
-  }
+    sgc_stack -= 1
+    if (sgc_stack == 0) {
+        Debug.extended("Sending graphChanged")
+        api.dispatchEvent(
+        new CustomEvent('graphChanged', { })
+        )
+    } else {
+        Debug.trivia("Not sending graphChanged yet")
+    }
 }
 
 export function send_graph_changed(turn_on) {
-  started = started || turn_on
-  if (started) {
-    sgc_stack += 1
-    setTimeout(_send_graph_changed, Timings.GENERIC_LONGER_DELAY)
-  }
+    started = started || turn_on
+    if (started) {
+        sgc_stack += 1
+        setTimeout(_send_graph_changed, Timings.GENERIC_LONGER_DELAY)
+    }
 }
 
 
@@ -58,8 +58,7 @@ var floatRegex = /^-?\d+(?:[.,]\d*?)?$/
 export function check_float(v) {
     if (!floatRegex.test(`${v}`)) return false;
     var vv = parseFloat(v)
-    if (isNaN(vv)) return false
-    return true
+    return  (!isNaN(vv))
 }
 
 export function rounding(v, options) {
@@ -78,9 +77,7 @@ export function rounding(v, options) {
 export function integer_rounding(v, options) {
     const s = options.step / 10
     let sh = options.min % s
-    if (isNaN(sh)) {
-      sh = 0
-    }
+    sh = (isNaN(sh)) ? 0 : sh
     return Math.round((v - sh) / s) * s + sh   
 }
 
@@ -131,38 +128,38 @@ export function add_tooltip(element, text, extra_classes) {
 export function defineProperty(instance, property, desc) {
     const existingDesc = Object.getOwnPropertyDescriptor(instance, property);
     if (existingDesc?.configurable === false) {
-      throw new Error(`Error: Cannot define un-configurable property "${property}"`);
+        throw new Error(`Error: Cannot define un-configurable property "${property}"`);
     }
     if (existingDesc?.get && desc.get) {
-      const descGet = desc.get;
-      desc.get = () => {
-        existingDesc.get.apply(instance, []);
-        return descGet.apply(instance, []);
-      };
+        const descGet = desc.get;
+        desc.get = () => {
+            existingDesc.get.apply(instance, []);
+            return descGet.apply(instance, []);
+        };
     }
     if (existingDesc?.set && desc.set) {
-      const descSet = desc.set;
-      desc.set = (v) => {
-        existingDesc.set.apply(instance, [v]);
-        return descSet.apply(instance, [v]);
-      };
+        const descSet = desc.set;
+        desc.set = (v) => {
+            existingDesc.set.apply(instance, [v]);
+            return descSet.apply(instance, [v]);
+        };
     }
     desc.enumerable = desc.enumerable ?? existingDesc?.enumerable ?? true;
     desc.configurable = desc.configurable ?? existingDesc?.configurable ?? true;
     if (!desc.get && !desc.set) {
-      desc.writable = desc.writable ?? existingDesc?.writable ?? true;
+        desc.writable = desc.writable ?? existingDesc?.writable ?? true;
     }
     return Object.defineProperty(instance, property, desc);
 }
 
 export function mode_change(mode, e) {
-  return (mode==0) ? (e.ctrlKey ? 2 : 4) : ((e.ctrlKey && mode==4) ? 2 : 0)
+    return (mode==0) ? (e.ctrlKey ? 2 : 4) : ((e.ctrlKey && mode==4) ? 2 : 0)
 }
 
 export function focus_mode() {
-  if (document.getElementsByClassName('graph-canvas-panel')[0]) return "normal"
-  if (document.getElementsByClassName('graph-canvas-container')[0]) return "focus"
-  return null
+    if (document.getElementsByClassName('graph-canvas-panel')[0]) return "normal"
+    if (document.getElementsByClassName('graph-canvas-container')[0]) return "focus"
+    return null
 }
 
 export function find_controller_parent() {
@@ -174,29 +171,35 @@ export function find_controller_parent() {
 export function createBounds(objects, padding = 10) {
     const bounds = new Float32Array([Infinity, Infinity, -Infinity, -Infinity]);
     for (const obj of objects) {
-      const rect = obj.boundingRect;
-      bounds[0] = Math.min(bounds[0], rect[0]);
-      bounds[1] = Math.min(bounds[1], rect[1]);
-      bounds[2] = Math.max(bounds[2], rect[0] + rect[2]);
-      bounds[3] = Math.max(bounds[3], rect[1] + rect[3]);
+        const rect = obj.boundingRect;
+        bounds[0] = Math.min(bounds[0], rect[0]);
+        bounds[1] = Math.min(bounds[1], rect[1]);
+        bounds[2] = Math.max(bounds[2], rect[0] + rect[2]);
+        bounds[3] = Math.max(bounds[3], rect[1] + rect[3]);
     }
     if (!bounds.every((x2) => isFinite(x2))) return null;
     return [
-      bounds[0] - padding,
-      bounds[1] - padding,
-      bounds[2] - bounds[0] + 2 * padding,
-      bounds[3] - bounds[1] + 2 * padding
+        bounds[0] - padding,
+        bounds[1] - padding,
+        bounds[2] - bounds[0] + 2 * padding,
+        bounds[3] - bounds[1] + 2 * padding
     ];
   }
 
-export function title_if_overflowing(element, title) {
-    setTimeout(_title_if_overflowing, Timings.ALLOW_LAYOUT, element, title)
+/* 
+After a short delay (for layout), add or remove a title to the specified element, based on whether it's content is overflowing.
+if overflowing, add title (which acts as a tooltip in most browsers) otherwise remove title
+
+Used for elements with ellipsis text-overflow
+*/
+export function tooltip_if_overflowing(element, applyto) {
+  if (element) setTimeout(_tooltip_if_overflowing, Timings.GENERIC_LONGER_DELAY, element, applyto ?? element)
 }
 
-function _title_if_overflowing(element, title) {
+function _tooltip_if_overflowing(element, applyto) {
     if (element.clientWidth < element.scrollWidth) {
-        element.title = title
+        applyto.title = element.innerText ?? innerHTML
     } else {
-        if (element.title) delete element.title
+        if (applyto.title) delete applyto.title
     }
 }

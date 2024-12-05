@@ -1,5 +1,5 @@
 import { app } from "../../scripts/app.js";
-import { create } from "./utilities.js";
+import { create, tooltip_if_overflowing } from "./utilities.js";
 import { FancySlider } from "./input_slider.js";
 import { rounding } from "./utilities.js";
 import { make_resizable } from "./resize_manager.js";
@@ -193,6 +193,8 @@ export class Entry extends HTMLDivElement {
 
     render() {
         if (document.activeElement == this.input_element) return
+        tooltip_if_overflowing(this.entry_label, this)
+        tooltip_if_overflowing(this.entry_value, this)
         if (this.input_element.value == this.target_widget.value) return
         this.input_element.value = rounding(this.target_widget.value, this.target_widget.options)
     }

@@ -72,15 +72,13 @@ export class Timings { // ms
     static GENERIC_SHORT_DELAY = 20
     static GENERIC_LONGER_DELAY = 1000
     static GENERIC_MUCH_LONGER_DELAY = 5000
-    static PERIODIC_CHECK = 1000
+    static PERIODIC_CHECK = 1000               // on_change 'tick'
     static DRAG_PAUSE_OVER_BACKGROUND = 500
     static SLIDER_ACTIVE_DELAY = 300
     static UPDATE_EXCEPTION_WAITTIME = 10000
     static PAUSE_STACK_WAIT = 101
     static ACTIVE_ELEMENT_DELAY = 234
-    static ON_CHANGE_GAP = 200
-    static ON_WINDOW_RESIZE_GAP = 27
-    static GROUP_CHANGE_DELAY = 10
+    static ON_CHANGE_GAP = 200                 // must be less than PERIODIC_CHECK
     static ALLOW_LAYOUT = 1000
 }
 
