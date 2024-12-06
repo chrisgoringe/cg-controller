@@ -131,7 +131,7 @@ export class OnChangeController {
                     UpdateController.make_request(`on_change (${details}), read_only changed to ${app.canvas.read_only}`)
                     app.canvas._controller_read_only = app.canvas.read_only
                 } else {
-                    Debug.trivia(`on_change (${details}), no changes`, true)
+                    Debug.extended(`on_change (${details}), no changes`, true)
                 }
             } 
         } else {

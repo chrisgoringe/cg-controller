@@ -354,7 +354,7 @@ export class ControllerPanel extends HTMLDivElement {
     static group_change(group_name) {
         const names = family_names(group_name)
         Object.values(ControllerPanel.instances).filter((cp)=>(names.has(cp.settings.group_choice))).forEach((cp)=>{
-            OnChangeController.on_change(`group ${group_name} changed`,cp)
+            UpdateController.make_single_request(`group ${group_name} changed`,cp)
         })
     }
 
@@ -363,7 +363,7 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     _node_change(node_id, moreinfo) {
-        if (this.have_node(node_id)) OnChangeController.on_change(`node ${node_id} changed ${moreinfo ?? ""}`,this)
+        if (this.have_node(node_id)) UpdateController.make_single_request(`node ${node_id} changed ${moreinfo ?? ""}`,this)
     }
 
     choose_suitable_initial_group() {
