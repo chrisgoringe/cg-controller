@@ -92,8 +92,10 @@ function hash_node(node) {
     hash all the things we want to check for changes.
     */
     var hash = `${node.bgcolor} ${node.title} ${node.mode} `
-    node.inputs.forEach((i)=>{hash += `${i.name} `})
-    node.outputs.forEach((o)=>{hash += `${o.name} `})
+    node.inputs?.forEach(                                 (i)=>{hash += `${i.name} `})
+    node.outputs?.forEach(                                (o)=>{hash += `${o.name} `})
+    node.widgets?.filter((w)=>(w.element?.value)).forEach((w)=>{hash += `${w.element.value} `})
+    node.widget_values?.forEach(                          (w)=>{hash += `${w} `})
     return hash
 }
 
@@ -131,11 +133,25 @@ export class OnChangeController {
                     UpdateController.make_request(`on_change (${details}), read_only changed to ${app.canvas.read_only}`)
                     app.canvas._controller_read_only = app.canvas.read_only
                 } else {
-                    Debug.extended(`on_change (${details}), no changes`, true)
+                    Debug._log(`on_change (${details}), no changes`, details=="tick" ? 3 : 2, true)
                 }
             } 
         } else {
-            Debug.trivia(`on_change (${details}), too soon`, true)
+            Debug._log(`on_change (${details}), too soon`, details=="tick" ? 3 : 2, true)
+        }
+    }
+    static on_executing(e) {
+        if (OnChangeController.executing_node && OnChangeController.executing_node!=e.detail) {
+            setTimeout(OnChangeController._on_executing, Timings.GENERIC_SHORT_DELAY, OnChangeController.executing_node)
+        }
+        OnChangeController.executing_node = e.detail
+    }
+    static _on_executing(nid) {
+        if (node_changed(app.graph._nodes_by_id[nid])) {
+            Debug.extended(`Node (${nid} on_executing changed)`)
+            UpdateController.single_node(nid, `on_executing, node ${nid} changed`)
+        } else {
+            Debug.extended(`Node (${nid} on_executing unchanged)`)
         }
     }
 }

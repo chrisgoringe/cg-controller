@@ -50,6 +50,8 @@ function on_setup() {
     api.addEventListener('progress', ControllerPanel.on_progress)
     api.addEventListener('executing', ControllerPanel.on_executing)
 
+    api.addEventListener('executing', OnChangeController.on_executing)
+
     window.addEventListener("resize", WindowResizeManager.onWindowResize)
     window.addEventListener('mousedown', (e)=>{
         mouse_change(true)
