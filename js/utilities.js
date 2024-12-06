@@ -188,7 +188,11 @@ export function createBounds(objects, padding = 10) {
 
 /* 
 After a short delay (for layout), add or remove a title to the specified element, based on whether it's content is overflowing.
-if overflowing, add title (which acts as a tooltip in most browsers) otherwise remove title
+if overflowing, add title (which acts as a tooltip in most browsers) otherwise remove title.
+
+Second parameter is the element that the title gets applied to (default is the same as the first)
+
+If the element applied to has a .tooltip property this is used when not overflowing
 
 Used for elements with ellipsis text-overflow
 */
@@ -199,6 +203,8 @@ export function tooltip_if_overflowing(element, applyto) {
 function _tooltip_if_overflowing(element, applyto) {
     if (element.clientWidth < element.scrollWidth) {
         applyto.title = element.innerText ?? innerHTML
+    } else if (applyto.tooltip) {
+        applyto.title = applyto.tooltip
     } else {
         if (applyto.title) delete applyto.title
     }

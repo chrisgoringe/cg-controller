@@ -114,6 +114,7 @@ export class Entry extends HTMLDivElement {
         }
 
         this.typecheck = (target_widget.type=='number') ? typecheck_number : typecheck_other
+        if (node.__controller_tooltips && node.__controller_tooltips[target_widget.name]) this.tooltip = node.__controller_tooltips[target_widget.name]
 
         if (target_widget.element) {
             target_widget.element.addEventListener('input', (e)=>{WidgetChangeManager.notify(target_widget)})

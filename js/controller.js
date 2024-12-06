@@ -206,6 +206,13 @@ app.registerExtension({
     },
 
     async beforeRegisterNodeDef(nodeType, nodeData, app) {
+        nodeType.prototype.__controller_tooltips = {}
+        Object.values(nodeData.input).forEach((list)=>{
+            Object.keys(list).filter((k)=>(list[k].length>1 && list[k][1].tooltip)).forEach((k)=>{
+                nodeType.prototype.__controller_tooltips[k] = list[k][1].tooltip
+            })
+        })
+
         const getExtraMenuOptions = nodeType.prototype.getExtraMenuOptions;
         nodeType.prototype.getExtraMenuOptions = function(_, options) {
             getExtraMenuOptions?.apply(this, arguments);
