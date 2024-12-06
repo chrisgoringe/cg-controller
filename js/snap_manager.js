@@ -3,7 +3,8 @@ import { Debug } from "./debug.js"
 import { Pixels, Timings } from "./constants.js"
 
 const THRESHOLD = 16
-const OVERLAP = Pixels.BORDER_WIDTH
+const OVERLAP   = Pixels.BORDER_WIDTH
+const UNDERLAP  = Math.min(3, OVERLAP) // pixel grabbable at the bottom
 
 class ChildType {
     anything() {
@@ -87,13 +88,12 @@ export class WindowResizeManager {
         })
 
         const parent_height = get_parent_height()
-        const height_available = parent_height + 3 * OVERLAP
-
+        
         Array.from(WindowResizeManager.vertical_snapped).forEach((i)=>{
             const panel = SnapManager.panels[i]
             const frac = WindowResizeManager.vertical_fraction[i]
-            const new_height = height_available * frac
-            const new_y = (panel.settings.position.y == -OVERLAP) ? -OVERLAP : parent_height - new_height + OVERLAP
+            const new_height = parent_height * frac + 2*OVERLAP
+            const new_y = (panel.settings.position.y == -OVERLAP) ? -OVERLAP : parent_height - new_height
 
             Debug.trivia(`Panel ${{i}} vertical rescale from ${panel.settings.position.h} to ${new_height}`)
 
@@ -106,29 +106,23 @@ export class WindowResizeManager {
         if (WindowResizeManager.owr_stack>0) return
         Debug.extended("get_vertical_spans")
         const parent_height = get_parent_height()
-        const height_available = parent_height + 3 * OVERLAP
         WindowResizeManager.vertical_snapped = new Set()
 
         Object.keys(SnapManager.panels).forEach((i)=>{
             const panel = SnapManager.panels[i]
-            WindowResizeManager.vertical_fraction[i] = panel.getBoundingClientRect().height / height_available
+            WindowResizeManager.vertical_fraction[i] = (panel.getBoundingClientRect().height - 2*OVERLAP) / parent_height
             if (panel.settings.fullheight) WindowResizeManager.vertical_snapped.add(i)
-            if (Math.abs(panel.settings.position.y + panel.settings.position.h - parent_height) < THRESHOLD) {
+            if (Math.abs(panel.settings.position.y + panel.settings.position.h - parent_height - UNDERLAP) < THRESHOLD) {
                 // we are touching the bottom. Are we child of anyone touching the top?
                 Object.keys(SnapManager.panels).filter((j)=>(SnapManager.child_types[j][i]?.joined_y)).forEach((j)=>{
                     if (SnapManager.panels[j].settings.position.y == -OVERLAP) {
                         WindowResizeManager.vertical_snapped.add(i)
                         WindowResizeManager.vertical_snapped.add(j)
-                        panel.settings.set_position(null, null, null, parent_height + OVERLAP - panel.settings.position.y)
+                        panel.settings.set_position(null, null, null, parent_height + OVERLAP - panel.settings.position.y - UNDERLAP)
                         update_panel_position(panel)
                     }
                 })
             }
-        })
-
-        Array.from(WindowResizeManager.vertical_snapped).forEach((i)=>{
-            WindowResizeManager.vertical_fraction[i] = SnapManager.panels[i].getBoundingClientRect().height / height_available
-            Debug.trivia(`${i} frac ${WindowResizeManager.vertical_fraction[i]}`)
         })
 
     }
@@ -300,7 +294,7 @@ export class SnapManager {
             me.set_position( null, -OVERLAP, null, null )
             if (me.position.y + me.position.h + THRESHOLD > panel.parentElement.getBoundingClientRect().height) {
                 me.fullheight = true
-                me.set_position( null, null, null, panel.parentElement.getBoundingClientRect().height + 2 * OVERLAP )
+                me.set_position( null, null, null, panel.parentElement.getBoundingClientRect().height + 2 * OVERLAP - UNDERLAP )
             } else { me.fullheight = false }
         } else { me.fullheight = false }
         
