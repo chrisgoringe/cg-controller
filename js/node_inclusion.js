@@ -20,6 +20,11 @@ export class NodeInclusionManager {
         return (nd && nd.properties["controller"] && nd.properties["controller"]==InclusionOptions.ADVANCED) 
     }
 
+    static favorite(node_or_node_id) {
+        const nd = get_node(node_or_node_id)
+        return (nd && nd.properties["controller"] && nd.properties["controller"]==InclusionOptions.FAVORITE) 
+    }
+
     static visual(ctx, node) {
         const r = 3
         const title_mid = 15
@@ -48,8 +53,8 @@ function cp_callback_submenu(value, options, e, menu, node) {
     const current = node.properties["controller"] ?? InclusionOptions.EXCLUDE;
     const selection = selected_nodes()
     const choices = (selection.length==1) ? 
-        [InclusionOptions.EXCLUDE,  InclusionOptions.INCLUDE,  InclusionOptions.ADVANCED] : 
-        [InclusionOptions.EXCLUDES, InclusionOptions.INCLUDES, InclusionOptions.ADVANCEDS]
+        [InclusionOptions.EXCLUDE,  InclusionOptions.INCLUDE,  InclusionOptions.ADVANCED,  InclusionOptions.FAVORITE] : 
+        [InclusionOptions.EXCLUDES, InclusionOptions.INCLUDES, InclusionOptions.ADVANCEDS, InclusionOptions.FAVORITES]
     const submenu = new LiteGraph.ContextMenu(
         choices,
         { event: e, callback: function (v) { 

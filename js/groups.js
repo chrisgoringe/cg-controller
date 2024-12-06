@@ -1,7 +1,7 @@
 import { app } from "../../scripts/app.js"
 import { NodeInclusionManager } from "./node_inclusion.js"
-import { Colors, Texts } from "./constants.js"
-import { mode_change } from "./utilities.js"
+import { Colors, Texts, DisplayNames } from "./constants.js"
+import { mode_change, pickContrastingColor } from "./utilities.js"
 import { Debug } from "./debug.js"
 
 function recompute_safely(group) {
@@ -38,10 +38,14 @@ export class GroupManager {
     constructor() {
         this.groups = {}  // maps group name to Set of node ids
         const ungrouped = new Set()
+        const favorites = new Set()
         app.graph._nodes.forEach((node)=>{
             if (NodeInclusionManager.node_includable(node)) ungrouped.add(node.id)
+            if (NodeInclusionManager.favorite(node)) favorites.add(node.id)
         })
-        this.colors = {}  // maps group name to color
+        if (favorites.size>0) this.groups[Texts.FAVORITES] = favorites
+        this.colors = { }
+        this.colors[Texts.FAVORITES] = Colors.FAVORITES_GROUP  // maps group name to color
         app.graph._groups.forEach((group) => {
             if (!group.graph) {
                 group.graph = app.graph
@@ -91,17 +95,26 @@ export class GroupManager {
         return true
     }
 
+    static displayName(group_name) {
+        return DisplayNames[group_name] ?? group_name
+    }
+
     static list_group_names() {
         const names = Object.keys(GroupManager.instance.groups)
-        //Object.keys(GroupManager.instance.groups).forEach((gp) => {names.push(gp)})
         names.sort()
         names.unshift(Texts.ALL_GROUPS)
         return names
     }
 
-    static group_color(group_name) {
+    static group_bgcolor(group_name) {
         return GroupManager.instance.colors[group_name] ?? Colors.DARK_BACKGROUND
     }
+
+    static group_fgcolor(group_name) {
+        return (group_name==Texts.FAVORITES) ? Colors.FAVORITES_FG : 
+            pickContrastingColor(GroupManager.group_bgcolor(group_name),Colors.OPTIONS)
+    }
+
 
     static group_node_mode(group_name) {
         const modes = {0:0,2:0,4:0}

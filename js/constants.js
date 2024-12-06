@@ -63,9 +63,11 @@ export class InclusionOptions {
     static EXCLUDE   = "Don't include this node"
     static INCLUDE   = "Include this node"
     static ADVANCED  = "Include this node as advanced control"
-    static EXCLUDES  =  InclusionOptions.EXCLUDE.replace('this node', 'these nodes')
+    static FAVORITE  = "Include this node as favorite"
+    static EXCLUDES  = InclusionOptions.EXCLUDE.replace('this node', 'these nodes')
     static INCLUDES  = InclusionOptions.INCLUDE.replace('this node', 'these nodes')
     static ADVANCEDS = InclusionOptions.ADVANCED.replace('this node', 'these nodes')
+    static FAVORITES = InclusionOptions.FAVORITE.replace('this node', 'these nodes')
 }
 
 export class Timings { // ms
@@ -85,6 +87,10 @@ export class Timings { // ms
 export class Colors {
     static DARK_BACKGROUND = '#222222'
     static MENU_HIGHLIGHT = '#C08080'
+    static FAVORITES_FG = '#CC4444'
+    static FAVORITES_GROUP = '#223322'
+    static FOREGROUND = '#FFFFFF'
+    static OPTIONS = ['#FFFFFF', '#000000']
 }
 
 export class Pixels {
@@ -95,6 +101,7 @@ export class Pixels {
 export class Texts {
     static ALL_GROUPS = "All"
     static UNGROUPED = "Ungrouped"
+    static FAVORITES = "&#x2764;"
     static CONTEXT_MENU = "Controller Panel"
     static MODE_TOOLTIP = {
         0 : "Click to bypass</br>ctrl&#8209;click to mute",
@@ -105,6 +112,10 @@ export class Texts {
     static REMOVE = "Remove from controllers"
     static EDIT_WV = "Edit widget visibility"
     static IMAGE_WIDGET_NAME = "image viewer"
+}
+
+export const DisplayNames = {
+    "&#x2764;" : "&#x2764; Favorites"
 }
 
 export const BASE_PATH = "extensions/cg-controller"

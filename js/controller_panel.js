@@ -681,7 +681,8 @@ export class ControllerPanel extends HTMLDivElement {
         this.settings.groups.forEach((nm) => {
             const tab = create('span','tab',this.header1_left,{"innerHTML":nm.replaceAll(' ','&nbsp;')})
             classSet(tab,'selected',(this.settings.group_choice == nm))
-            tab.style.setProperty('--base-color', GroupManager.group_color(nm))
+            tab.style.setProperty('--base-color', GroupManager.group_bgcolor(nm))
+            tab.style.color = GroupManager.group_fgcolor(nm)
             tab.addEventListener('mouseenter', ()=>{Highlighter.group(nm)})
             tab.addEventListener('mouseleave', ()=>{Highlighter.group(null)})
             tab.addEventListener('mousedown', (e) => {
@@ -800,8 +801,9 @@ export class ControllerPanel extends HTMLDivElement {
     show_group_select(e, replace) {
         const the_select = create('span','group_add_select', document.body)
         this.groups_not_included.forEach((g)=>{
-            const the_choice = create('div', 'group_add_option', the_select, {"innerText":g})
-            the_choice.style.backgroundColor = GroupManager.group_color(g)
+            const the_choice = create('div', 'group_add_option', the_select, {"innerHTML":GroupManager.displayName(g)})
+            the_choice.style.backgroundColor = GroupManager.group_bgcolor(g)
+            the_choice.style.color = GroupManager.group_fgcolor(g)
             the_choice.addEventListener('click', (e)=> {
                 if (replace) {
                     this.settings.groups = [g,]
