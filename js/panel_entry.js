@@ -3,7 +3,7 @@ import { create, tooltip_if_overflowing } from "./utilities.js";
 import { FancySlider } from "./input_slider.js";
 import { rounding } from "./utilities.js";
 import { make_resizable } from "./resize_manager.js";
-import { UpdateController } from "./update_controller.js";
+import { OnChangeController, UpdateController } from "./update_controller.js";
 import { Debug } from "./debug.js";
 import { SettingIds } from "./constants.js";
 import { Toggle } from "./toggle.js";
@@ -187,7 +187,7 @@ export class Entry extends HTMLDivElement {
                 this.target_widget.callback()
             }
             app.graph.setDirtyCanvas(true,true); 
-            UpdateController.make_request("button clicked")
+            OnChangeController.on_change("button clicked")
         } finally { UpdateController.pop_pause() }
     }
 

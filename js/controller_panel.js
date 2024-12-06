@@ -3,7 +3,7 @@ import { app } from "../../scripts/app.js";
 import { create, get_node, add_tooltip, clamp, classSet, defineProperty, find_controller_parent, createBounds, tooltip_if_overflowing } from "./utilities.js";
 import { family_names, GroupManager } from "./groups.js";
 
-import { UpdateController } from "./update_controller.js";
+import { OnChangeController, UpdateController } from "./update_controller.js";
 import { NodeBlock } from "./nodeblock.js";
 import { observe_resizables, clear_resize_managers } from "./resize_manager.js";
 import { Debug } from "./debug.js";
@@ -126,7 +126,7 @@ export class ControllerPanel extends HTMLDivElement {
                 this.settings.groups = this.settings.groups.filter((g)=>g!=oldname)
             }
             this.settings.groups = Array.from(new Set(this.settings.groups))
-            UpdateController.make_request('group change', Timings.GENERIC_SHORT_DELAY, false, this)
+            //UpdateController.make_request('group change', Timings.GENERIC_SHORT_DELAY, false, this)
         }
     }
 
@@ -217,12 +217,12 @@ export class ControllerPanel extends HTMLDivElement {
         ControllerPanel.add_controllers()
         if (ControllerPanel.menu_button) classSet(ControllerPanel.menu_button, 'litup', !global_settings.hidden) 
         if (!global_settings.hidden && Object.keys(ControllerPanel.instances).length==0 && find_controller_parent()) ControllerPanel.create_new()
-        UpdateController.make_request('new workflow', 100)
+        OnChangeController.on_change('new workflow')
         ControllerPanel.update_buttons()
     }
 
     static on_graphCleared() {
-        UpdateController.make_request("graph_cleared")
+        OnChangeController.on_change("graph_cleared")
     }
 
     static create_new(e) {
@@ -354,7 +354,7 @@ export class ControllerPanel extends HTMLDivElement {
     static group_change(group_name) {
         const names = family_names(group_name)
         Object.values(ControllerPanel.instances).filter((cp)=>(names.has(cp.settings.group_choice))).forEach((cp)=>{
-            UpdateController.make_single_request(`group ${group_name} changed`,cp)
+            OnChangeController.on_change(`group ${group_name} changed`,cp)
         })
     }
 
@@ -363,7 +363,7 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     _node_change(node_id, moreinfo) {
-        if (this.have_node(node_id)) UpdateController.make_single_request(`node ${node_id} changed ${moreinfo ?? ""}`,this)
+        if (this.have_node(node_id)) OnChangeController.on_change(`node ${node_id} changed ${moreinfo ?? ""}`,this)
     }
 
     choose_suitable_initial_group() {
@@ -743,9 +743,6 @@ export class ControllerPanel extends HTMLDivElement {
                 e.stopPropagation(); 
                 if (app.canvas.read_only) return
                 this.settings.groups = this.settings.groups.filter((g)=>g!=this.settings.group_choice)
-                //if (this.settings.groups.length==0) {
-                //    this.delete_controller()
-                //}
                 UpdateController.make_single_request('group removed', this)
             })
             add_tooltip(this.remove_group_button, 'Remove active group tab', 'right')
