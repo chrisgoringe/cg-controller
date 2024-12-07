@@ -48,7 +48,10 @@ export class Entry extends HTMLDivElement {
 
         target_widget.type = target_widget.type ?? target_widget.constructor.name
 
-        switch (target_widget.type) {
+        var implementation_type = target_widget.type
+        if (node.type=="ImpactSwitch" && target_widget.type=="number") implementation_type = "switch-combo"
+
+        switch (implementation_type) {
             case 'text':
                 this.entry_label = create('span','entry_label text', this, {'innerText':widget_label, 'draggable':false} )  
                 this.input_element = create('input', 'input', this) 
@@ -63,37 +66,45 @@ export class Entry extends HTMLDivElement {
                 this.input_element.addEventListener('keydown', this.keydown_callback.bind(this))
                 this.appendChild(this.input_element)
                 break
+            case 'switch-combo':
+                this.choices_value_to_name = {}
+                for (var idx=0; idx<node.inputs.length; idx++) { this.choices_value_to_name[idx+1] = node.inputs[idx].name }
+                this.entry_label = create('span','entry_label', this, {'innerText':widget_label, 'draggable':false} )  
+                this.entry_value = create('span','entry_label value', this, {'draggable':false} ) 
+                this.input_element = create("select", 'input', this, {"doesntBlockRefresh":true}) 
+                Object.keys(this.choices_value_to_name).forEach((value) => this.input_element.add(new Option(this.choices_value_to_name[value], value )))
+                this.input_element.value = target_widget.value
+                this.input_element.redraw = () => { this.entry_value.innerText = this.choices_value_to_name[this.input_element.value] } 
+                this.input_element.addEventListener("change", this.input_element.redraw.bind(this))
+                this.input_element.redraw() 
+                break
             case 'combo':
                 this.entry_label = create('span','entry_label', this, {'innerText':widget_label, 'draggable':false} )  
                 this.entry_value = create('span','entry_label value', this, {'innerText':target_widget.value, 'draggable':false} )  
                 this.input_element = create("select", 'input', this, {"doesntBlockRefresh":true}) 
-                const choices = (target_widget.options.values instanceof Function) ? target_widget.options.values() : target_widget.options.values
-                choices.forEach((o) => this.input_element.add(new Option(o,o)))
-                this.input_element.addEventListener("change", (e)=>{
-                    this.entry_value.innerText = e.target.value
-                })
-                this.input_element.redraw = () => {
-                    this.entry_value.innerText = this.input_element.value
-                }
+                this.choices = (target_widget.options.values instanceof Function) ? target_widget.options.values() : target_widget.options.values
+                this.choices.forEach((o) => this.input_element.add(new Option(o,o)))
+                this.input_element.redraw = () => { this.entry_value.innerText = this.input_element.value }
+                this.input_element.addEventListener("change", this.input_element.redraw.bind(this))
                 break
             case 'RgthreeBetterButtonWidget':
             case 'button':
                 this.input_element = create("button", 'input', this, {"innerText":widget_label, "doesntBlockRefresh":true})
                 break
             case 'toggle':
-                this.input_element = new Toggle(target_widget.value, widget_label)
+                this.input_element = new Toggle(target_widget.value, widget_label, target_widget.options?.on, target_widget.options?.off)
                 this.appendChild(this.input_element)
                 break
             case 'converted-widget':
                 return
+
+            /* for possible future implementation 
             case 'RgthreeDividerWidget':
                 return
             case 'PowerLoraLoaderHeaderWidget':
-                // toggle for all
                 return
             case 'PowerLoraLoaderWidget':
-                // toggle, pick, strength, remove
-                return
+                return  */
             default:
                 return
         }  
@@ -102,7 +113,7 @@ export class Entry extends HTMLDivElement {
 
         this.combo_for_image = (this.target_widget.name=='image' && this.target_widget._real_value && this.target_widget.type=="combo")
   
-        switch (target_widget.type) {
+        switch (implementation_type) {
             case 'RgthreeBetterButtonWidget':
             case 'button':
                 this.input_element.addEventListener('click', this.button_click_callback.bind(this)) 
