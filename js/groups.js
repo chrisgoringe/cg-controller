@@ -115,6 +115,9 @@ export class GroupManager {
             pickContrastingColor(GroupManager.group_bgcolor(group_name),Colors.OPTIONS)
     }
 
+    static normal_group(group_name) {
+        return !(group_name==Texts.ALL_GROUPS || group_name==Texts.UNGROUPED || group_name==Texts.FAVORITES)
+    }
 
     static group_node_mode(group_name) {
         const modes = {0:0,2:0,4:0}

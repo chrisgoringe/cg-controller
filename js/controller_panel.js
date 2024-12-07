@@ -625,7 +625,7 @@ export class ControllerPanel extends HTMLDivElement {
             this.delete_button = create('i', 'pi pi-times header_button', this.header1_right)
         } else {
             this.add_group_button = create('i', 'pi pi-plus header_button last', this.header1_left)
-            if (this.settings.group_choice != Texts.ALL_GROUPS && this.settings.group_choice != Texts.UNGROUPED) {
+            if (GroupManager.normal_group(this.settings.group_choice)) {
                 this.group_mode_button = create('i', 'pi header_button mode', this.header2_left)
             }
             this.show_advanced_button = create('i', `pi pi-bolt header_button${this.settings.advanced ? " clicked":""}`, this.header2_left)
