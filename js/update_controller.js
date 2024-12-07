@@ -91,6 +91,7 @@ function hash_node(node) {
     /* 
     hash all the things we want to check for changes.
     */
+    if (!node) return "nonode"
     var hash = `${node.bgcolor} ${node.title} ${node.mode} `
     node.inputs?.forEach(                                 (i)=>{hash += `${i.name} `})
     node.outputs?.forEach(                                (o)=>{hash += `${o.name} `})
@@ -100,6 +101,7 @@ function hash_node(node) {
 }
 
 function node_changed(node) {
+    if (!node) return false
     const new_hash = hash_node(node)
     if (new_hash == node._controller_hash) return false
     node._controller_hash = new_hash
