@@ -163,7 +163,7 @@
     justify-content: flex-start;
     flex-direction: row;
     align-items: center;
-    /* allow the group to shirnk */
+    /* allow the group to shrink */
     min-width: 0px;
     flex-shrink: 1;
 }
@@ -178,7 +178,7 @@
     text-align: center;
     margin: 0px 1px 4px 1px;
 
-    /* allow the group to shirnk */
+    /* allow the group to shrink */
     min-width: 0px;
     flex-shrink: 1;
     text-overflow: ellipsis;
