@@ -1,6 +1,6 @@
 import { app } from "../../scripts/app.js"
 import { api } from "../../scripts/api.js"
-import { SettingIds, Timings } from "./constants.js";
+import { Colors, SettingIds, Timings } from "./constants.js";
 import { getSettingValue } from "./settings.js";
 import { Debug } from "./debug.js";
 
@@ -86,9 +86,9 @@ export function get_node(node_or_node_id) {
     return app.graph._nodes_by_id[node_or_node_id]
 }
 
-export function darken(hex) {
+export function darken(hex, lum) {
+    lum = lum ?? Colors.HEADER_DARKEN
 	hex = hex.replace("#", '');
-    const lum = 0.666;
     const rgb = (hex.length == 3) ?
         [ parseInt(hex.substr(0,1), 16)*17*lum, parseInt(hex.substr(1,1), 16)*17*lum, parseInt(hex.substr(2,1), 16)*17*lum ] :
         [ parseInt(hex.substr(0,2), 16)*lum, parseInt(hex.substr(2,2), 16)*lum, parseInt(hex.substr(4,2), 16)*lum ]

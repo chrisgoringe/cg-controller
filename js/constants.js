@@ -91,6 +91,8 @@ export class Colors {
     static FAVORITES_GROUP = '#223322'
     static FOREGROUND = '#FFFFFF'
     static OPTIONS = ['#FFFFFF', '#000000']
+    static UNSELECTED_DARKEN = 0.4
+    static HEADER_DARKEN = 0.666
 }
 
 export class Pixels {

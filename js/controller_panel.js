@@ -681,8 +681,8 @@ export class ControllerPanel extends HTMLDivElement {
         this.settings.groups.forEach((nm) => {
             const tab = create('span','tab',this.header1_left,{"innerHTML":nm.replaceAll(' ','&nbsp;')})
             classSet(tab,'selected',(this.settings.group_choice == nm))
-            tab.style.setProperty('--base-color', GroupManager.group_bgcolor(nm))
-            tab.style.color = GroupManager.group_fgcolor(nm)
+            tab.style.backgroundColor = GroupManager.group_bgcolor(nm, (this.settings.group_choice == nm))
+            tab.style.color = GroupManager.group_fgcolor(nm, (this.settings.group_choice == nm))
             tab.addEventListener('mouseenter', ()=>{Highlighter.group(nm)})
             tab.addEventListener('mouseleave', ()=>{Highlighter.group(null)})
             tab.addEventListener('mousedown', (e) => {

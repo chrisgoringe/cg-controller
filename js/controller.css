@@ -172,9 +172,8 @@
     border-radius: 6px;
     padding: 2px 6px;
     border: 1px solid var(--deep-back-color);
-    background-color: color-mix(in srgb, var(--base-color), transparent);
-    color: var(--muted-fore-color);
-    /*color : color-contrast(var(--base-color) vs var(--muted-fore-color), var(--second-back-color)) */
+    /*background-color: var(--base-color);
+    color: var(--muted-fore-color);           set programatically*/
     cursor: pointer;
     text-align: center;
     margin: 0px 1px 4px 1px;
@@ -187,12 +186,6 @@
 }
 .tab.selected {
 
-    color: var(--main-fore-color);
-    background-color: var(--base-color);
-    /*border-bottom-left-radius: 0px;
-    border-bottom-right-radius: 0px;
-    border-bottom: none; 
-    margin-bottom:0px;*/
 }
 
 .controller.grabbed .tab {

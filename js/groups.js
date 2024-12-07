@@ -1,7 +1,7 @@
 import { app } from "../../scripts/app.js"
 import { NodeInclusionManager } from "./node_inclusion.js"
 import { Colors, Texts, DisplayNames } from "./constants.js"
-import { mode_change, pickContrastingColor } from "./utilities.js"
+import { mode_change, pickContrastingColor, darken } from "./utilities.js"
 import { Debug } from "./debug.js"
 
 function recompute_safely(group) {
@@ -106,13 +106,15 @@ export class GroupManager {
         return names
     }
 
-    static group_bgcolor(group_name) {
-        return GroupManager.instance.colors[group_name] ?? Colors.DARK_BACKGROUND
+    static group_bgcolor(group_name, selected) {
+        var c = GroupManager.instance.colors[group_name] ?? Colors.DARK_BACKGROUND
+        return selected ? c : darken(c, Colors.UNSELECTED_DARKEN)
     }
 
-    static group_fgcolor(group_name) {
-        return (group_name==Texts.FAVORITES) ? Colors.FAVORITES_FG : 
-            pickContrastingColor(GroupManager.group_bgcolor(group_name),Colors.OPTIONS)
+    static group_fgcolor(group_name, selected) {
+        var c = (group_name==Texts.FAVORITES) ? Colors.FAVORITES_FG : 
+            pickContrastingColor(GroupManager.group_bgcolor(group_name, selected),Colors.OPTIONS)
+        return selected ? c : darken(c, Colors.UNSELECTED_DARKEN)
     }
 
     static normal_group(group_name) {
