@@ -1,5 +1,5 @@
 
-export const VERSION = "1.5.1"
+export const VERSION = "1.6"
 
 export const MAXIMUM_UPSTREAM = 4
 
