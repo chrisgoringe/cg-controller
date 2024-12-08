@@ -114,6 +114,7 @@ export class Texts {
     static REMOVE = "Remove from controllers"
     static EDIT_WV = "Edit widget visibility"
     static IMAGE_WIDGET_NAME = "image viewer"
+    static UNCONNECTED = "Unconnected Input"
 }
 
 export const DisplayNames = {
