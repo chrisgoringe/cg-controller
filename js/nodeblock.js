@@ -300,6 +300,12 @@ export class NodeBlock extends HTMLSpanElement {
                     ComfyApp.open_maskeditor()
                 }
             },
+            { 
+                "title":"Open in new tab", 
+                "callback":()=>{
+                    window.open(this.urls[this.image_index])
+                }
+            },
         ])
     }
 
