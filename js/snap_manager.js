@@ -55,8 +55,12 @@ function get_child_type(p1, p2) {
     return r
 }
 
-function get_parent_height() {
+export function get_parent_height() {
     return (Object.values(SnapManager.panels).length) ?  Object.values(SnapManager.panels)[0].parentElement.getBoundingClientRect().height : null
+}
+
+export function get_parent_width() {
+    return (Object.values(SnapManager.panels).length) ?  Object.values(SnapManager.panels)[0].parentElement.getBoundingClientRect().width : null
 }
 
 function update_panel_position(panel, need_tidy) {

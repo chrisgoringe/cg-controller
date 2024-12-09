@@ -17,6 +17,7 @@ import { clear_widget_change_managers } from "./widget_change_manager.js";
 import { clean_image_manager, ImageManager } from "./image_manager.js";
 import { SnapManager } from "./snap_manager.js";
 import { Highlighter } from "./highlighter.js";
+import { download_workspace_as_json, load_workspace, set_settings_for_instance } from "./workspace.js"
 
 export class ControllerPanel extends HTMLDivElement {
     static instances = {}
@@ -229,6 +230,7 @@ export class ControllerPanel extends HTMLDivElement {
         const newcp = new ControllerPanel()
         if (e && e.layerX && e.layerY) newcp.settings.set_position(e.layerX,e.layerY,null,null)
         newcp.build_controllerPanel()
+        return newcp
     }
 
     delete_controller() {
@@ -278,6 +280,28 @@ export class ControllerPanel extends HTMLDivElement {
             const exit_focus_button = document.getElementsByTagName('main')[0].getElementsByTagName('button')[0]
             exit_focus_button.addEventListener('click', () => {
                 UpdateController.make_request('exit focus', 10)
+            })
+
+            ControllerPanel.save_button = create('i', 'pi pi-file-export controller_menu_button', ControllerPanel.buttons)
+            add_tooltip(ControllerPanel.save_button, 'save controller workspace')
+            ControllerPanel.save_button.addEventListener('click', ()=>{ 
+                download_workspace_as_json(ControllerPanel.instances, "workspace.json")
+            })
+            
+            ControllerPanel.load_button = create('i', 'pi pi-file-import controller_menu_button', ControllerPanel.buttons)
+            add_tooltip(ControllerPanel.load_button, 'load controller workspace')
+            ControllerPanel.load_button.addEventListener('click', async function() { 
+                await load_workspace((new_instances)=>{
+                    if (new_instances.length>0) {
+                        Object.values(ControllerPanel.instances).forEach((instance)=>{instance.delete_controller()})
+                        new_instances.forEach((instance)=>{
+                            const newcp = ControllerPanel.create_new()
+                            set_settings_for_instance(newcp.settings, instance)
+                        })
+                        global_settings.hidden = false
+                        UpdateController.make_request("loaded workspace")
+                    }
+                }, (e)=>{Debug.error("Load_button",e)})                
             })
 
             ControllerPanel.update_buttons()
