@@ -386,6 +386,15 @@
     display:none;
 }
 
+.nodeblock_image_overlay {
+    position: absolute;
+    width: calc(100% - 8px);
+    left: 4px;
+    clip: rect(0, 0, 0, 0);
+  /* clip: shape(top, right, bottom, left); NB 'rect' is the only available option */
+
+}
+
 .nodeblock.minimised .nodeblock_image_panel {
     display:none;
     height:0px !important;

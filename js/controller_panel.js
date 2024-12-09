@@ -685,8 +685,12 @@ export class ControllerPanel extends HTMLDivElement {
         /*
         Finalise
         */
-        this.replaceChild(this._main, this.main)
-        this.replaceChild(this._header, this.header)
+        try {
+            this.replaceChild(this._main, this.main)
+            this.replaceChild(this._header, this.header)
+        } catch (e) {
+            Debug.error("finalise controller panel", e)
+        }
         this.header = this._header
         this.main = this._main
         
