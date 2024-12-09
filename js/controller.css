@@ -423,6 +423,33 @@
     padding:4px 3px 0px 3px;
 }
 
+.two_line_entry {
+    display:flex;
+    flex-direction:column;
+}
+
+.two_line_entry .line {
+    display:flex;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--third-back-color);
+}
+
+.line .toggle {
+    width: unset;
+    padding-left:4px;
+}
+
+.line .label {
+    font-size: 70%;
+    flex-grow: 1;
+    background-color: var(--second-back-color);
+    height: 20px;
+    padding: 4px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    text-wrap-mode: nowrap;
+}
+
 .entry_label {
     position: absolute;
     height: calc(var(--font-size) - 2px);

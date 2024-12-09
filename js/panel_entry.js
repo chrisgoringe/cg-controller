@@ -9,6 +9,7 @@ import { SettingIds } from "./constants.js";
 import { Toggle } from "./toggle.js";
 import { WidgetChangeManager } from "./widget_change_manager.js";
 import { Texts } from "./constants.js";
+import { PLL_Widget } from "./power_lora_loader_widget.js";
 
 function typecheck_number(v) {
     const vv = parseFloat(v)
@@ -100,14 +101,14 @@ export class Entry extends HTMLDivElement {
                 break
             case 'converted-widget':
                 return
-
-            /* for possible future implementation 
             case 'RgthreeDividerWidget':
                 return
             case 'PowerLoraLoaderHeaderWidget':
                 return
             case 'PowerLoraLoaderWidget':
-                return  */
+                this.input_element =  new PLL_Widget(this.parent_controller, node, target_widget)
+                this.appendChild(this.input_element)
+                break
             default:
                 return
         }  
