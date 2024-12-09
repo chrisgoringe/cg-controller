@@ -529,17 +529,20 @@ export class NodeBlock extends HTMLSpanElement {
     }
 
     show_images(urls) {
+        const is_blob = image_is_blob(urls[0])
+        
         if (this.entry_controlling_image) setTimeout(()=>{
             this.entry_controlling_image.update_combo_selection()
         }, Timings.GENERIC_SHORT_DELAY)
 
         const doing_compare = (this.node.type=="Image Comparer (rgthree)" && urls && urls.length==2)
-        this.image_image.doing_compare = this
+        
         this.image_image_2?.remove()
         if (doing_compare) {
             this.image_image_2 = create('img', 'nodeblock_image_overlay', this.image_panel, {"doing_compare":this})
             this.image_index = 0
         }
+        this.image_image.doing_compare = doing_compare ? this : null
 
         const nothing = !(urls && urls.length>0)
         classSet(this.image_panel, 'nodeblock_image_empty', nothing)
@@ -553,7 +556,7 @@ export class NodeBlock extends HTMLSpanElement {
         }
 
         this.urls = urls
-        const url = urls[this.image_index]
+        const url = is_blob ? urls[0] : urls[this.image_index]
 
         if (this.image_image.src != url) {
             this.image_image.src = url
