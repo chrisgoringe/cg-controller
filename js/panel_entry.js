@@ -38,7 +38,7 @@ export class Entry extends HTMLDivElement {
         if (target_widget.disabled) return
         if (target_widget.name=='control_after_generate' && !app.ui.settings.getSettingValue(SettingIds.CONTROL_AFTER_GENERATE, false)) return
 
-        const widget_label = target_widget.label ?? target_widget.name
+        const widget_label = (target_widget.label && target_widget.label!="") ? target_widget.label : target_widget.name
         this.display_name = widget_label
 
         this.classList.add('entry')
@@ -52,6 +52,7 @@ export class Entry extends HTMLDivElement {
 
         var implementation_type = target_widget.type
         if (node.type=="ImpactSwitch" && target_widget.type=="number") implementation_type = "switch-combo"
+        if (node.type=="Fast Groups Muter (rgthree)") implementation_type = "toggle"
 
         switch (implementation_type) {
             case 'text':

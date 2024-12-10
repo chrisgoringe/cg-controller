@@ -96,7 +96,7 @@ function hash_node(node) {
     node.inputs?.forEach(                                 (i)=>{hash += `${i.name} `})
     node.outputs?.forEach(                                (o)=>{hash += `${o.name} `})
     node.widgets?.filter((w)=>(w.element?.value)).forEach((w)=>{hash += `${w.element.value} `})
-    node.widgets?.filter((w)=>(w.type=="PowerLoraLoaderWidget")).forEach((w)=>{hash += JSON.stringify(w.value)})
+    node.widgets?.filter((w)=>(w.value)).forEach(         (w)=>{hash += JSON.stringify(w.value)})
     node.widget_values?.forEach(                          (w)=>{hash += `${w} `})
     return hash
 }
