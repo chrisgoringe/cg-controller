@@ -802,8 +802,8 @@ export class ControllerPanel extends HTMLDivElement {
         const the_select = create('span','group_add_select', document.body)
         this.groups_not_included.forEach((g)=>{
             const the_choice = create('div', 'group_add_option', the_select, {"innerHTML":GroupManager.displayName(g)})
-            the_choice.style.backgroundColor = GroupManager.group_bgcolor(g)
-            the_choice.style.color = GroupManager.group_fgcolor(g)
+            the_choice.style.backgroundColor = GroupManager.group_bgcolor(g, true)
+            the_choice.style.color = GroupManager.group_fgcolor(g, true)
             the_choice.addEventListener('click', (e)=> {
                 if (replace) {
                     this.settings.groups = [g,]
