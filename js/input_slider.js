@@ -170,7 +170,7 @@ export class FancySlider extends HTMLSpanElement {
     static mouse_down_on = null
     static currently_active = null
 
-    constructor(parent_controller, node, widget, properties) {
+    constructor(parent_controller, node, widget, properties, label) {
         super()
         this.classList.add("fancy_slider")
         this.parent_controller = parent_controller
@@ -188,7 +188,7 @@ export class FancySlider extends HTMLSpanElement {
         this.graphic_fill  = create('span', 'fs_graphic_fill', this.graphic)
         this.graphic_text  = create('span', 'fs_graphic_text', this.graphic)
         this.text_edit     = create('input','fs_text_edit', this)
-        this.label         = create('span', 'fs_label', this, {"innerText":widget.label ?? widget.name})
+        this.label         = create('span', 'fs_label', this, {"innerText":label ?? widget.label ?? widget.name})
 
         this.displaying = "graphic"
 
