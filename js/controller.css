@@ -45,6 +45,7 @@
 
     --toggle-on: #8899aa;
     --toggle-off: #333333;
+    --toggle-intermediate: #556677;
 
     --main-border-color: rgb(53 53 53);
 
@@ -549,6 +550,9 @@ textarea.input {
 
 .toggle_graphic.false {
     color: var(--toggle-off);
+}
+.toggle_graphic.intermediate {
+    color: var(--toggle-intermediate);
 }
 
 /* Footer */

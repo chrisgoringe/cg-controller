@@ -104,7 +104,24 @@ export class Entry extends HTMLDivElement {
             case 'RgthreeDividerWidget':
                 return
             case 'PowerLoraLoaderHeaderWidget':
-                return
+                var state = null
+                node.widgets.filter((w)=>(w.type=="PowerLoraLoaderWidget")).forEach((w)=>{
+                    if (w.value.on) {
+                        if (state=='mixed' || state=='off') state = 'mixed'
+                        else state = 'on'
+                    } else {
+                        if (state=='mixed' || state=='on') state = 'mixed'
+                        else state = 'off'
+                    }
+                })
+                this.input_element = new Toggle(state, "Toggle All", "On", "Off", "Mixed")
+                this.input_element.addEventListener('click', (e)=>{
+                    target_widget.hitAreas.toggle.onDown.bind(target_widget)(e, null, node)
+                    app.graph.setDirtyCanvas(true,true);
+                    OnChangeController.on_change('Power lora toggle all')
+                })
+                this.appendChild(this.input_element)
+                break
             case 'PowerLoraLoaderWidget':
                 this.input_element =  new PLL_Widget(this.parent_controller, node, target_widget)
                 this.appendChild(this.input_element)
@@ -123,6 +140,7 @@ export class Entry extends HTMLDivElement {
                 this.input_element.addEventListener('click', this.button_click_callback.bind(this)) 
                 break
             case 'PowerLoraLoaderWidget':
+            case 'PowerLoraLoaderHeaderWidget':
                 break
             default:
                 this.input_element.addEventListener('input', this.input_callback.bind(this))  
