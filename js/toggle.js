@@ -1,3 +1,4 @@
+import { Timings } from "./constants.js";
 import { classSet, create } from "./utilities.js";
 
 export class Toggle extends HTMLSpanElement { 
@@ -34,13 +35,15 @@ export class Toggle extends HTMLSpanElement {
     render() {
         if (this.threestate) {
             this.text_value.innerText = this.value=="on" ? this.label_true : (this.value=="off" ? this.label_false : this.label_intermediate)
-            classSet(this, 'false', this.value=="off")
+            classSet(this, 'muted', this.value=="off")
             classSet(this.graphical_value, "true", this.value=="on")
             classSet(this.graphical_value, "false", this.value=="off")
             classSet(this.graphical_value, "intermediate", this.value=="mixed")
         } else {
             this.text_value.innerText = this.value ? this.label_true : this.label_false
-            classSet(this, 'false', !this.value)
+            classSet(this, 'muted', !this.value)
+            classSet(this.parentElement, 'muted', !this.value)
+            classSet(this.parentElement?.parentElement, 'muted', !this.value)
             classSet(this.graphical_value, "true", this.value)
             classSet(this.graphical_value, "false", !this.value)
         }

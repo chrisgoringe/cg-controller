@@ -109,6 +109,7 @@ export function clamp(v,min,max) {
 }
 
 export function classSet(element, name, add) {
+    if (!element) return
     if (add) {
         element.classList.add(name)
     } else {

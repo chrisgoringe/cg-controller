@@ -519,18 +519,9 @@ textarea.input {
     background-color:var(--second-back-color)
 }
 
-.toggle.false .toggle_value .toggle_text {
-    color: var(--muted-fore-color);
-}
-
-.toggle.false .toggle_label {
-    color: var(--muted-fore-color);
-}
-
 .toggle_label {
     font-size: 70%;
     padding-left: 4px;
-    /*color: var(--muted-fore-color);*/
 }
 
 .toggle_value {
@@ -557,6 +548,22 @@ textarea.input {
 }
 .toggle_graphic.intermediate {
     color: var(--toggle-intermediate);
+}
+
+.muted .toggle_value .toggle_text {
+    color: var(--muted-fore-color);
+}
+
+.muted .toggle_label {
+    color: var(--muted-fore-color);
+}
+
+.muted .line {
+    color: var(--muted-fore-color);
+}
+
+.muted .line .fancy_slider .fs_graphic .fs_graphic_fill {
+    opacity: 50%;
 }
 
 /* Footer */

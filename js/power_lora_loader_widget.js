@@ -48,6 +48,7 @@ export class PLL_Widget extends HTMLSpanElement {
             app.canvas.setDirty(true,true)
         })
         this.top_line.appendChild(this.on_off)
+        this.on_off.render()
 
         this.second_line = create('span','line', this)
 
