@@ -15,7 +15,6 @@ const DEFAULTS = {
     "fullwidth"    : false,
     "hidden_widgets" : [],
     "minimised_blocks" : [],
-    "blocks_rejecting_upstream" : [],
 } 
 const KEYS = Object.keys(DEFAULTS)
 
