@@ -100,10 +100,6 @@ export class Entry extends HTMLDivElement {
                 this.input_element = new Toggle(target_widget.value, widget_label, target_widget.options?.on, target_widget.options?.off)
                 this.appendChild(this.input_element)
                 break
-            case 'converted-widget':
-                return
-            case 'RgthreeDividerWidget':
-                return
             case 'PowerLoraLoaderHeaderWidget':
                 var state = null
                 node.widgets.filter((w)=>(w.type=="PowerLoraLoaderWidget")).forEach((w)=>{
@@ -127,7 +123,10 @@ export class Entry extends HTMLDivElement {
                 this.input_element =  new PLL_Widget(this.parent_controller, node, target_widget)
                 this.appendChild(this.input_element)
                 break
+            case 'converted-widget':
+            case 'RgthreeDividerWidget':
             default:
+                Debug.extended(`Not adding widget type ${implementation_type}`)
                 return
         }  
         
