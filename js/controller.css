@@ -712,15 +712,16 @@ i {
 .image_popup_frame {
     background-color: #333333;
     /*border: thin solid #333333;*/
-    padding: 8px;
-    border-radius: 8px;
     display: flex;
-    max-width: calc(100% - 8px);
-    max-height:  calc(100% - 8px);
+    width: 100%;
+    height: 100%;
+    justify-content: center;
 }
 
 .image_popup_image {
-    border: thin solid white;
+    border: 12px solid black;
     max-width: 100%;
     max-height: 100%;
+    background-color: white;
+    padding: 16px;
 }
