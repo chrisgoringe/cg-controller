@@ -14,6 +14,7 @@ import { WindowResizeManager } from "./snap_manager.js"
 import { Highlighter } from "./highlighter.js"
 import { GroupManager } from "./groups.js"
 import { NodeBlock } from "./nodeblock.js"
+import { ImagePopup } from "./image_popup.js"
 
 const MINIMUM_UE = 500006
 async function check_ue() {
@@ -62,6 +63,9 @@ function on_setup() {
         mouse_change(false)
         ControllerPanel.handle_mouse_up(e)
         FancySlider.handle_mouse_up(e)
+    })
+    window.addEventListener('click', (e)=>{
+        ImagePopup.handle_click(e)
     })
     window.addEventListener('mousemove', (e)=>{
         ControllerPanel.handle_mouse_move(e)

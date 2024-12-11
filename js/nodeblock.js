@@ -1,8 +1,7 @@
 import { app, ComfyApp } from "../../scripts/app.js";
-
 import { ComfyWidgets } from "../../scripts/widgets.js";
 
-import { create, darken, classSet, mode_change, focus_mode, tooltip_if_overflowing } from "./utilities.js";
+import { create, darken, classSet, mode_change, tooltip_if_overflowing, kill_event } from "./utilities.js";
 import { Entry } from "./panel_entry.js"
 import { make_resizable } from "./resize_manager.js";
 import { get_image_url, image_is_blob, ImageManager, is_image_upload_node, isImageNode } from "./image_manager.js";
@@ -13,6 +12,7 @@ import { close_context_menu, open_context_menu } from "./context_menu.js";
 import { Generic, MAXIMUM_UPSTREAM, Texts, Timings } from "./constants.js";
 import { InclusionOptions } from "./constants.js";
 import { NodeInclusionManager } from "./node_inclusion.js";
+import { ImagePopup } from "./image_popup.js";
 
 function is_single_image(data) { return (data && data.items && data.items.length==1 && data.items[0].type.includes("image")) }
 
@@ -334,8 +334,7 @@ export class NodeBlock extends HTMLSpanElement {
         this.mode_button  = create('i', `pi mode_button mode_button_${this.mode}`, this.title_bar_left)
         this.mode_button.addEventListener('click', (e)=>{
             if (app.canvas.read_only) return
-            e.preventDefault(); 
-            e.stopPropagation(); 
+            kill_event(e)
             this.node.mode = mode_change(this.node.mode,e)
             app.canvas.setDirty(true,true)
             OnChangeController.on_change('node mode button')
@@ -398,7 +397,8 @@ export class NodeBlock extends HTMLSpanElement {
         this.image_image = create('img', 'nodeblock_image', this.image_panel)
         this.image_image.addEventListener('load', () => {this.rescale_image()})
         this.image_image.addEventListener('click', (e)=>{
-            if (e.ctrlKey) { this.image_context_menu(e) }
+            if (e.ctrlKey) { kill_event(e); this.image_context_menu(e) }
+            if (e.shiftKey) { ImagePopup.show(this.urls[this.image_index]) }
         })
         this.image_paging = create('span', 'overlay overlay_paging', this.image_panel)
         this.image_image.handle_right_click = (e) => { this.image_context_menu(e) }

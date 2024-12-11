@@ -692,3 +692,31 @@ i {
     opacity: 0.5;
     cursor: unset;
 }
+
+.image_popup {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.image_popup_frame {
+    background-color: #333333;
+    /*border: thin solid #333333;*/
+    padding: 8px;
+    border-radius: 8px;
+    display: flex;
+    max-width: calc(100% - 8px);
+    max-height:  calc(100% - 8px);
+}
+
+.image_popup_image {
+    border: thin solid white;
+    max-width: 100%;
+    max-height: 100%;
+}

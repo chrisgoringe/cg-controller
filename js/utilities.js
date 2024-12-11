@@ -306,3 +306,11 @@ function prepColor(hex) {
 
     return color
 }
+
+export function kill_event(e) {
+    if (e) {
+        e.preventDefault()
+        e.stopPropagation()
+        e.stopImmediatePropagation()
+    }
+}
