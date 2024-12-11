@@ -53,6 +53,7 @@ export class Entry extends HTMLDivElement {
         var implementation_type = target_widget.type
         if (node.type=="ImpactSwitch" && target_widget.type=="number") implementation_type = "switch-combo"
         if (node.type=="Fast Groups Muter (rgthree)") implementation_type = "toggle"
+        if (node.type=="Fast Groups Bypasser (rgthree)") implementation_type = "toggle"
 
         switch (implementation_type) {
             case 'text':
@@ -124,9 +125,12 @@ export class Entry extends HTMLDivElement {
                 this.appendChild(this.input_element)
                 break
             case 'converted-widget':
+            case 'converted-widget:seed':
             case 'RgthreeDividerWidget':
+                Debug.trivia(`Not adding known widget type ${implementation_type}`)
+                return
             default:
-                Debug.extended(`Not adding widget type ${implementation_type}`)
+                Debug.extended(`Not adding unknown widget type ${implementation_type}`)
                 return
         }  
         

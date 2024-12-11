@@ -40,6 +40,7 @@ export class Toggle extends HTMLSpanElement {
             classSet(this.graphical_value, "intermediate", this.value=="mixed")
         } else {
             this.text_value.innerText = this.value ? this.label_true : this.label_false
+            classSet(this, 'false', !this.value)
             classSet(this.graphical_value, "true", this.value)
             classSet(this.graphical_value, "false", !this.value)
         }
