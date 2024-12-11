@@ -41,6 +41,9 @@ export class PLL_Widget extends HTMLSpanElement {
         this.classList.add('two_line_entry')
         this.top_line = create('span','line', this)
         this.label = create('span', 'label', this.top_line, {"innerText":this.target_widget._value.lora})
+        this.label.addEventListener('click', (e)=>{
+            this.target_widget.hitAreas.lora.onDown.bind(this.target_widget)(e,null,node)
+        })
         this.on_off = new Toggle(target_widget._value.on, "", "Active", "Muted")
         this.on_off.addEventListener('input',(e)=>{
             target_widget.hitAreas.toggle.onDown.apply(target_widget, e)
