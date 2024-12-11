@@ -523,10 +523,14 @@ textarea.input {
     color: var(--muted-fore-color);
 }
 
+.toggle.false .toggle_label {
+    color: var(--muted-fore-color);
+}
+
 .toggle_label {
     font-size: 70%;
     padding-left: 4px;
-    color: var(--muted-fore-color);
+    /*color: var(--muted-fore-color);*/
 }
 
 .toggle_value {
