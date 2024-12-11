@@ -115,6 +115,8 @@ export class Texts {
     static EDIT_WV = "Edit widget visibility"
     static IMAGE_WIDGET_NAME = "image viewer"
     static UNCONNECTED = "Unconnected Input"
+    static ACCEPT_UPSTREAM = "Show upstream images"
+    static REJECT_UPSTREAM = "Only show my images"
 }
 
 export const DisplayNames = {

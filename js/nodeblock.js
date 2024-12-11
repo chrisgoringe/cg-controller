@@ -192,24 +192,44 @@ export class NodeBlock extends HTMLSpanElement {
         return this.parent_controller.settings.minimised_blocks.includes(this.node.id)
     }
 
+    get_rejects_upstream() {
+        return this.parent_controller.settings.blocks_rejecting_upstream.includes(this.node.id)
+    }
+
     toggle_minimise() {
         this.set_minimised(!this.get_minimised())
     }
 
+    toggle_rejects_upstream() {
+        this.set_rejects_upstream(!this.get_rejects_upstream())
+    }
+
+    set(lst, v) {
+        if (v) {
+            lst.push(this.node.id)
+        } else {
+            const index = lst.findIndex((e)=>(e==this.node.id))
+            lst.splice(index, 1)
+        }        
+    }
+
     set_minimised(v) {
         if (v == this.get_minimised()) return
-        if (v) {
-            this.parent_controller.settings.minimised_blocks.push(this.node.id)
-        } else {
-            const index = this.parent_controller.settings.minimised_blocks.findIndex((e)=>(e==this.node.id))
-            this.parent_controller.settings.minimised_blocks.splice(index, 1)
-        }
+        this.set(this.parent_controller.settings.minimised_blocks, v)
         this.minimised = v
         classSet(this, 'minimised', this.minimised)
         if (this.minimised && this.contains(document.activeElement)) {
             document.activeElement.blur()
         }
     }
+
+    set_rejects_upstream(v) {
+        if (v == this.get_rejects_upstream()) return
+        this.set(this.parent_controller.settings.blocks_rejecting_upstream, v)
+        this.rejects_updates = v
+    }
+
+    
 
     set_all_widget_visibility(v) {
         this.parent_controller.settings.hidden_widgets = []
@@ -276,6 +296,13 @@ export class NodeBlock extends HTMLSpanElement {
                     NodeInclusionManager.node_change_callback?.('context_menu_remove', Timings.GENERIC_SHORT_DELAY);
                 }
             },
+            { 
+                "title"    : this.rejects_updates ? Texts.ACCEPT_UPSTREAM : Texts.REJECT_UPSTREAM, 
+                "callback" : ()=>{
+                    this.toggle_rejects_upstream()
+                    UpdateController.make_request('accepts updates toggled', null, null, this.parent_controller)
+                }
+            },
             {
                 "title"    : Texts.EDIT_WV,
                 has_submenu: true,
@@ -330,6 +357,7 @@ export class NodeBlock extends HTMLSpanElement {
         }
 
         this.minimised = this.get_minimised()
+        this.rejects_updates = this.get_rejects_upstream()
 
         this.mode_button  = create('i', `pi mode_button mode_button_${this.mode}`, this.title_bar_left)
         this.mode_button.addEventListener('click', (e)=>{
@@ -413,7 +441,7 @@ export class NodeBlock extends HTMLSpanElement {
         this.resize_observer = new ResizeObserver( ()=>{this.rescale_image()} ).observe(this.image_panel)
         if (app.canvas.read_only) this.image_panel.style.resize = "none"
 
-        if (isImageNode(this.node)) {
+        if (isImageNode(this.node) && !this.rejects_updates) {
             const add_upstream = (nd, depth) => {
                 if (depth>MAXIMUM_UPSTREAM) return
                 if (nd==this.node || (!isImageNode(nd) && !is_image_upload_node(nd))) {
