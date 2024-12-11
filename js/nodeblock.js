@@ -492,7 +492,9 @@ export class NodeBlock extends HTMLSpanElement {
                         this.image_image.style.width = `${w}px`
                     } else {
                         const scaled_height_fraction = (im_h * w) / (im_w * box.height)
-                        this.image_panel.style.maxHeight = `unset`
+                        const max_height = (im_h/im_w) * w;
+                        //this.image_panel.style.maxHeight = `unset`
+                        this.image_panel.style.maxHeight = `${max_height}px`
                         this.image_image.style.height = `100%`
                         this.image_image.style.width = `${w/scaled_height_fraction}px`
                     }
