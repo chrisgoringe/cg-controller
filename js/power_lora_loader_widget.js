@@ -72,7 +72,7 @@ export class PLL_Widget extends HTMLSpanElement {
             this.slider2._change = (e)=>{
                 e.stopPropagation()
                 const v = parseFloat(e.target.value)
-                if (!isNaN(v)) this.ps.value = v
+                if (!isNaN(v)) this.ps2.value = v
                 this.slider2.switch_to_graphicaledit()
                 FancySlider.currently_active = null
             }
