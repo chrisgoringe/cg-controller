@@ -281,7 +281,7 @@ export class ControllerPanel extends HTMLDivElement {
             exit_focus_button.addEventListener('click', () => {
                 UpdateController.make_request('exit focus', 10)
             })
-
+/* removed from 1.6, will return in 1.7
             ControllerPanel.save_button = create('i', 'pi pi-file-export controller_menu_button', ControllerPanel.buttons)
             add_tooltip(ControllerPanel.save_button, 'save controller workspace')
             ControllerPanel.save_button.addEventListener('click', ()=>{ 
@@ -303,6 +303,7 @@ export class ControllerPanel extends HTMLDivElement {
                     }
                 }, (e)=>{Debug.error("Load_button",e)})                
             })
+*/
 
             ControllerPanel.update_buttons()
             
