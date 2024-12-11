@@ -1,5 +1,5 @@
 
-export const VERSION = "1.5.1"
+export const VERSION = "1.6"
 
 export const MAXIMUM_UPSTREAM = 4
 
@@ -74,7 +74,7 @@ export class Timings { // ms
     static GENERIC_SHORT_DELAY = 20
     static GENERIC_LONGER_DELAY = 1000
     static GENERIC_MUCH_LONGER_DELAY = 5000
-    static PERIODIC_CHECK = 1000               // on_change 'tick'
+    static PERIODIC_CHECK = 1000              // on_change 'tick'
     static DRAG_PAUSE_OVER_BACKGROUND = 500
     static SLIDER_ACTIVE_DELAY = 300
     static UPDATE_EXCEPTION_WAITTIME = 10000
@@ -114,6 +114,7 @@ export class Texts {
     static REMOVE = "Remove from controllers"
     static EDIT_WV = "Edit widget visibility"
     static IMAGE_WIDGET_NAME = "image viewer"
+    static UNCONNECTED = "Unconnected Input"
 }
 
 export const DisplayNames = {

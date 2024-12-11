@@ -1,8 +1,7 @@
 import { app, ComfyApp } from "../../scripts/app.js";
-
 import { ComfyWidgets } from "../../scripts/widgets.js";
 
-import { create, darken, classSet, mode_change, focus_mode, tooltip_if_overflowing } from "./utilities.js";
+import { create, darken, classSet, mode_change, tooltip_if_overflowing, kill_event } from "./utilities.js";
 import { Entry } from "./panel_entry.js"
 import { make_resizable } from "./resize_manager.js";
 import { get_image_url, image_is_blob, ImageManager, is_image_upload_node, isImageNode } from "./image_manager.js";
@@ -13,6 +12,7 @@ import { close_context_menu, open_context_menu } from "./context_menu.js";
 import { Generic, MAXIMUM_UPSTREAM, Texts, Timings } from "./constants.js";
 import { InclusionOptions } from "./constants.js";
 import { NodeInclusionManager } from "./node_inclusion.js";
+import { ImagePopup } from "./image_popup.js";
 
 function is_single_image(data) { return (data && data.items && data.items.length==1 && data.items[0].type.includes("image")) }
 
@@ -300,6 +300,12 @@ export class NodeBlock extends HTMLSpanElement {
                     ComfyApp.open_maskeditor()
                 }
             },
+            { 
+                "title":"Open in new tab", 
+                "callback":()=>{
+                    window.open(this.urls[this.image_index])
+                }
+            },
         ])
     }
 
@@ -328,8 +334,7 @@ export class NodeBlock extends HTMLSpanElement {
         this.mode_button  = create('i', `pi mode_button mode_button_${this.mode}`, this.title_bar_left)
         this.mode_button.addEventListener('click', (e)=>{
             if (app.canvas.read_only) return
-            e.preventDefault(); 
-            e.stopPropagation(); 
+            kill_event(e)
             this.node.mode = mode_change(this.node.mode,e)
             app.canvas.setDirty(true,true)
             OnChangeController.on_change('node mode button')
@@ -392,7 +397,8 @@ export class NodeBlock extends HTMLSpanElement {
         this.image_image = create('img', 'nodeblock_image', this.image_panel)
         this.image_image.addEventListener('load', () => {this.rescale_image()})
         this.image_image.addEventListener('click', (e)=>{
-            if (e.ctrlKey) { this.image_context_menu(e) }
+            if (e.ctrlKey) { kill_event(e); this.image_context_menu(e) }
+            if (e.shiftKey) { ImagePopup.show(this.urls[this.image_index]) }
         })
         this.image_paging = create('span', 'overlay overlay_paging', this.image_panel)
         this.image_image.handle_right_click = (e) => { this.image_context_menu(e) }
@@ -500,10 +506,44 @@ export class NodeBlock extends HTMLSpanElement {
         this.show_images([get_image_url(nm),])
     }
 
+    static comparing = null
+    static handle_mouse_move(e) {
+        if (e.target.doing_compare) {
+            NodeBlock.comparing = e.target.doing_compare
+            const fraction = e.offsetX / NodeBlock.comparing.image_image.getBoundingClientRect().width
+            NodeBlock.comparing.show_part_of_overlay(fraction)
+            Debug.extended(`mouse over compare image ${fraction}`)
+        } else if (NodeBlock.comparing) {
+            NodeBlock.comparing.show_part_of_overlay(0)
+            NodeBlock.comparing = null
+        }
+    }
+
+    show_part_of_overlay(fraction) {
+        if (this.image_image_2) {
+            const box = this.image_image_2.getBoundingClientRect()
+            const w = fraction * box.width
+            const h = box.height
+            this.image_image_2.style.clip = `rect(0, ${w}px, ${h}px, 0)`
+        }
+    }
+
     show_images(urls) {
+        const is_blob = image_is_blob(urls[0])
+        
         if (this.entry_controlling_image) setTimeout(()=>{
             this.entry_controlling_image.update_combo_selection()
         }, Timings.GENERIC_SHORT_DELAY)
+
+        const doing_compare = (this.node.type=="Image Comparer (rgthree)" && urls && urls.length==2)
+        
+        this.image_image_2?.remove()
+        if (doing_compare) {
+            this.image_image_2 = create('img', 'nodeblock_image_overlay', this.image_panel, {"doing_compare":this})
+            this.image_index = 0
+        }
+        this.image_image.doing_compare = doing_compare ? this : null
+
         const nothing = !(urls && urls.length>0)
         classSet(this.image_panel, 'nodeblock_image_empty', nothing)
         classSet(this.image_pin, 'hidden', nothing)
@@ -516,17 +556,23 @@ export class NodeBlock extends HTMLSpanElement {
         }
 
         this.urls = urls
-        const url = urls[this.image_index]
+        const url = is_blob ? urls[0] : urls[this.image_index]
 
         if (this.image_image.src != url) {
             this.image_image.src = url
             this.image_panel.style.maxHeight = ''
         }
 
-        classSet(this.image_paging, 'hidden', urls.length<2)
-        classSet(this.image_prev, 'prev', true)
-        this.image_xofy.innerHTML = `${this.image_index+1}/${urls.length}`
-        classSet(this.image_next, 'next', true)
+        if (doing_compare) {
+            classSet(this.image_paging, 'hidden', true)
+            this.image_image_2.src = urls[1]
+            setTimeout(this.show_part_of_overlay.bind(this), Timings.GENERIC_SHORT_DELAY, 0.0)
+        } else {
+            classSet(this.image_paging, 'hidden', urls.length<2)
+            classSet(this.image_prev, 'prev', true)
+            this.image_xofy.innerHTML = `${this.image_index+1}/${urls.length}`
+            classSet(this.image_next, 'next', true)
+        }
     }
 
     previousImage() {

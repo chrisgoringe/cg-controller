@@ -13,6 +13,8 @@ import { FancySlider } from "./input_slider.js"
 import { WindowResizeManager } from "./snap_manager.js"
 import { Highlighter } from "./highlighter.js"
 import { GroupManager } from "./groups.js"
+import { NodeBlock } from "./nodeblock.js"
+import { ImagePopup } from "./image_popup.js"
 
 const MINIMUM_UE = 500006
 async function check_ue() {
@@ -62,9 +64,13 @@ function on_setup() {
         ControllerPanel.handle_mouse_up(e)
         FancySlider.handle_mouse_up(e)
     })
+    window.addEventListener('click', (e)=>{
+        ImagePopup.handle_click(e)
+    })
     window.addEventListener('mousemove', (e)=>{
         ControllerPanel.handle_mouse_move(e)
         FancySlider.handle_mouse_move(e)
+        NodeBlock.handle_mouse_move(e)
     })
     window.addEventListener('contextmenu', (e)=>{
         if (e.target.handle_right_click) return stop_event(e);
