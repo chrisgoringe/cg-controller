@@ -375,7 +375,7 @@ export class NodeBlock extends HTMLSpanElement {
         this.image_pin.addEventListener('click', (e) => {
             if (app.canvas.read_only) return
             this.node.properties.controller_widgets[this.image_panel_id].pinned = !this.node.properties.controller_widgets[this.image_panel_id].pinned
-            this.update_pin()
+            this.update_pin(true)
         })
 
         this.style.backgroundColor = this.node.bgcolor ?? LiteGraph.NODE_DEFAULT_BGCOLOR
@@ -489,13 +489,13 @@ export class NodeBlock extends HTMLSpanElement {
         return true
     }
 
-    update_pin() {
+    update_pin(from_click) {
         classSet(this.image_pin, 'clicked', this.node.properties.controller_widgets[this.image_panel_id].pinned)
         this.image_panel.style.resize = this.node.properties.controller_widgets[this.image_panel_id].pinned ? "none" : "vertical"
-        this.rescale_image()
+        this.rescale_image(from_click)
     }
 
-    rescale_image() {
+    rescale_image(from_click) {
         if (this.rescaling) return
         if (!this.parent_controller) {
             Debug.trivia("Nodeblock rescale_image called with no parent", true)
@@ -518,13 +518,16 @@ export class NodeBlock extends HTMLSpanElement {
                         this.image_panel.style.maxHeight = `${full_h}px`
                         this.image_image.style.height = `${full_h}px`
                         this.image_image.style.width = `${w}px`
-                    } else {
-                        const scaled_height_fraction = (im_h * w) / (im_w * box.height)
+                    } else {                      
                         const max_height = (im_h/im_w) * w;
-                        //this.image_panel.style.maxHeight = `unset`
+                        if (from_click) {
+                            const overflow = box.bottom - this.parent_controller.getBoundingClientRect().bottom + 8
+                            const height = (from_click) ? Math.min(max_height, max_height - overflow) : max_height
+                            this.image_panel.style.height = `${height}px`
+                        }
                         this.image_panel.style.maxHeight = `${max_height}px`
                         this.image_image.style.height = `100%`
-                        this.image_image.style.width = `${w/scaled_height_fraction}px`
+                        this.image_image.style.width = `auto`
                     }
                 }
             } 
