@@ -9,7 +9,7 @@ import { OnChangeController, UpdateController } from "./update_controller.js";
 import { Debug } from "./debug.js";
 import { Highlighter } from "./highlighter.js";
 import { close_context_menu, open_context_menu } from "./context_menu.js";
-import { Generic, MAXIMUM_UPSTREAM, Texts, Timings } from "./constants.js";
+import { Generic, /*MAXIMUM_UPSTREAM, */Texts, Timings } from "./constants.js";
 import { InclusionOptions } from "./constants.js";
 import { NodeInclusionManager } from "./node_inclusion.js";
 import { ImagePopup } from "./image_popup.js";
@@ -441,9 +441,11 @@ export class NodeBlock extends HTMLSpanElement {
         this.resize_observer = new ResizeObserver( ()=>{this.rescale_image()} ).observe(this.image_panel)
         if (app.canvas.read_only) this.image_panel.style.resize = "none"
 
+        const seen = new Set()
         if (isImageNode(this.node) && !this.rejects_updates) {
             const add_upstream = (nd, depth) => {
-                if (depth>MAXIMUM_UPSTREAM) return
+                if (seen.has(nd.id)) return
+                seen.add(nd.id)
                 if (nd==this.node || (!isImageNode(nd) && !is_image_upload_node(nd))) {
                     ImageManager.add_listener(nd.id, this)
                     //Debug.trivia(`${this.node.id} listening to ${nd.id}`)

@@ -1,7 +1,7 @@
 
 export const VERSION = "1.6"
 
-export const MAXIMUM_UPSTREAM = 4
+//export const MAXIMUM_UPSTREAM = 4
 
 export class SettingIds {
     static KEYBOARD_TOGGLE = "Controller.Display.keyboard"
