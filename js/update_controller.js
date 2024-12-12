@@ -93,7 +93,7 @@ function hash_node(node) {
     */
     if (!node) return "nonode"
     var hash = `${node.bgcolor} ${node.title} ${node.mode} `
-    node.inputs?.forEach(                                 (i)=>{hash += `${i.name} `})
+    node.inputs?.forEach(                                 (i)=>{hash += `${i.label ?? i.name} `})
     node.outputs?.forEach(                                (o)=>{hash += `${o.name} `})
     node.widgets?.filter((w)=>(w.element?.value)).forEach((w)=>{hash += `${w.element.value} `})
     node.widgets?.filter((w)=>(w.value)).forEach(         (w)=>{hash += JSON.stringify(w.value)})

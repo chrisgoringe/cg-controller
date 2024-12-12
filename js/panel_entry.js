@@ -71,13 +71,13 @@ export class Entry extends HTMLDivElement {
                 this.appendChild(this.input_element)
                 break
             case 'switch-combo':
-                this.choices_value_to_name = {"":Texts.UNCONNECTED}
-                for (var idx=0; idx<node.inputs.length; idx++) { if (node.inputs[idx].link) this.choices_value_to_name[idx+1] = node.inputs[idx].label ?? node.inputs[idx].name }
+                this.choices_value_to_name = {}
+                for (var idx=0; idx<node.inputs.length; idx++) { this.choices_value_to_name[idx+1] = node.inputs[idx].label ?? node.inputs[idx].name }
                 this.entry_label = create('span','entry_label', this, {'innerText':widget_label, 'draggable':false} )  
                 this.entry_value = create('span','entry_label value', this, {'draggable':false} ) 
                 this.input_element = create("select", 'input', this, {"doesntBlockRefresh":true}) 
                 Object.keys(this.choices_value_to_name).forEach((value) => {
-                    if (this.choices_value_to_name[value]!=Texts.UNCONNECTED) this.input_element.add(new Option(this.choices_value_to_name[value], value ))
+                    this.input_element.add(new Option(this.choices_value_to_name[value], value ))
                 })
                 this.input_element.value = target_widget.value
                 this.input_element.redraw = () => { this.entry_value.innerText = this.choices_value_to_name[this.input_element.value] } 
