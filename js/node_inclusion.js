@@ -26,20 +26,35 @@ export class NodeInclusionManager {
     }
 
     static visual(ctx, node) {
-        const r = 3
+        const r = NodeInclusionManager.favorite(node) ? 4 : 3
         const title_mid = 15
         const width = node.collapsed ? node._collapsed_width : node.size[0]
+        const x = 3+width-title_mid
+        const y = -title_mid
         if (NodeInclusionManager.node_includable(node)) {
             ctx.save();
-            ctx.beginPath();
-            ctx.arc(3+width-title_mid, -title_mid, r, 0, 2*Math.PI, false);
-            if (!NodeInclusionManager.advanced_only(node)) {
-                ctx.fillStyle = "#C08080";
-                ctx.fill()
-            }
-            ctx.lineWidth = 2;
+
+            ctx.fillStyle = "#C08080";
+            ctx.lineWidth = 3;
             ctx.strokeStyle = "#C08080";
-            ctx.stroke();
+
+            if (NodeInclusionManager.favorite(node)) {
+                ctx.beginPath();
+                ctx.arc(x-(r/2), y-(r/2), (r/2), -Math.PI, 0, false);
+                ctx.arc(x+(r/2), y-(r/2), (r/2), -Math.PI, 0, false);
+                ctx.lineTo(x, y+r)
+                ctx.lineTo(x-r, y-(r/2))
+                ctx.fill()
+            } else {
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, 2*Math.PI, false);
+                if (!NodeInclusionManager.advanced_only(node)) {
+                    ctx.fill()
+                } else {
+                    ctx.stroke()
+                }
+            }
+
             ctx.restore();       
         }
     }
