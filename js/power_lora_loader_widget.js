@@ -1,6 +1,6 @@
 import { create } from "./utilities.js"
 import { Toggle } from "./toggle.js"
-import { OnChangeController, UpdateController } from "./update_controller.js"
+import { OnChangeController } from "./update_controller.js"
 import { FancySlider } from "./input_slider.js"
 import { app } from "../../scripts/app.js";
 

@@ -2,6 +2,7 @@ import { app } from "../../scripts/app.js";
 
 import { create, get_node, add_tooltip, clamp, classSet, defineProperty, find_controller_parent, createBounds, tooltip_if_overflowing } from "./utilities.js";
 import { family_names, GroupManager } from "./groups.js";
+import { pim } from "./prompt_id_manager.js";
 
 import { OnChangeController, UpdateController } from "./update_controller.js";
 import { NodeBlock } from "./nodeblock.js";
@@ -133,6 +134,7 @@ export class ControllerPanel extends HTMLDivElement {
 
 
     static on_progress(e) {
+        if (!pim.ours(e)) return
         const node_id = e.detail.node
         const value = e.detail.value
         const max = e.detail.max
@@ -151,6 +153,7 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     static on_executing(e) {
+        if (!pim.ours(e)) return
         const node_id = e.detail
         Debug.trivia(`ControllerPanel.on_executing ${node_id}`)
         Object.values(ControllerPanel.instances).forEach((cp)=>{
@@ -371,26 +374,27 @@ export class ControllerPanel extends HTMLDivElement {
 
     static node_change(node_id, moreinfo) {
         if (UpdateController._configuring) return;
-        setTimeout(ControllerPanel._node_change, Timings.GENERIC_SHORT_DELAY, node_id, moreinfo)
+        OnChangeController.on_change(moreinfo, node_id)
+        //setTimeout(ControllerPanel._node_change, Timings.GENERIC_SHORT_DELAY, node_id, moreinfo)
     }
-    static _node_change(node_id, moreinfo) {
+    /*static _node_change(node_id, moreinfo) {
         Object.values(ControllerPanel.instances).forEach((cp)=>{cp._node_change(node_id, moreinfo)})
-    }
+    }*/
 
-    static group_change(group_name) {
+    /*static group_change(group_name) {
         const names = family_names(group_name)
         Object.values(ControllerPanel.instances).filter((cp)=>(names.has(cp.settings.group_choice))).forEach((cp)=>{
             UpdateController.make_single_request(`group ${group_name} changed`,cp)
         })
-    }
+    }*/
 
     have_node(nid) {
         return (this.node_blocks[nid] && this.node_blocks[nid].parentElement)
     }
 
-    _node_change(node_id, moreinfo) {
-        if (this.have_node(node_id)) UpdateController.make_single_request(`node ${node_id} changed ${moreinfo ?? ""}`,this)
-    }
+    //_node_change(node_id, moreinfo) {
+    //    if (this.have_node(node_id)) UpdateController.make_single_request(`node ${node_id} changed ${moreinfo ?? ""}`,this)
+    //}
 
     choose_suitable_initial_group() {
         const all_options = GroupManager.list_group_names()
@@ -787,7 +791,8 @@ export class ControllerPanel extends HTMLDivElement {
                 if (app.canvas.read_only) return
                 GroupManager.change_group_mode(this.settings.group_choice, node_mode, e)
                 app.canvas.setDirty(true,true)
-                ControllerPanel.group_change(this.settings.group_choice)
+                //ControllerPanel.group_change(this.settings.group_choice)
+                OnChangeController.on_change("Group mode changed")
             })
             add_tooltip(this.group_mode_button, Texts.MODE_TOOLTIP[node_mode], 'right')
             

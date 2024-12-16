@@ -1,12 +1,12 @@
 import { app } from "../../scripts/app.js"
-import { api } from "../../scripts/api.js" 
+import { api, ComfyApi } from "../../scripts/api.js" 
 import { ControllerPanel } from "./controller_panel.js"
 import { create, mouse_change, send_graph_changed } from "./utilities.js"
 import { OPTIONS } from "./options.js"
 import { add_control_panel_options, NodeInclusionManager,  } from "./node_inclusion.js"
 import { OnChangeController, UpdateController } from "./update_controller.js"
 import { Debug } from "./debug.js"
-import { BASE_PATH, SettingIds } from "./constants.js"
+import { BASE_PATH, SettingIds, Timings } from "./constants.js"
 import { ImageManager } from "./image_manager.js"
 import { global_settings } from "./settings.js"
 import { FancySlider } from "./input_slider.js"
@@ -15,6 +15,7 @@ import { Highlighter } from "./highlighter.js"
 import { GroupManager } from "./groups.js"
 import { NodeBlock } from "./nodeblock.js"
 import { ImagePopup } from "./image_popup.js"
+import { pim } from "./prompt_id_manager.js"
 
 const MINIMUM_UE = 500006
 async function check_ue() {
@@ -45,6 +46,7 @@ function on_setup() {
     api.addEventListener('graphCleared', ControllerPanel.on_graphCleared) 
 
     api.addEventListener('executed', ImageManager.on_executed)
+    api.addEventListener('executed', pim.on_executed)
     api.addEventListener('execution_start', ImageManager.on_execution_start)
     api.addEventListener('executing', ImageManager.on_executing)
     api.addEventListener('b_preview', ImageManager.on_b_preview)
@@ -191,6 +193,13 @@ app.registerExtension({
             if (focus_change) ControllerPanel.focus_mode_changed()
         }).observe(document.getElementsByClassName('graph-canvas-container')[0], {"childList":true})
 
+        const queuePrompt = api.queuePrompt
+        api.queuePrompt = async function() {
+            const r = await queuePrompt.apply(ComfyApi, arguments)
+            pim.add(r.prompt_id)
+            return r
+        }
+
         check_ue()
     },
 
@@ -262,7 +271,7 @@ app.registerExtension({
         const onRemoved = node.onRemoved
         node.onRemoved = function() {
             onRemoved?.apply(this, arguments)
-            UpdateController.make_request_unless_configuring("node_removed", 20)
+            UpdateController.make_request_unless_configuring("node_removed", Timings.GENERIC_SHORT_DELAY)
         }
 
         const onDrawForeground = node.onDrawForeground
@@ -276,7 +285,7 @@ app.registerExtension({
 
         }
 
-        UpdateController.make_request_unless_configuring("node_created", 20)
+        UpdateController.make_request_unless_configuring("node_created", Timings.GENERIC_SHORT_DELAY)
     },
 
 })

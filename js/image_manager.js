@@ -1,5 +1,6 @@
 import { api } from "../../scripts/api.js";
 import { Debug } from "./debug.js";
+import { pim } from "./prompt_id_manager.js";
 
 export function is_image_upload_node(node) {
     return ( node?.pasteFile != undefined )
@@ -83,20 +84,24 @@ export class ImageManager {
         }
     }
 
-    static on_execution_start() {
+    static on_execution_start(e) {
+        if (!pim.ours(e)) return
         ImageManager.node_urls_map = {}
     }
 
     static on_executing(e) {
+        if (!pim.ours(e)) return
         ImageManager.executing_node = e.detail
     }
 
     static on_b_preview(e) {
+        if (!pim.ours(e)) return
         Debug.trivia(`ImageManager on_b_preview ${ImageManager.executing_node}`)
         ImageManager._set_sources( ImageManager.executing_node, [window.URL.createObjectURL(e.detail),] )
     }
 
     static on_executed(e) {
+        if (!pim.ours(e)) return
         Debug.trivia(`ImageManager on_executed ${e.detail.node}`)
         const srcs = []
         e.detail?.output?.images?.forEach((v)=>{ srcs.push(get_image_url(v)) })

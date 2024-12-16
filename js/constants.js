@@ -80,7 +80,7 @@ export class Timings { // ms
     static UPDATE_EXCEPTION_WAITTIME = 10000
     static PAUSE_STACK_WAIT = 101
     static ACTIVE_ELEMENT_DELAY = 234
-    static ON_CHANGE_GAP = 200                 // must be less than PERIODIC_CHECK
+    static ON_CHANGE_GAP = 200                 // must be less than PERIODIC_CHECK. How long to wait for gap in on_change calls
     static ALLOW_LAYOUT = 1000
 }
 

@@ -209,10 +209,7 @@ export class Entry extends HTMLDivElement {
 
     keydown_callback(e) {
         Debug.trivia("keydown_callback")
-        UpdateController.push_pause()
-        try {
-            if (e.key=="Enter") document.activeElement.blur();
-        } finally { UpdateController.pop_pause() }
+        if (e.key=="Enter") document.activeElement.blur();
     }
 
     button_click_callback(e) {
