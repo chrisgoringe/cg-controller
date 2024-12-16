@@ -423,7 +423,8 @@ export class NodeBlock extends HTMLSpanElement {
         this.update_pin()
 
         this.image_image = create('img', 'nodeblock_image', this.image_panel)
-        this.image_image.addEventListener('load', () => {this.rescale_image()})
+        this.image_image.addEventListener('load', (e) => {this.rescale_image()})
+        this.image_image.addEventListener('error', (e) => {delete e.target.src})
         this.image_image.addEventListener('click', (e)=>{
             if (e.ctrlKey) { kill_event(e); this.image_context_menu(e) }
             if (e.shiftKey) { ImagePopup.show(this.urls[this.image_index]) }
