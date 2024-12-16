@@ -67,10 +67,10 @@ export class GroupManager {
     }
 
     static check_for_changes() {
-        const gids = []
+        const group_titles = new Set()
         app.graph._groups.forEach((group) => {
             const id = parseInt(group.id)
-            gids.push(id)
+            group_titles.add(group.title)
             if (GroupManager.group_properties[id]) {
                 if (GroupManager.group_properties[id].color != group.color) {
                     GroupManager.change_callback?.(GroupManager.group_properties[id].title, {"color":group.color})
@@ -84,7 +84,7 @@ export class GroupManager {
                 GroupManager.group_properties[id] = {"color":group.color, "title":group.title}
             }
         })
-        Object.keys(GroupManager.group_properties).filter((id)=>(!gids.includes(parseInt(id)))).forEach((id)=>{
+        Object.keys(GroupManager.group_properties).filter((id)=>(!group_titles.has(GroupManager.group_properties[id].title))).forEach((id)=>{
             GroupManager.change_callback?.(GroupManager.group_properties[id].title, {"removed":true})
             delete GroupManager.group_properties[id]
         })
