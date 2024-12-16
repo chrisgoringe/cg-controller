@@ -218,7 +218,7 @@ export function pickContrastingColor(fixed, options, threshold=3.0) {
     options.forEach((o)=>{
         if (best_score>=0) {
             const score = calculateContrastRatioAntecedent(fixed, o)
-            Debug.extended(`contrast for ${fixed} and ${o} score ${score}`)
+            Debug.trivia(`contrast for ${fixed} and ${o} score ${score}`)
             if (score > threshold) {
                 best_choice = o
                 best_score = -1
@@ -228,7 +228,7 @@ export function pickContrastingColor(fixed, options, threshold=3.0) {
             }
         }
     })
-    Debug.extended(`contrast for ${fixed} chose ${best_choice} score ${best_score}`)
+    Debug.trivia(`contrast for ${fixed} chose ${best_choice} score ${best_score}`)
     return best_choice
 }
 ////////////////////////////////////////////////////////////////////////
