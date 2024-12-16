@@ -108,7 +108,7 @@ export class WindowResizeManager {
 
     static update_vertical_spans() {
         if (WindowResizeManager.owr_stack>0) return
-        Debug.extended("get_vertical_spans")
+        Debug.trivia("get_vertical_spans")
         const parent_height = get_parent_height()
         WindowResizeManager.vertical_snapped = new Set()
 
@@ -149,7 +149,7 @@ export class SnapManager {
     }
 
     static update_child_list(note) {
-        Debug.extended(`update_child_list ${note?note:''}`)
+        Debug.trivia(`update_child_list ${note?note:''}`)
         SnapManager.child_types = {}
         Object.keys(SnapManager.panels).forEach((i)=>{
             SnapManager.child_types[i] = {}
