@@ -15,8 +15,8 @@ export class PromptIdManager {
     }
 
     ours(e) {
-        return (this.prompt_ids.has(e.prompt_id))
-    }s
+        return (this.prompt_ids.has(e.prompt_id) || this.prompt_ids.has(e.detail?.prompt_id))
+    }
 }
 
 export const pim = new PromptIdManager()

@@ -95,7 +95,7 @@ export class ImageManager {
     }
 
     static on_b_preview(e) {
-        if (!pim.ours(e)) return
+        //if (!pim.ours(e)) return
         Debug.trivia(`ImageManager on_b_preview ${ImageManager.executing_node}`)
         ImageManager._set_sources( ImageManager.executing_node, [window.URL.createObjectURL(e.detail),] )
     }
