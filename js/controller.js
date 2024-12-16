@@ -231,29 +231,29 @@ app.registerExtension({
         const onInputRemoved = nodeType.prototype.onInputRemoved
         nodeType.prototype.onInputRemoved = function () {
             onInputRemoved?.apply(this,arguments)
-            ControllerPanel.node_change(this.id)
+            ControllerPanel.node_change(this.id, "onInputRemoved")
         }
         const onInputAdded = nodeType.prototype.onInputAdded
         nodeType.prototype.onInputAdded = function () {
             onInputAdded?.apply(this,arguments)
-            ControllerPanel.node_change(this.id)
+            ControllerPanel.node_change(this.id, "onInputAdded")
             app.graph.afterChange()
         }
         const onOutputRemoved = nodeType.prototype.onOutputRemoved
         nodeType.prototype.onOutputRemoved = function () {
             onOutputRemoved?.apply(this,arguments)
-            ControllerPanel.node_change(this.id)
+            ControllerPanel.node_change(this.id, "onOutputRemoved")
         }
         const onOutputAdded = nodeType.prototype.onOutputAdded
         nodeType.prototype.onOutputAdded = function () {
             onOutputAdded?.apply(this,arguments)
-            ControllerPanel.node_change(this.id)
+            ControllerPanel.node_change(this.id, "onOutputAdded")
         }
 
         const onModeChange = nodeType.prototype.onModeChange
         nodeType.prototype.onModeChange = function () {
             onModeChange?.apply(this,arguments)
-            ControllerPanel.node_change(this.id)
+            ControllerPanel.node_change(this.id, "onModeChange")
         }
     },
 
@@ -262,7 +262,7 @@ app.registerExtension({
         const onRemoved = node.onRemoved
         node.onRemoved = function() {
             onRemoved?.apply(this, arguments)
-            UpdateController.make_request("node_removed", 20)
+            UpdateController.make_request_unless_configuring("node_removed", 20)
         }
 
         const onDrawForeground = node.onDrawForeground
