@@ -370,6 +370,7 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     static node_change(node_id, moreinfo) {
+        if (UpdateController._configuring) return;
         setTimeout(ControllerPanel._node_change, Timings.GENERIC_SHORT_DELAY, node_id, moreinfo)
     }
     static _node_change(node_id, moreinfo) {
