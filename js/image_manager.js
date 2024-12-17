@@ -91,6 +91,11 @@ export class ImageManager {
     static on_executing(e) {
         // TODO if (!pim.ours(e)) return
         ImageManager.executing_node = e.detail
+        if (!ImageManager.executing_node) {
+            Array.from(app.graph._nodes).filter((node)=>(node.imgs && node.imgs.length>0)).forEach((node)=>{
+                ImageManager.node_reported_images(node.id, node.imgs)
+            })
+        }
     }
 
     static on_b_preview(e) {

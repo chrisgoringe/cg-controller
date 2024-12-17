@@ -448,8 +448,11 @@ export class NodeBlock extends HTMLSpanElement {
         if (this.node.imgs && this.node.imgs.length>0) {
             const urls = []
             this.node.imgs.forEach((i)=>{urls.push(i.src)})
-            this.show_images(urls)
-        } 
+            this.show_images(urls, this.node.id)
+        } else {
+            const urls = ImageManager.get_urls(this.node.id)
+            if (urls) this.show_images(urls, this.node.id)
+        }
 
         this.valid_nodeblock = true 
         if (!(isImageNode(this.node) || this.widget_count || (this.node.imgs && this.node.imgs.length>0))) this.set_minimised(true)
