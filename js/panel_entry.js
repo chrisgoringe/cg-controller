@@ -10,6 +10,7 @@ import { Toggle } from "./toggle.js";
 import { WidgetChangeManager } from "./widget_change_manager.js";
 import { Texts } from "./constants.js";
 import { PLL_Widget } from "./power_lora_loader_widget.js";
+import { ImageComparerControlWidget } from "./image_comparer_control_widget.js";
 
 function typecheck_number(v) {
     const vv = parseFloat(v)
@@ -124,9 +125,13 @@ export class Entry extends HTMLDivElement {
                 this.input_element =  new PLL_Widget(this.parent_controller, node, target_widget)
                 this.appendChild(this.input_element)
                 break
+            case 'RgthreeImageComparerWidget':
+                this.input_element =  new ImageComparerControlWidget(this.parent_controller, node, target_widget)
+                this.appendChild(this.input_element)
             case 'converted-widget':
             case 'converted-widget:seed':
             case 'RgthreeDividerWidget':
+            case 'string':
                 Debug.trivia(`Not adding known widget type ${implementation_type}`)
                 return
             default:

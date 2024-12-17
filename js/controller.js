@@ -42,6 +42,7 @@ function on_setup() {
     UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh, ControllerPanel.node_change)
     NodeInclusionManager.node_change_callback = UpdateController.make_request
     GroupManager.change_callback = ControllerPanel.on_group_details_change
+    ImageManager.node_image_change = ControllerPanel.node_image_change
     
     api.addEventListener('graphCleared', ControllerPanel.on_graphCleared) 
 
@@ -108,6 +109,9 @@ function on_setup() {
     ControllerPanel.create_menu_icon()
 }
 
+const active = true
+if (active) {
+
 app.registerExtension({
 	name: "cg.controller",
     settings: OPTIONS,
@@ -120,8 +124,9 @@ app.registerExtension({
     async afterConfigureGraph() {
         UpdateController.configuring(false)
         try {
-            ImageManager.init()
             ControllerPanel.new_workflow()
+            ImageManager.analyse_graph()
+            ImageManager.send_all()
             send_graph_changed(true)
         } catch (e) {
             console.error(e)
@@ -277,15 +282,12 @@ app.registerExtension({
         const onDrawForeground = node.onDrawForeground
         node.onDrawForeground = function() {
             onDrawForeground?.apply(this,arguments)
-
-            if (node._controller_imgs !== node.imgs && node.imgs && node.imgs.length>0) {
-                ImageManager.node_img_change(node)
-            }
-            node._controller_imgs = node.imgs
-
+            if (node.imgs) ImageManager.node_reported_images(node.id, node.imgs)
         }
 
         UpdateController.make_request_unless_configuring("node_created", Timings.GENERIC_SHORT_DELAY)
     },
 
 })
+
+}

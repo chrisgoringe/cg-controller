@@ -15,7 +15,7 @@ import { update_node_order, add_missing_nodes } from "./settings.js"
 import { SettingIds, Timings, Texts, Pixels } from "./constants.js";
 import { FancySlider } from "./input_slider.js";
 import { clear_widget_change_managers } from "./widget_change_manager.js";
-import { clean_image_manager, ImageManager } from "./image_manager.js";
+import { ImageManager } from "./image_manager.js";
 import { SnapManager } from "./snap_manager.js";
 import { Highlighter } from "./highlighter.js";
 import { download_workspace_as_json, load_workspace, set_settings_for_instance } from "./workspace.js"
@@ -333,7 +333,6 @@ export class ControllerPanel extends HTMLDivElement {
         } else {
             clear_resize_managers()
             clear_widget_change_managers()
-            clean_image_manager()
             Object.values(ControllerPanel.instances).forEach((cp)=>{cp.redraw()})
         }
         ControllerPanel.update_buttons()
@@ -379,6 +378,11 @@ export class ControllerPanel extends HTMLDivElement {
     }
     static _node_change(node_id, moreinfo) {
         Object.values(ControllerPanel.instances).forEach((cp)=>{cp._node_change(node_id, moreinfo)})
+    }
+
+    static node_image_change(node_id, caused_by_node_id) {
+        const urls = ImageManager.get_urls(node_id)
+        Object.values(ControllerPanel.instances).filter((cp)=>(cp.have_node(node_id))).forEach((cp)=>{cp.node_blocks[node_id].show_images(urls, caused_by_node_id)})
     }
 
     static group_change(group_name) {

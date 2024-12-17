@@ -566,6 +566,20 @@ textarea.input {
     opacity: 50%;
 }
 
+.image_comparer_widget {
+    display:flex;
+    justify-content: center;
+}
+
+.image_comparer_option {
+    padding: 0px 8px;
+    color: var(--muted-fore-color)
+}
+
+.image_comparer_option.selected {
+    color: var(--main-fore-color)
+}
+
 /* Footer */
 
 .footer {

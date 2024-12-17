@@ -229,8 +229,6 @@ export class NodeBlock extends HTMLSpanElement {
         this.rejects_updates = v
     }
 
-    
-
     set_all_widget_visibility(v) {
         this.parent_controller.settings.hidden_widgets = []
         if (!v) {
@@ -442,32 +440,6 @@ export class NodeBlock extends HTMLSpanElement {
         this.resize_observer = new ResizeObserver( ()=>{this.rescale_image()} ).observe(this.image_panel)
         if (app.canvas.read_only) this.image_panel.style.resize = "none"
 
-        const seen = new Set()
-        if (isImageNode(this.node) && !this.rejects_updates) {
-            const add_upstream = (nd, depth) => {
-                if (seen.has(nd.id)) return
-                seen.add(nd.id)
-                if (nd==this.node || (!isImageNode(nd) && !is_image_upload_node(nd))) {
-                    ImageManager.add_listener(nd.id, this)
-                    //Debug.trivia(`${this.node.id} listening to ${nd.id}`)
-                    nd.inputs.forEach((i)=>{
-                        if (i.type=="IMAGE" || i.type=="LATENT") {
-                            const lk = i.link
-                            const upstream_id = lk ? app.graph.links[lk]?.origin_id : null
-                            if (!upstream_id) {
-                                app.graph.extra?.ue_links?.forEach((ue_link)=>{
-                                    if (ue_link.downstream==nd.id && (ue_link.type=="IMAGE" || ue_link.type=="LATENT")) add_upstream(app.graph._nodes_by_id[ue_link.upstream], depth+1)
-                                })
-                            }
-                            if (upstream_id) add_upstream(app.graph._nodes_by_id[upstream_id], depth+1)
-                        }
-                    })
-                }
-            }
-            add_upstream(this.node, 0)
-        }
-        ImageManager.add_listener(this.node.id, this) // add ourself last to take priority
-
         this._remove_entries()
         this.replaceChild(new_main, this.main)
         this.main = new_main
@@ -481,15 +453,6 @@ export class NodeBlock extends HTMLSpanElement {
 
         this.valid_nodeblock = true 
         if (!(isImageNode(this.node) || this.widget_count || (this.node.imgs && this.node.imgs.length>0))) this.set_minimised(true)
-    }
-
-    manage_image(urls, running) {
-        if (!this.parentElement) return false
-        if (!(this.bypassed || this.hidden)) {
-            /* take anything when running, or if we have nothing, or if we have a blob; otherwise reject blobs */
-            if (running || !this.image_image.src || image_is_blob(this.image_image.src) || !image_is_blob(urls[0])) this.show_images(urls)
-        }
-        return true
     }
 
     update_pin(from_click) {
@@ -564,8 +527,11 @@ export class NodeBlock extends HTMLSpanElement {
         }
     }
 
-    show_images(urls) {
-        const is_blob = image_is_blob(urls[0])
+    show_images(urls, node_id) {
+        if (this.get_rejects_upstream() && node_id!=this.node.id) return
+
+        const nothing = !(urls && urls.length>0)
+        const is_blob = (!nothing && image_is_blob(urls[0]))
         
         if (this.entry_controlling_image) setTimeout(()=>{
             this.entry_controlling_image.update_combo_selection()
@@ -580,7 +546,7 @@ export class NodeBlock extends HTMLSpanElement {
         }
         this.image_image.doing_compare = doing_compare ? this : null
 
-        const nothing = !(urls && urls.length>0)
+        
         classSet(this.image_panel, 'nodeblock_image_empty', nothing)
         classSet(this.image_pin, 'hidden', nothing)
 
