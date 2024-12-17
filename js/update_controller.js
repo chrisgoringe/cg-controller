@@ -162,7 +162,7 @@ export class OnChangeController {
         }
     }
     static on_executing(e) {
-        if (!pim.ours(e)) return
+        //if (!pim.ours(e)) return
         if (OnChangeController.executing_node && OnChangeController.executing_node!=e.detail) {
             OnChangeController.on_change(`on_executing ${e.detail}`)
         }

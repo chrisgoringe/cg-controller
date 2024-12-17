@@ -153,7 +153,7 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     static on_executing(e) {
-        if (!pim.ours(e)) return
+        //if (!pim.ours(e)) return
         const node_id = e.detail
         Debug.trivia(`ControllerPanel.on_executing ${node_id}`)
         Object.values(ControllerPanel.instances).forEach((cp)=>{

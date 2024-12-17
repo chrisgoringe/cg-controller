@@ -25,6 +25,65 @@ export function get_image_url(v) {
 }
 
 export class ImageManager {
+    static node_listener_map  = {}  // map to Set: node_id (listened to) to node_id's (listeners)
+    static node_urls_map      = {}  // map to urls: node_id to list[str]
+    static executing_node     = null
+    static on_change_callback = (node_id)=>{}
+
+    static reset() {
+        this.node_listener_map = {}
+        this.node_urls_map     = {}
+        this.executing_node    = null
+    } 
+
+    static clear_listeners(node_id) {
+        Object.values(this.node_listener_map).forEach((s)=>{s.delete(node_id)})
+    }
+
+    static add_listener(node_id, listens_to_node_id) {
+        if (!this.node_listener_map[listens_to_node_id]) this.node_listener_map[listens_to_node_id] = new Set()
+            this.node_listener_map[listens_to_node_id].add(node_id)
+    }
+
+    static get_urls(node_id) {
+        return this.node_urls_map[node_id] ?? null
+    }
+
+    static set_urls(node_id, urls) {
+        if (!this.node_urls_map[node_id]) this.node_urls_map[node_id] = []
+        var differ = (urls.length != this.node_urls_map[node_id].length)
+        if (!differ) {
+            for (var i=0; i<urls.length; i++) {
+                if (urls[i]!=this.node_urls_map[node_id][i]) differ = true
+            }
+        }
+        this.node_urls_map[node_id] = Array.from(urls)
+        if (differ) this.on_change_callback(node_id)
+    }
+
+    static consider_urls(node_id, urls) {
+        if (    ImageManager.executing_node              || // when running, we take any image 
+                !this.get_urls(node_id)                  || // if we don't have an image, we take any image
+                image_is_blob(this.get_urls(node_id)[0]) || // if we have a blob, we take any image
+                !image_is_blob(urls[0])                     // if this isn't a blob, take it
+            )  this.set_urls(node_id, urls)
+    }
+
+    static images_received(node_id, urls, detail) {
+        Debug.extended(`${detail}: Image urls received for ${node_id} with length ${urls.length}`)
+        this.set_urls(node_id, urls)
+        if (urls.length && this.node_listener_map[node_id]) {
+            Array.from(this.node_listener_map[node_id]).forEach((listener)=>{this.consider_urls(listener, urls)})
+        }
+    }
+
+    static on_executing(e) {
+        ImageManager.executing_node = e.detail
+    }
+
+}
+
+export class ImageManager_ {
     /*
     node_listener_map is a map from node_id to a Set of listeners.
     Listeners must have the method manage_image(url) which returns
@@ -37,9 +96,7 @@ export class ImageManager {
         ImageManager.executing_node = null
     }
 
-    static node_listener_map = {}  // map to Set
-    static node_urls_map      = {}  // map to url
-    static executing_node    = null
+
 
     static add_listener(node_id, listener) {
         if (!ImageManager.node_listener_map[node_id]) ImageManager.node_listener_map[node_id] = new Set()
@@ -90,7 +147,7 @@ export class ImageManager {
     }
 
     static on_executing(e) {
-        if (!pim.ours(e)) return
+        //if (!pim.ours(e)) return
         ImageManager.executing_node = e.detail
     }
 
