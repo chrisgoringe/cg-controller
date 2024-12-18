@@ -174,9 +174,7 @@ export class NodeBlock extends HTMLSpanElement {
         NodeBlock.last_swap = null
     }
 
-    image_progress_update(value, max) { this.on_progress(value, max) }
-
-    on_progress(value, max) {
+    image_progress_update(value, max, me) {
         if (value) {
             this.title_bar.appendChild(this.progress)
             const w = this.getBoundingClientRect().width * value / max
@@ -185,6 +183,7 @@ export class NodeBlock extends HTMLSpanElement {
             this.progress.style.width = `${w}px`
             this.progress.style.top = `${top}px`
             this.progress.style.height = `${h}px`
+            this.progress.style.backgroundColor = me ? "var(--progress-color)" : "var(--alien-progress-color)"
         } else { this.progress.remove() }
     }
 

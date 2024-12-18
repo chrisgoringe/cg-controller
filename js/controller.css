@@ -50,6 +50,7 @@
     --main-border-color: rgb(53 53 53);
 
     --progress-color: green;
+    --alien-progress-color: rgb(0, 122, 128);
     --active-color: green;
 
     --border_width: 4px;

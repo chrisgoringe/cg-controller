@@ -138,12 +138,14 @@ export class ControllerPanel extends HTMLDivElement {
         const node_id = e.detail.node
         const value = e.detail.value
         const max = e.detail.max
-        Object.values(ControllerPanel.instances).filter((cp)=>cp.have_node(node_id)).forEach((cp)=>cp.on_progress(node_id, value, max))
-        ImageManager.send_progress_update(node_id, value, max)
+        Object.values(ControllerPanel.instances).filter((cp)=>cp.have_node(node_id)).forEach((cp)=>cp.on_progress(node_id, value, max, true))
+        ImageManager.get_listeners(node_id).forEach((upstream)=>{
+            Object.values(ControllerPanel.instances).filter((cp)=>cp.have_node(upstream)).forEach((cp)=>cp.on_progress(upstream, value, max, false))
+        })
     }
 
-    on_progress(node_id, value, max) {
-        this.node_blocks[node_id]?.on_progress(value, max)
+    on_progress(node_id, value, max, me) {
+        this.node_blocks[node_id]?.image_progress_update(value, max, me)
     }
 
     static focus_mode_changed() {
@@ -159,7 +161,7 @@ export class ControllerPanel extends HTMLDivElement {
         Object.values(ControllerPanel.instances).forEach((cp)=>{
             Object.values(cp.node_blocks).forEach((nb)=>{
                 try {
-                    nb.on_progress()
+                    nb.image_progress_update()
                     classSet(nb, 'active', nb.node.id==node_id)
                 } catch (e) {
                     Debug.error(`on_executing: controller ${cp.index}, node ${node_id}`, e)

@@ -51,6 +51,10 @@ export class ImageManager {
         return this.node_urls_map[node_id] ?? null
     }
 
+    static get_listeners(node_id) {
+        return Array.from(this.node_listener_map[node_id] ?? [])
+    }
+
     static _set_urls(node_id, urls, caused_by_node_id) {
         if (!this.node_urls_map[node_id]) this.node_urls_map[node_id] = []
         const is_change = differs(this.node_urls_map[node_id], urls)
@@ -108,10 +112,6 @@ export class ImageManager {
         const srcs = []
         e.detail?.output?.images?.forEach((v)=>{ srcs.push(get_image_url(v)) })
         ImageManager._images_received( e.detail.node, srcs, 'on_executed' ) 
-    }
-
-    static send_progress_update(node_id, value, max) {
-// TO DO
     }
 
     static on_execution_start(e) {
