@@ -735,6 +735,7 @@ export class ControllerPanel extends HTMLDivElement {
             if (!as_dropdown || this.settings.group_choice == nm) {
                 const tab = create('span','tab',this.header1_left,{"innerHTML":nm.replaceAll(' ','&nbsp;')})
                 classSet(tab,'selected',(this.settings.group_choice == nm))
+                classSet(tab,'stack',(as_dropdown && this.settings.groups.length>1))
                 tab.handle_right_click = (e) => { this.tab_context_menu.bind(this)(e) }
                 tab.style.backgroundColor = GroupManager.group_bgcolor(nm, (this.settings.group_choice == nm))
                 tab.style.color = GroupManager.group_fgcolor(nm, (this.settings.group_choice == nm))
@@ -773,7 +774,7 @@ export class ControllerPanel extends HTMLDivElement {
                         app.canvas.animateToBounds(createBounds(app.graph._groups.filter((g)=>(g.title==nm))))
                     } else {
                         if (as_dropdown) {
-                            this.show_group_select(e, 'select')
+                            if (this.settings.groups.length>1) this.show_group_select(e, 'select')
                         } else {
                             if (this.settings.groups.length==1) this.show_group_select(e, 'replace')
                         }
@@ -862,7 +863,7 @@ export class ControllerPanel extends HTMLDivElement {
     show_group_select(e, mode) {
         const the_select = create('span','group_add_select', document.body)
         const groups_to_show = (mode!='select') ? this.groups_not_included : this.settings.groups
-        groups_to_show.forEach((g)=>{
+        groups_to_show.filter((g)=>(g!=this.settings.group_choice)).forEach((g)=>{
             const the_choice = create('div', 'group_add_option', the_select, {"innerHTML":GroupManager.displayName(g)})
             the_choice.style.backgroundColor = GroupManager.group_bgcolor(g, true)
             the_choice.style.color = GroupManager.group_fgcolor(g, true)

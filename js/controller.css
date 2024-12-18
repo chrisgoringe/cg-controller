@@ -190,6 +190,10 @@
 
 }
 
+.tab.stack {
+    box-shadow: 1px 1px var(--muted-fore-color);
+}
+
 .controller.grabbed .tab {
     cursor:grabbing;
 }
