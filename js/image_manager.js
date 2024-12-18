@@ -31,11 +31,13 @@ export class ImageManager {
     static node_listener_map  = {}  // map to Set: node_id (listened to) to node_id's (listeners)
     static node_urls_map      = {}  // map to urls: node_id to list[str]
     static executing_node     = null
+    static last_preview_node = null
     static node_image_change = (node_id)=>{}
 
     static reset() {
         this.node_listener_map = {}
         this.executing_node    = null
+        this.last_preview_node = null
     } 
 
     static clear_listeners(node_id) {
@@ -104,6 +106,7 @@ export class ImageManager {
 
     static on_b_preview(e) {
         // TODO if (!pim.ours(e)) return
+        ImageManager.last_preview_node = ImageManager.executing_node
         ImageManager._images_received( ImageManager.executing_node, [window.URL.createObjectURL(e.detail),], "b_preview" )
     }
 
@@ -111,7 +114,12 @@ export class ImageManager {
         // TODO if (!pim.ours(e)) return
         const srcs = []
         e.detail?.output?.images?.forEach((v)=>{ srcs.push(get_image_url(v)) })
-        ImageManager._images_received( e.detail.node, srcs, 'on_executed' ) 
+        if (srcs.length) {
+            ImageManager._images_received( e.detail.node, srcs, 'on_executed' ) 
+            ImageManager._images_received( ImageManager.last_preview_node, srcs, 'on_executed' ) 
+            ImageManager.last_preview_node = null
+        }
+        
     }
 
     static on_execution_start(e) {
