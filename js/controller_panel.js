@@ -19,6 +19,7 @@ import { ImageManager } from "./image_manager.js";
 import { SnapManager } from "./snap_manager.js";
 import { Highlighter } from "./highlighter.js";
 import { download_workspace_as_json, load_workspace, set_settings_for_instance } from "./workspace.js"
+import { close_context_menu, open_context_menu } from "./context_menu.js";
 
 export class ControllerPanel extends HTMLDivElement {
     static instances = {}
@@ -654,7 +655,7 @@ export class ControllerPanel extends HTMLDivElement {
         }
         
         this.find_groups_not_included()
-        this.add_tabs()
+        this.add_tabs(this.settings.stack_tabs)
 
         if (this.settings.collapsed) {
             this.minimise_button = create("i", `pi pi-minus header_button collapse_button`, this.header1_right)
@@ -717,51 +718,70 @@ export class ControllerPanel extends HTMLDivElement {
         this.groups_not_included = all_options.filter((g)=>!(all_used.has(g)))
     }
 
-    add_tabs() {
+    tab_context_menu(e) {
+        open_context_menu(e, "Tabs", [ 
+            { 
+                "title": this.settings.stack_tabs ? "Show all tabs" : "Only show active tab", 
+                "callback":()=>{
+                    this.settings.stack_tabs = !this.settings.stack_tabs
+                    UpdateController.make_single_request("tab options", this)
+                }
+            },
+        ])
+    }
+
+    add_tabs(as_dropdown) {
         this.settings.groups.forEach((nm) => {
-            const tab = create('span','tab',this.header1_left,{"innerHTML":nm.replaceAll(' ','&nbsp;')})
-            classSet(tab,'selected',(this.settings.group_choice == nm))
-            tab.style.backgroundColor = GroupManager.group_bgcolor(nm, (this.settings.group_choice == nm))
-            tab.style.color = GroupManager.group_fgcolor(nm, (this.settings.group_choice == nm))
-            tab.addEventListener('mouseenter', ()=>{Highlighter.group(nm)})
-            tab.addEventListener('mouseleave', ()=>{Highlighter.group(null)})
-            tab.addEventListener('mousedown', (e) => {
-                if (e.ctrlKey) return
-                this.mouse_down_at_x = e.x
-                this.mouse_down_at_y = e.y
-                this.mouse_down_on = tab
-                if (document.activeElement) document.activeElement.blur()
-            })
-            tab.addEventListener('mouseup', (e) => {
-                if (this.mouse_down_on == tab && Math.abs(this.mouse_down_at_x - e.x) < 2 && Math.abs(this.mouse_down_at_y - e.y) < 2) {
-                    if (this.settings.collapsed) {
-                        this.settings.collapsed = false
-                        UpdateController.make_single_request('uncollapse', this) 
-                    } else {
-                        if (this.settings.group_choice == nm) {
-                            return
+            if (!as_dropdown || this.settings.group_choice == nm) {
+                const tab = create('span','tab',this.header1_left,{"innerHTML":nm.replaceAll(' ','&nbsp;')})
+                classSet(tab,'selected',(this.settings.group_choice == nm))
+                tab.handle_right_click = (e) => { this.tab_context_menu.bind(this)(e) }
+                tab.style.backgroundColor = GroupManager.group_bgcolor(nm, (this.settings.group_choice == nm))
+                tab.style.color = GroupManager.group_fgcolor(nm, (this.settings.group_choice == nm))
+                tab.addEventListener('mouseenter', ()=>{Highlighter.group(nm)})
+                tab.addEventListener('mouseleave', ()=>{Highlighter.group(null)})
+                tab.addEventListener('mousedown', (e) => {
+                    if (e.ctrlKey) return
+                    this.mouse_down_at_x = e.x
+                    this.mouse_down_at_y = e.y
+                    this.mouse_down_on = tab
+                    if (document.activeElement) document.activeElement.blur()
+                })
+                tab.addEventListener('mouseup', (e) => {
+                    if (this.mouse_down_on == tab && Math.abs(this.mouse_down_at_x - e.x) < 2 && Math.abs(this.mouse_down_at_y - e.y) < 2) {
+                        if (this.settings.collapsed) {
+                            this.settings.collapsed = false
+                            UpdateController.make_single_request('uncollapse', this) 
+                        } else {
+                            if (this.settings.group_choice == nm) {
+                                return
+                            }
+                            this.settings.group_choice = nm
+                            UpdateController.make_single_request(`tab ${nm} clicked`, this) 
                         }
-                        this.settings.group_choice = nm
-                        UpdateController.make_single_request(`tab ${nm} clicked`, this) 
+                        this.mouse_up()
+                        e.preventDefault()
+                        e.stopPropagation()
                     }
-                    this.mouse_up()
+                    this.mouse_down_on = null
+                })
+
+                tab.addEventListener('click', (e)=>{
                     e.preventDefault()
                     e.stopPropagation()
-                }
-                this.mouse_down_on = null
-            })
+                    if (e.ctrlKey) {
+                        app.canvas.animateToBounds(createBounds(app.graph._groups.filter((g)=>(g.title==nm))))
+                    } else {
+                        if (as_dropdown) {
+                            this.show_group_select(e, 'select')
+                        } else {
+                            if (this.settings.groups.length==1) this.show_group_select(e, 'replace')
+                        }
+                    }
+                })
 
-            tab.addEventListener('click', (e)=>{
-                e.preventDefault()
-                e.stopPropagation()
-                if (e.ctrlKey) {
-                    app.canvas.animateToBounds(createBounds(app.graph._groups.filter((g)=>(g.title==nm))))
-                } else {
-                    if (this.settings.groups.length==1) this.show_group_select(e, true)
-                }
-            })
-
-            tooltip_if_overflowing(tab)
+                tooltip_if_overflowing(tab)
+            }
 
         })
     }
@@ -772,7 +792,7 @@ export class ControllerPanel extends HTMLDivElement {
                 e.preventDefault()
                 e.stopPropagation()
                 if (app.canvas.read_only) return
-                this.show_group_select(e)
+                this.show_group_select(e, 'add')
             })
             add_tooltip(this.add_group_button, 'Add new group tab', 'right')
             classSet(this.add_group_button, 'hidden', (this.groups_not_included.length==0))
@@ -839,21 +859,26 @@ export class ControllerPanel extends HTMLDivElement {
         }
     }
 
-    show_group_select(e, replace) {
+    show_group_select(e, mode) {
         const the_select = create('span','group_add_select', document.body)
-        this.groups_not_included.forEach((g)=>{
+        const groups_to_show = (mode!='select') ? this.groups_not_included : this.settings.groups
+        groups_to_show.forEach((g)=>{
             const the_choice = create('div', 'group_add_option', the_select, {"innerHTML":GroupManager.displayName(g)})
             the_choice.style.backgroundColor = GroupManager.group_bgcolor(g, true)
             the_choice.style.color = GroupManager.group_fgcolor(g, true)
             the_choice.addEventListener('click', (e)=> {
-                if (replace) {
+                if (mode=='replace') {
                     this.settings.groups = [g,]
-                } else {
+                } else if (mode=='add') {
                     this.settings.groups.push(g)
+                } else if (mode=='select') {
+                    // don't need to change the group list
+                } else {
+                    Debug.essential(`show_group_select called with unknown mode ${mode}`)
                 }
                 this.settings.group_choice = g
                 the_select.remove()
-                UpdateController.make_single_request('group tab added', this)
+                UpdateController.make_single_request('group tab change', this)
             })
         })
         the_select.addEventListener('mouseleave', (e)=>{the_select.remove()})
