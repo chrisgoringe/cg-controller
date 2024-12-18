@@ -50,7 +50,8 @@ export class ImageManager {
     }
 
     static get_urls(node_id) {
-        return this.node_urls_map[node_id] ?? null
+        if (this.node_urls_map[node_id] && this.node_urls_map[node_id].length>0) return this.node_urls_map[node_id] 
+        return null
     }
 
     static get_listeners(node_id) {
@@ -60,8 +61,8 @@ export class ImageManager {
     static _set_urls(node_id, urls, caused_by_node_id) {
         if (!this.node_urls_map[node_id]) this.node_urls_map[node_id] = []
         const is_change = differs(this.node_urls_map[node_id], urls)
-        this.node_urls_map[node_id] = Array.from(urls)
         if (is_change) {
+            this.node_urls_map[node_id] = Array.from(urls)
             Debug.trivia(`Sending image update to node ${node_id} caused by ${caused_by_node_id}`)
             this.node_image_change(node_id, caused_by_node_id)
         } 
@@ -124,6 +125,7 @@ export class ImageManager {
 
     static on_execution_start(e) {
         ImageManager.analyse_graph()
+        this.node_urls_map = {}
     }
 
     static analyse_graph() {

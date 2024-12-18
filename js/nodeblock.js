@@ -444,14 +444,13 @@ export class NodeBlock extends HTMLSpanElement {
         this.main = new_main
         this.apply_widget_visibility()
 
-        if (this.node.imgs && this.node.imgs.length>0) {
+        if (ImageManager.get_urls(this.node.id)) {
+            this.show_images(ImageManager.get_urls(this.node.id), this.node.id)
+        } else if (this.node.imgs && this.node.imgs.length>0) {
             const urls = []
             this.node.imgs.forEach((i)=>{urls.push(i.src)})
             this.show_images(urls, this.node.id)
-        } else {
-            const urls = ImageManager.get_urls(this.node.id)
-            if (urls) this.show_images(urls, this.node.id)
-        }
+        } 
 
         this.valid_nodeblock = true 
         if (!(isImageNode(this.node) || this.widget_count || (this.node.imgs && this.node.imgs.length>0))) this.set_minimised(true)
