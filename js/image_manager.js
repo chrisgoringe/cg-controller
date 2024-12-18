@@ -77,7 +77,7 @@ export class ImageManager {
     }
 
     static _images_received(node_id, urls, detail) {
-        if (this._set_urls(node_id, urls, node_id) && urls && urls.length && image_is_blob(urls[0])) { // only send blobs to listeners
+        if (this._set_urls(node_id, urls, node_id)) { 
             if (detail) Debug.trivia(`${detail}: Image urls received for ${node_id} with length ${urls.length}`)
             if (urls.length && this.node_listener_map[node_id]) {
                 Array.from(this.node_listener_map[node_id]).forEach((listener)=>{this._consider_urls(listener, urls, node_id)})
@@ -89,7 +89,7 @@ export class ImageManager {
         if (ImageManager.executing_node) return
         const urls = []
         imgs.filter((i)=>(i.src && ! i.src.endsWith('undefined'))).forEach((i)=>{urls.push(i.src)})
-        this._images_received(node_id, urls, "node_report")
+        this._set_urls(node_id, urls, node_id)
     }
 
     static on_executing(e) {
