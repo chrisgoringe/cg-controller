@@ -226,6 +226,7 @@ export class ControllerPanel extends HTMLDivElement {
         if (!global_settings.hidden && Object.keys(ControllerPanel.instances).length==0 && find_controller_parent()) ControllerPanel.create_new()
         OnChangeController.on_change('new workflow')
         ControllerPanel.update_buttons()
+        ImageManager.reset()
     }
 
     static on_graphCleared() {
