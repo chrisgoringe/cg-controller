@@ -1,5 +1,5 @@
 import { app } from "../../scripts/app.js"
-import { api, ComfyApi } from "../../scripts/api.js" 
+import { api } from "../../scripts/api.js" 
 import { ControllerPanel } from "./controller_panel.js"
 import { create, mouse_change, send_graph_changed } from "./utilities.js"
 import { OPTIONS } from "./options.js"
@@ -200,7 +200,7 @@ app.registerExtension({
 
         const queuePrompt = api.queuePrompt
         api.queuePrompt = async function() {
-            const r = await queuePrompt.apply(ComfyApi, arguments)
+            const r = await queuePrompt.apply(api, arguments)
             pim.add(r.prompt_id)
             return r
         }
