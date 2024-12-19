@@ -551,7 +551,7 @@ export class NodeBlock extends HTMLSpanElement {
         classSet(this.image_panel, 'nodeblock_image_empty', nothing)
         classSet(this.image_pin, 'hidden', nothing)
 
-        if (this.image_index===null || this.image_index>=urls.length) {
+        if (this.image_index===null || !urls || this.image_index>=urls.length) {
             this.image_index = this.node.imageIndex ?? 0
         } else {
             this.node.imageIndex = this.image_index
