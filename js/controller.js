@@ -110,9 +110,9 @@ app.registerExtension({
     async setup() {
         // Add the css call to the document
         create('link', null, document.getElementsByTagName('HEAD')[0], 
-            {'rel':'stylesheet', 'type':'text/css', 'href':`${BASE_PATH}/controller.css` } )
+            {'rel':'stylesheet', 'type':'text/css', 'href': new URL("./controller.css", import.meta.url).href } )
         create('link', null, document.getElementsByTagName('HEAD')[0], 
-            {'rel':'stylesheet', 'type':'text/css', 'href':`${BASE_PATH}/slider.css` } )
+            {'rel':'stylesheet', 'type':'text/css', 'href': new URL("./slider.css", import.meta.url).href} )
 
         // Allow our elements to do any setup they want
         try {
