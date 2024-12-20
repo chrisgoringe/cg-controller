@@ -168,11 +168,12 @@
     /* allow the group to shrink */
     min-width: 0px;
     flex-shrink: 1;
+    flex-grow: 1;
 }
 .tab { 
     --base-color: black;
     border-radius: 6px;
-    padding: 2px 6px;
+    padding: 2px 5px;
     border: 1px solid var(--deep-back-color);
     /*background-color: var(--base-color);
     color: var(--muted-fore-color);           set programatically*/
@@ -181,8 +182,10 @@
     margin: 0px 1px 4px 1px;
 
     /* allow the group to shrink */
-    min-width: 0px;
-    flex-shrink: 1;
+    min-width: 40px;
+    max-width: fit-content;
+    /*flex-basis: calc-size( max-content, size * 1.4 );*/
+    /*flex-shrink: 1; set programatically*/
     text-overflow: ellipsis;
     overflow: hidden;
 }

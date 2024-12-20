@@ -740,6 +740,9 @@ export class ControllerPanel extends HTMLDivElement {
                 tab.handle_right_click = (e) => { this.tab_context_menu.bind(this)(e) }
                 tab.style.backgroundColor = GroupManager.group_bgcolor(nm, (this.settings.group_choice == nm))
                 tab.style.color = GroupManager.group_fgcolor(nm, (this.settings.group_choice == nm))
+                tab.style.flexShrink = `${nm.length + 2}`
+                tab.style.flexGrow = `${nm.length + 2}`
+                tab.style.flexBasis = `${nm.length * 20}px`
                 tab.addEventListener('mouseenter', ()=>{Highlighter.group(nm)})
                 tab.addEventListener('mouseleave', ()=>{Highlighter.group(null)})
                 tab.addEventListener('mousedown', (e) => {
