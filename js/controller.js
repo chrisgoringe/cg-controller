@@ -109,9 +109,6 @@ function on_setup() {
     ControllerPanel.create_menu_icon()
 }
 
-const active = true
-if (active) {
-
 app.registerExtension({
 	name: "cg.controller",
     settings: OPTIONS,
@@ -289,5 +286,3 @@ app.registerExtension({
     },
 
 })
-
-}
