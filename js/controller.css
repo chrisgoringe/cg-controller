@@ -400,6 +400,21 @@
 
 }
 
+.nodeblock_image_grid {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.nodeblock_image_grid_image {
+    padding: 1px;
+}
+
+.overlay.overlay_show_grid {
+    padding: 2px 4px;
+    bottom: unset;
+    top: 2.5em;
+}
+
 .nodeblock.minimised .nodeblock_image_panel {
     display:none;
     height:0px !important;
@@ -648,6 +663,7 @@ i {
     padding-bottom: 1px;
     bottom: unset;
     top: 2.5em;
+    right: 2em;
 }
 
 .overlay_paging_icon {

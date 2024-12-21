@@ -54,7 +54,7 @@ export class NodeBlock extends HTMLSpanElement {
         this.parent_controller = parent_controller
         this.node = node
         this.mode = this.node.mode
-        this.image_index = null
+        this.imageIndex = null
         Debug.trivia(`creating nodeblock for ${this.node?.id} on controller ${this.parent_controller?.index}`)
 
         if (!this.node.properties.controller_details) {
@@ -327,13 +327,13 @@ export class NodeBlock extends HTMLSpanElement {
             { 
                 "title":"Open in new tab", 
                 "callback":()=>{
-                    window.open(this.urls[this.image_index])
+                    window.open(this.urls[this.imageIndex])
                 }
             },
             { 
                 "title":"Save image", 
                 "callback":()=>{
-                    const a = create('a', 'hidden', this, {href:this.urls[this.image_index], download:"image.png"})
+                    const a = create('a', 'hidden', this, {href:this.urls[this.imageIndex], download:"image.png"})
                     a.click()
                     a.remove()
                 }
@@ -432,7 +432,7 @@ export class NodeBlock extends HTMLSpanElement {
         this.image_image.addEventListener('error', (e) => {delete e.target.src})
         this.image_image.addEventListener('click', (e)=>{
             if (e.ctrlKey) { kill_event(e); this.image_context_menu(e) }
-            if (e.shiftKey) { ImagePopup.show(this.urls[this.image_index]) }
+            if (e.shiftKey) { ImagePopup.show(this.urls[this.imageIndex]) }
         })
         this.image_paging = create('span', 'overlay overlay_paging', this.image_panel)
         this.image_image.handle_right_click = (e) => { this.image_context_menu(e) }
@@ -442,6 +442,11 @@ export class NodeBlock extends HTMLSpanElement {
         this.image_next = create('span', 'overlay_paging_icon', this.image_paging)
         this.image_prev.addEventListener('click', ()=>{this.previousImage()})
         this.image_next.addEventListener('click', ()=>{this.nextImage()})
+
+        this.image_show_grid = create('span', 'overlay overlay_show_grid', this.image_panel, {"innerText":"x"})
+        this.image_show_grid.addEventListener('click', ()=>{this.showImageGrid()})
+
+        this.image_grid = create('span', 'nodeblock_image_grid', this.image_panel)
         
         make_resizable( this.image_panel, this.node.id, this.image_panel_id, this.node.properties.controller_widgets[this.image_panel_id] )
         this.resize_observer = new ResizeObserver( ()=>{this.rescale_image()} ).observe(this.image_panel)
@@ -484,8 +489,10 @@ export class NodeBlock extends HTMLSpanElement {
             if (box.width) {
                 this.node.properties.controller_widgets[this.image_panel_id].height = box.height
                 const w = box.width - 8
-                const im_h = this.image_image?.naturalHeight
-                const im_w = this.image_image?.naturalWidth
+                var im_h = this.image_image?.naturalHeight
+                if (!im_h) im_h = this.image_grid?.firstChild?.naturalHeight * this.image_rows
+                var im_w = this.image_image?.naturalWidth
+                if (!im_w) im_w = this.image_grid?.firstChild?.naturalWidth * this.images_per_row
                 if (im_h && im_w) {
                     if (pinned) {
                         const full_h = (im_h/im_w)*w
@@ -551,49 +558,108 @@ export class NodeBlock extends HTMLSpanElement {
         this.image_image_2?.remove()
         if (doing_compare) {
             this.image_image_2 = create('img', 'nodeblock_image_overlay', this.image_panel, {"doing_compare":this})
-            this.image_index = 0
+            this.imageIndex = 0
         }
         this.image_image.doing_compare = doing_compare ? this : null
 
-        
         classSet(this.image_panel, 'nodeblock_image_empty', nothing)
         classSet(this.image_pin, 'hidden', nothing)
 
-        if (this.image_index===null || !urls || this.image_index>=urls.length) {
-            this.image_index = this.node.imageIndex ?? 0
-        } else {
-            this.node.imageIndex = this.image_index
+        if (!nothing && this.node.imageIndex > urls.length) this.node.imageIndex = 0
+        if (this.imageIndex != this.node.imageIndex) {
+            this.imageIndex = this.node.imageIndex 
             app.canvas.setDirty(true,true)
         }
 
+        //if (this.image_index===null || !urls || this.image_index>=urls.length) {
+        //    this.image_index = this.node.imageIndex ?? 0
+        //} else {
+        //    this.node.imageIndex = this.image_index
+        //    app.canvas.setDirty(true,true)
+        //}
+
         this.urls = urls
-        const url = nothing ? null : (is_blob ? urls[0] : urls[this.image_index])
 
-        if (this.image_image.src != url) {
-            this.image_image.src = url
-            this.image_panel.style.maxHeight = ''
-        }
+        if (this.imageIndex !== null || doing_compare) {
+            this.images_per_row = 1
+            this.image_rows = 1
+            classSet(this.image_image, 'hidden', false)
+            classSet(this.image_grid, 'hidden', true)
+            const url = nothing ? null : (is_blob ? urls[0] : urls[this.imageIndex])
 
-        if (doing_compare) {
+            if (this.image_image.src != url) {
+                this.image_image.src = url
+                this.image_panel.style.maxHeight = ''
+            }
+
+            if (doing_compare) {
+                classSet(this.image_paging, 'hidden', true)
+                classSet(this.image_show_grid, 'hidden', true)
+                this.image_image_2.src = urls[1]
+                setTimeout(this.show_part_of_overlay.bind(this), Timings.GENERIC_SHORT_DELAY, 0.0)
+            } else {
+                classSet(this.image_paging, 'hidden', nothing || urls.length<2)
+                classSet(this.image_show_grid, 'hidden', nothing || urls.length<2)
+                classSet(this.image_prev, 'prev', true)
+                this.image_xofy.innerHTML = `${this.imageIndex+1}/${urls?.length}`
+                classSet(this.image_next, 'next', true)
+            }
+        } else if (!nothing) {
+            classSet(this.image_image, 'hidden', true)
+            classSet(this.image_grid, 'hidden', false)
             classSet(this.image_paging, 'hidden', true)
-            this.image_image_2.src = urls[1]
-            setTimeout(this.show_part_of_overlay.bind(this), Timings.GENERIC_SHORT_DELAY, 0.0)
-        } else {
-            classSet(this.image_paging, 'hidden', nothing || urls.length<2)
-            classSet(this.image_prev, 'prev', true)
-            this.image_xofy.innerHTML = `${this.image_index+1}/${urls?.length}`
-            classSet(this.image_next, 'next', true)
+            classSet(this.image_show_grid, 'hidden', true)
+            this.image_grid.innerHTML = ''
+            this.urls.forEach((url, i)=>{
+                const img = create('img', 'nodeblock_image_grid_image', this.image_grid, {src:url})
+                img.addEventListener('click', ()=>{this.node.imageIndex = i; this.show_images(this.urls)})
+            })
+            this.images_per_row = this.pick_images_per_row(this.image_grid.firstChild, urls.length)
+            const width = `calc(100% / ${this.images_per_row})`
+            Array.from(this.image_grid.children).forEach((img)=>{img.style.width = width})
+            this.image_rows = Math.ceil(this.urls.length / this.images_per_row)
         }
+        this.rescale_image()
+    }
+
+    pick_images_per_row(an_image, count) {
+        const w = an_image?.naturalWidth
+        const h = an_image?.naturalHeight
+        if (w && h) {
+            var best = 0
+            var best_pick
+            for (var per_row=1; per_row<=count; per_row++) {
+                const rows = Math.ceil(count / per_row)
+                const width = per_row * w
+                const height = rows * h
+                const ratio = Math.min(width / height, height / width)
+                if (ratio > best) {
+                    best = ratio
+                    best_pick = per_row
+                } else {
+                    break
+                }
+            }
+            return best_pick
+        }
+        return Math.ceil(Math.sqrt(count))
     }
 
     previousImage() {
-        this.image_index = (this.image_index + this.urls.length - 1) % this.urls.length
+        this.node.imageIndex -= 1
+        if (this.node.imageIndex < 0) this.node.imageIndex = this.urls.length - 1
         this.show_images(this.urls)
     }
 
     nextImage() {
-        this.image_index = (this.image_index+1) % this.urls.length
+        this.node.imageIndex += 1
+        if (this.node.imageIndex >= this.urls.length) this.node.imageIndex = 0
         this.show_images(this.urls)        
+    }
+
+    showImageGrid() {
+        this.node.imageIndex = null
+        this.show_images(this.urls) 
     }
 
 }
