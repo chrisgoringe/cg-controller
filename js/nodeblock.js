@@ -559,7 +559,7 @@ export class NodeBlock extends HTMLSpanElement {
         }
 
         this.urls = urls
-        const url = is_blob ? urls[0] : urls[this.image_index]
+        const url = nothing ? null : (is_blob ? urls[0] : urls[this.image_index])
 
         if (this.image_image.src != url) {
             this.image_image.src = url
@@ -571,9 +571,9 @@ export class NodeBlock extends HTMLSpanElement {
             this.image_image_2.src = urls[1]
             setTimeout(this.show_part_of_overlay.bind(this), Timings.GENERIC_SHORT_DELAY, 0.0)
         } else {
-            classSet(this.image_paging, 'hidden', urls.length<2)
+            classSet(this.image_paging, 'hidden', nothing || urls.length<2)
             classSet(this.image_prev, 'prev', true)
-            this.image_xofy.innerHTML = `${this.image_index+1}/${urls.length}`
+            this.image_xofy.innerHTML = `${this.image_index+1}/${urls?.length}`
             classSet(this.image_next, 'next', true)
         }
     }

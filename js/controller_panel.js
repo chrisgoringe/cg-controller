@@ -108,6 +108,7 @@ export class ControllerPanel extends HTMLDivElement {
 
         this.should_update_size = false
         this.addEventListener('mousedown', (e)=>{this.mouse_down(e)})
+        this.clear_stacking_threshold()
         
         this.resize_observer = new ResizeObserver((x) => this.on_size_change()).observe(this)
     }
@@ -131,6 +132,7 @@ export class ControllerPanel extends HTMLDivElement {
             this.settings.groups = Array.from(new Set(this.settings.groups))
             //UpdateController.make_request('group change', Timings.GENERIC_SHORT_DELAY, false, this)
         }
+        this.clear_stacking_threshold()
     }
 
 
@@ -482,6 +484,7 @@ export class ControllerPanel extends HTMLDivElement {
             this.being_resized = true
             this.show_overlay(`${Math.round(this.getBoundingClientRect().width)} x ${Math.round(this.getBoundingClientRect().height)}px`, this)
             this.settings.set_position(null,null,this.getBoundingClientRect().width,this.getBoundingClientRect().height)
+            this.checkIfTabsShouldStack()
         }
     }
 
@@ -656,7 +659,7 @@ export class ControllerPanel extends HTMLDivElement {
         }
         
         this.find_groups_not_included()
-        this.add_tabs(this.settings.stack_tabs)
+        this.add_tabs()
 
         if (this.settings.collapsed) {
             this.minimise_button = create("i", `pi pi-minus header_button collapse_button`, this.header1_right)
@@ -725,18 +728,20 @@ export class ControllerPanel extends HTMLDivElement {
                 "title": this.settings.stack_tabs ? "Show all tabs" : "Only show active tab", 
                 "callback":()=>{
                     this.settings.stack_tabs = !this.settings.stack_tabs
+                    this.clear_stacking_threshold()
                     UpdateController.make_single_request("tab options", this)
                 }
             },
         ])
     }
 
-    add_tabs(as_dropdown) {
+    add_tabs() {
+        this.stack_tabs = (this.settings.stack_tabs || this.forced_stacking)
         this.settings.groups.forEach((nm) => {
-            if (!as_dropdown || this.settings.group_choice == nm) {
+            if (!this.stack_tabs || this.settings.group_choice == nm) {
                 const tab = create('span','tab',this.header1_left,{"innerHTML":nm.replaceAll(' ','&nbsp;')})
                 classSet(tab,'selected',(this.settings.group_choice == nm))
-                classSet(tab,'stack',(as_dropdown && this.settings.groups.length>1))
+                classSet(tab,'stack',(this.stack_tabs && this.settings.groups.length>1))
                 tab.handle_right_click = (e) => { this.tab_context_menu.bind(this)(e) }
                 tab.style.backgroundColor = GroupManager.group_bgcolor(nm, (this.settings.group_choice == nm))
                 tab.style.color = GroupManager.group_fgcolor(nm, (this.settings.group_choice == nm))
@@ -757,12 +762,14 @@ export class ControllerPanel extends HTMLDivElement {
                     if (this.mouse_down_on == tab && Math.abs(this.mouse_down_at_x - e.x) < 2 && Math.abs(this.mouse_down_at_y - e.y) < 2) {
                         if (this.settings.collapsed) {
                             this.settings.collapsed = false
+                            this.clear_stacking_threshold()
                             UpdateController.make_single_request('uncollapse', this) 
                         } else {
                             if (this.settings.group_choice == nm) {
                                 return
                             }
                             this.settings.group_choice = nm
+                            this.clear_stacking_threshold()
                             UpdateController.make_single_request(`tab ${nm} clicked`, this) 
                         }
                         this.mouse_up()
@@ -778,18 +785,34 @@ export class ControllerPanel extends HTMLDivElement {
                     if (e.ctrlKey) {
                         app.canvas.animateToBounds(createBounds(app.graph._groups.filter((g)=>(g.title==nm))))
                     } else {
-                        if (as_dropdown) {
+                        if (this.stack_tabs) {
                             if (this.settings.groups.length>1) this.show_group_select(e, 'select')
                         } else {
                             if (this.settings.groups.length==1) this.show_group_select(e, 'replace')
                         }
                     }
                 })
-
                 tooltip_if_overflowing(tab)
             }
-
         })
+        setTimeout(this.checkIfTabsShouldStack.bind(this), Timings.GENERIC_SHORT_DELAY)
+    }
+
+    clear_stacking_threshold() { this.stacking_threshold = 0 }
+
+    checkIfTabsShouldStack() {
+        const below_stacking_threshold = (this.stacking_threshold && this.clientWidth <= this.stacking_threshold)
+        const need_to_stack = (this.add_group_button.getBoundingClientRect().right > this.header1_right.getBoundingClientRect().left + 10) || (below_stacking_threshold)
+        
+        if (need_to_stack == this.forced_stacking) return
+        this.forced_stacking = need_to_stack
+
+        if (need_to_stack) this.stacking_threshold = Math.max(this.clientWidth, this.stacking_threshold ?? 0)
+        
+        if ((this.settings.stack_tabs || this.forced_stacking) != this.stack_tabs) {
+            UpdateController.make_single_request(`tab forced stacking now ${this.forced_stacking}`, this)
+        }
+
     }
 
     add_button_actions() {
@@ -810,6 +833,7 @@ export class ControllerPanel extends HTMLDivElement {
                 e.stopPropagation(); 
                 if (app.canvas.read_only) return
                 this.settings.groups = this.settings.groups.filter((g)=>g!=this.settings.group_choice)
+                this.clear_stacking_threshold()
                 UpdateController.make_single_request('group removed', this)
             })
             add_tooltip(this.remove_group_button, 'Remove active group tab', 'right')
@@ -823,6 +847,7 @@ export class ControllerPanel extends HTMLDivElement {
                 if (app.canvas.read_only) return
                 GroupManager.change_group_mode(this.settings.group_choice, node_mode, e)
                 app.canvas.setDirty(true,true)
+                this.clear_stacking_threshold()
                 ControllerPanel.group_change(this.settings.group_choice)
                 OnChangeController.on_change("Group mode changed")
             })
@@ -884,6 +909,7 @@ export class ControllerPanel extends HTMLDivElement {
                 }
                 this.settings.group_choice = g
                 the_select.remove()
+                this.clear_stacking_threshold()
                 UpdateController.make_single_request('group tab change', this)
             })
         })
