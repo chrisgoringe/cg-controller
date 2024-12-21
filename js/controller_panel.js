@@ -725,7 +725,7 @@ export class ControllerPanel extends HTMLDivElement {
     tab_context_menu(e) {
         open_context_menu(e, "Tabs", [ 
             { 
-                "title": this.settings.stack_tabs ? "Show all tabs" : "Only show active tab", 
+                "title": this.settings.stack_tabs ? Texts.STACK_IF_NEEDED : Texts.STACK_ALWAYS, 
                 "callback":()=>{
                     this.settings.stack_tabs = !this.settings.stack_tabs
                     this.clear_stacking_threshold()

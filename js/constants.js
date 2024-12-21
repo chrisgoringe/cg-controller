@@ -120,6 +120,8 @@ export class Texts {
     static UNCONNECTED = "Unconnected Input"
     static ACCEPT_UPSTREAM = "Show upstream images"
     static REJECT_UPSTREAM = "Only show my images"
+    static STACK_ALWAYS = "Only show active tab"
+    static STACK_IF_NEEDED = "Show all tabs if space allows"
 }
 
 export const DisplayNames = {
