@@ -10,6 +10,11 @@ export function mouse_change(v) { mouse_is_down = v }
 var started = false
 var sgc_stack = 0
 
+export function extension_hiding(v) {
+    if (!getSettingValue(SettingIds.HIDE_EXTENSIONS, false)) return v
+    return v.replace(/\.[^\. ]+$/, "")
+}
+
 function _send_graph_changed() {
     sgc_stack -= 1
     if (sgc_stack == 0) {

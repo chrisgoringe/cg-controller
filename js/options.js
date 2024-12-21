@@ -13,6 +13,13 @@ export const OPTIONS = [
         defaultValue: 50
     },
     {
+        id: SettingIds.HIDE_EXTENSIONS,
+        name: SettingNames.HIDE_EXTENSIONS,
+        tooltip: Tooltips.HIDE_EXTENSIONS,
+        type: "boolean",
+        defaultValue: false
+    },
+    {
         id: SettingIds.KEYBOARD_TOGGLE,
         name: SettingNames.KEYBOARD_TOGGLE,
         type: "combo",

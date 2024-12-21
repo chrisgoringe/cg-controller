@@ -16,6 +16,7 @@ export class SettingIds {
     static DEFAULT_APPLY_TO_SIMILAR = "Controller.Sliders.default_apply_to_similar"
     static SHOW_SCROLLBARS = "Controller.Display.show_scrollbars"
     static SHOW_IN_FOCUS_MODE = "Controller.Display.show_in_focus_mode"
+    static HIDE_EXTENSIONS = "Controller.Display.hide_extensions"
 }
 
 export class SettingNames {
@@ -31,6 +32,7 @@ export class SettingNames {
     static SHOW_SCROLLBARS = "Controller scrollbars"
     static EDIT_SLIDERS = "Edit slider limits"
     static DEBUG_LEVEL = "Debug level"
+    static HIDE_EXTENSIONS = "Hide extensions"
 }
 
 export class Generic {
@@ -60,6 +62,7 @@ export class Tooltips {
     static SCROLL_REVERSED = "Scroll up to reduce value"
     static SHOW_SCROLLBARS = "If off, can still scroll with scrollwheel"
     static DEBUG_LEVEL = "Press f12 for js console"
+    static HIDE_EXTENSIONS = "Hide filename extensions"
 }
 
 export class InclusionOptions {

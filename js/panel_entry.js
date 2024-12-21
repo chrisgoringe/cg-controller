@@ -1,5 +1,5 @@
 import { app } from "../../scripts/app.js";
-import { create, tooltip_if_overflowing } from "./utilities.js";
+import { create, tooltip_if_overflowing, extension_hiding } from "./utilities.js";
 import { FancySlider } from "./input_slider.js";
 import { rounding } from "./utilities.js";
 import { make_resizable } from "./resize_manager.js";
@@ -87,11 +87,11 @@ export class Entry extends HTMLDivElement {
                 break
             case 'combo':
                 this.entry_label = create('span','entry_label', this, {'innerText':widget_label, 'draggable':false} )  
-                this.entry_value = create('span','entry_label value', this, {'innerText':target_widget.value, 'draggable':false} )  
+                this.entry_value = create('span','entry_label value', this, {'innerText':extension_hiding(target_widget.value), 'draggable':false} )  
                 this.input_element = create("select", 'input', this, {"doesntBlockRefresh":true}) 
                 this.choices = (target_widget.options.values instanceof Function) ? target_widget.options.values() : target_widget.options.values
                 this.choices.forEach((o) => this.input_element.add(new Option(o,o)))
-                this.input_element.redraw = () => { this.entry_value.innerText = this.input_element.value }
+                this.input_element.redraw = () => { this.entry_value.innerText = extension_hiding(this.input_element.value) }
                 this.input_element.addEventListener("change", this.input_element.redraw.bind(this))
                 break
             case 'RgthreeBetterButtonWidget':
