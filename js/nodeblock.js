@@ -330,6 +330,14 @@ export class NodeBlock extends HTMLSpanElement {
                     window.open(this.urls[this.image_index])
                 }
             },
+            { 
+                "title":"Save image", 
+                "callback":()=>{
+                    const a = create('a', 'hidden', this, {href:this.urls[this.image_index], download:"image.png"})
+                    a.click()
+                    a.remove()
+                }
+            },
         ])
     }
 
