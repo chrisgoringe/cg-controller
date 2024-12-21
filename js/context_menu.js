@@ -12,14 +12,15 @@ export function close_context_menu() {
     context_menu = null
 }
 
-function _open_context_menu(e, title, values) {
+function _open_context_menu(e, title, values, opts) {
     close_context_menu()
     const options = {
         "title":title, 
         "event":e,
     }
+    if (opts) Object.assign(options, opts)
     context_menu = LiteGraph.ContextMenu(values, options, app.canvas.getCanvasWindow())
 }
-export function open_context_menu(e, title, values) { setTimeout(_open_context_menu, 10, e, title, values) }
+export function open_context_menu(e, title, values, opts) { setTimeout(_open_context_menu, 10, e, title, values, opts) }
 
 window.addEventListener('click',autoclose)

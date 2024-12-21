@@ -509,6 +509,12 @@
     height: 20px;
     text-align: right;
 }
+.input.clickabletext {
+    display: block;
+    text-align: left;
+    padding:  4px;
+    font-size: 70%;
+}
 select.input {
     height: calc(var(--font-size) + 4px)
 }

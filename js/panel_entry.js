@@ -11,6 +11,7 @@ import { WidgetChangeManager } from "./widget_change_manager.js";
 import { Texts } from "./constants.js";
 import { PLL_Widget } from "./power_lora_loader_widget.js";
 import { ImageComparerControlWidget } from "./image_comparer_control_widget.js";
+import { close_context_menu, open_context_menu } from "./context_menu.js";
 
 function typecheck_number(v) {
     const vv = parseFloat(v)
@@ -86,13 +87,20 @@ export class Entry extends HTMLDivElement {
                 this.input_element.redraw() 
                 break
             case 'combo':
-                this.entry_label = create('span','entry_label', this, {'innerText':widget_label, 'draggable':false} )  
-                this.entry_value = create('span','entry_label value', this, {'innerText':extension_hiding(target_widget.value), 'draggable':false} )  
-                this.input_element = create("select", 'input', this, {"doesntBlockRefresh":true}) 
+                this.input_element = create('span','input clickabletext', this, {'innerText':extension_hiding(target_widget.value), 'draggable':false} )  
                 this.choices = (target_widget.options.values instanceof Function) ? target_widget.options.values() : target_widget.options.values
-                this.choices.forEach((o) => this.input_element.add(new Option(o,o)))
-                this.input_element.redraw = () => { this.entry_value.innerText = extension_hiding(this.input_element.value) }
-                this.input_element.addEventListener("change", this.input_element.redraw.bind(this))
+                this.input_element.addEventListener('click', (e)=>{
+                    open_context_menu(e, "", this.choices,  {
+                        className: "dark",
+                        callback: (v)=>{
+                            close_context_menu()
+                            target_widget.value=v; 
+                            this.input_element.innerText = extension_hiding(v)
+                            target_widget.callback(v, app.canvas, this.parent_nodeblock.node)
+                            WidgetChangeManager.notify(target_widget)
+                        },
+                    })
+                })
                 break
             case 'RgthreeBetterButtonWidget':
             case 'button':
