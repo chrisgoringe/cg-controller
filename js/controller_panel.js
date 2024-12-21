@@ -743,6 +743,7 @@ export class ControllerPanel extends HTMLDivElement {
                 tab.style.flexShrink = `${nm.length + 2}`
                 tab.style.flexGrow = `${nm.length + 2}`
                 tab.style.flexBasis = `${nm.length * 20}px`
+                tab.style.minWidth = `${getSettingValue(SettingIds.MINIMUM_TAB_WIDTH, 50)}px`
                 tab.addEventListener('mouseenter', ()=>{Highlighter.group(nm)})
                 tab.addEventListener('mouseleave', ()=>{Highlighter.group(null)})
                 tab.addEventListener('mousedown', (e) => {

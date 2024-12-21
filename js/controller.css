@@ -180,12 +180,8 @@
     cursor: pointer;
     text-align: center;
     margin: 0px 1px 4px 1px;
-
-    /* allow the group to shrink */
-    min-width: 40px;
     max-width: fit-content;
-    /*flex-basis: calc-size( max-content, size * 1.4 );*/
-    /*flex-shrink: 1; set programatically*/
+    /* min-width, flex-basis, flex-sshrink, flex-grow all set programatically */
     text-overflow: ellipsis;
     overflow: hidden;
 }
