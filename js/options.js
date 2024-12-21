@@ -7,8 +7,8 @@ export const OPTIONS = [
         tooltip: Tooltips.MINIMUM_TAB_WIDTH,
         type: "slider",
         attrs: {
-            min: 30,
-            max: 300
+            min: 20,
+            max: 150
           },
         defaultValue: 50
     },
