@@ -519,7 +519,7 @@ export class NodeBlock extends HTMLSpanElement {
                         const max_height = (im_h/im_w) * w * this.images_per_row;
                         if (from_click) {
                             const overflow = box.bottom - this.parent_controller.getBoundingClientRect().bottom + 8
-                            const height = (from_click) ? Math.min(max_height, max_height - overflow) : max_height
+                            const height = Math.min(max_height/this.images_per_row, max_height/this.images_per_row - overflow)
                             this.image_panel.style.height = `${height}px`
                         }
                         this.image_panel.style.maxHeight = `${max_height * this.images_per_row}px`
