@@ -401,14 +401,17 @@
 }
 
 .nodeblock_image_grid {
-    display: flex;
-    flex-wrap: wrap;
-    align-content: center;
+    display: grid;
     justify-content: center;
+    align-items: center;
+    justify-items: center;
+    align-content: center;
 }
 
 .nodeblock_image_grid_image {
     padding: 1px;
+    max-width: 100%;
+    max-height: 100%;
 }
 
 

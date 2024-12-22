@@ -487,10 +487,10 @@ export class NodeBlock extends HTMLSpanElement {
         if (this.using_image_grid) {
             this.images_per_row = this.pick_images_per_row(this.image_grid.firstChild, this.urls.length)
             this.image_rows = Math.ceil(this.urls.length / this.images_per_row)
-
-            const width = `calc(100% / ${this.images_per_row})`
-            const height = `calc(100% / ${this.image_rows})`
-            Array.from(this.image_grid.children).forEach((img)=>{img.style.maxWidth = width; img.style.maxHeight = height})
+            Array.from(this.image_grid.children).forEach((img, i)=>{
+                img.style.gridArea = `${Math.floor(i/this.images_per_row) + 1} / ${i%this.images_per_row + 1} /  auto / auto`; 
+                img.style.width = `${this.ratio * img.naturalWidth}px`
+            })
         } else {
             this.images_per_row = 1
             this.image_rows = 1
@@ -664,6 +664,7 @@ export class NodeBlock extends HTMLSpanElement {
                     Debug.important(`best yet ${best} for ${best_pick} per row`)
                 } 
             }
+            this.ratio = best
             return best_pick
         }
         return Math.ceil(Math.sqrt(count))
