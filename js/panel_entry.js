@@ -11,7 +11,7 @@ import { WidgetChangeManager } from "./widget_change_manager.js";
 import { Texts } from "./constants.js";
 import { PLL_Widget } from "./power_lora_loader_widget.js";
 import { ImageComparerControlWidget } from "./image_comparer_control_widget.js";
-import { close_context_menu, open_context_menu } from "./context_menu.js";
+import { ExtendedCombo } from "./combo.js";
 
 function typecheck_number(v) {
     const vv = parseFloat(v)
@@ -87,20 +87,9 @@ export class Entry extends HTMLDivElement {
                 this.input_element.redraw() 
                 break
             case 'combo':
-                this.input_element = create('span','input clickabletext', this, {'innerText':extension_hiding(target_widget.value), 'draggable':false} )  
                 this.choices = (target_widget.options.values instanceof Function) ? target_widget.options.values() : target_widget.options.values
-                this.input_element.addEventListener('click', (e)=>{
-                    open_context_menu(e, "", this.choices,  {
-                        className: "dark",
-                        callback: (v)=>{
-                            close_context_menu()
-                            target_widget.value=v; 
-                            this.input_element.innerText = extension_hiding(v)
-                            target_widget.callback(v, app.canvas, this.parent_nodeblock.node)
-                            WidgetChangeManager.notify(target_widget)
-                        },
-                    })
-                })
+                this.input_element =  new ExtendedCombo(this.choices, target_widget, node)
+                this.appendChild(this.input_element)
                 break
             case 'RgthreeBetterButtonWidget':
             case 'button':

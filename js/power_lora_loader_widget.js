@@ -3,6 +3,8 @@ import { Toggle } from "./toggle.js"
 import { OnChangeController } from "./update_controller.js"
 import { FancySlider } from "./input_slider.js"
 import { app } from "../../scripts/app.js";
+import { extension_hiding } from "./utilities.js";
+import { close_context_menu } from "./context_menu.js";
 
 class PseudoWidget {
     constructor(target_widget, pil, slider_name, val_name = "strength") {
@@ -40,8 +42,11 @@ export class PLL_Widget extends HTMLSpanElement {
         this.target_widget = target_widget
         this.classList.add('two_line_entry')
         this.top_line = create('span','line', this)
-        this.label = create('span', 'label', this.top_line, {"innerText":this.target_widget._value.lora})
+
+        this.label = create('span', 'label', this.top_line, {"innerText":extension_hiding(this.target_widget._value.lora)})
         this.label.addEventListener('click', (e)=>{
+            e.stopPropagation()
+            close_context_menu()
             this.target_widget.hitAreas.lora.onDown.bind(this.target_widget)(e,null,node)
         })
         this.on_off = new Toggle(target_widget._value.on, "", "Active", "Muted")

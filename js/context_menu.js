@@ -9,6 +9,7 @@ function autoclose(e) {
 
 export function close_context_menu() {
     context_menu?.close()
+    Array.from(document.getElementsByClassName('litecontextmenu')).forEach((e)=>e.remove())
     context_menu = null
 }
 
