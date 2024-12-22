@@ -376,7 +376,7 @@ export class NodeBlock extends HTMLSpanElement {
         this.title_text = create("span", 'nodeblock_title', this.draghandle, {"innerText":this.node.title, 'draggable':false})
         tooltip_if_overflowing(this.title_text, this.title_bar)
 
-        this.image_pin = create('i', 'pi pi-thumbtack hidden', this.title_bar_right)
+        this.image_pin = create('i', 'pi pi-thumbtack blank', this.title_bar_right)
         this.image_pin.addEventListener('click', (e) => {
             if (app.canvas.read_only) return
             this.node.properties.controller_widgets[this.image_panel_id].pinned = !this.node.properties.controller_widgets[this.image_panel_id].pinned
@@ -580,7 +580,7 @@ export class NodeBlock extends HTMLSpanElement {
         this.image_image.doing_compare = doing_compare ? this : null
 
         classSet(this.image_panel, 'nodeblock_image_empty', nothing)
-        classSet(this.image_pin, 'hidden', nothing)
+        classSet(this.image_pin, 'blank', nothing)
 
         if (!nothing && this.node.imageIndex > urls.length) this.node.imageIndex = 0
         if (this.imageIndex != this.node.imageIndex) {

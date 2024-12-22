@@ -654,6 +654,10 @@ textarea.input {
     display:none !important;
 }
 
+.blank {
+    color: transparent;
+}
+
 i {
     cursor: pointer;
 }
