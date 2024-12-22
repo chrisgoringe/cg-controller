@@ -173,7 +173,7 @@ export class Entry extends HTMLDivElement {
     update_combo_selection() {
         if (this.input_element) {
             this.input_element.value   = this.target_widget.value
-            this.entry_value.innerText = this.target_widget.value
+            if (this.entry_value) this.entry_value.innerText = this.target_widget.value
         } else {
             Debug.important("update_combo with no input_element")
         }

@@ -483,6 +483,19 @@ export class NodeBlock extends HTMLSpanElement {
         }
         if (this.parent_controller.settings.collapsed) return
         this.rescaling = true
+
+        if (this.using_image_grid) {
+            this.images_per_row = this.pick_images_per_row(this.image_grid.firstChild, this.urls.length)
+            this.image_rows = Math.ceil(this.urls.length / this.images_per_row)
+
+            const width = `calc(100% / ${this.images_per_row})`
+            const height = `calc(100% / ${this.image_rows})`
+            Array.from(this.image_grid.children).forEach((img)=>{img.style.maxWidth = width; img.style.maxHeight = height})
+        } else {
+            this.images_per_row = 1
+            this.image_rows = 1
+        }
+
         if (this.image_image) {
             const box = this.image_panel.getBoundingClientRect()
             const pinned = this.node.properties.controller_widgets[this.image_panel_id].pinned
@@ -500,16 +513,20 @@ export class NodeBlock extends HTMLSpanElement {
                         this.image_panel.style.maxHeight = `${full_h}px`
                         this.image_image.style.height = `${full_h}px`
                         this.image_image.style.width = `${w}px`
+                        this.image_grid.style.height = `${full_h}px`
+                        this.image_grid.style.width = `${w}px`
                     } else {                      
-                        const max_height = (im_h/im_w) * w;
+                        const max_height = (im_h/im_w) * w * this.images_per_row;
                         if (from_click) {
                             const overflow = box.bottom - this.parent_controller.getBoundingClientRect().bottom + 8
                             const height = (from_click) ? Math.min(max_height, max_height - overflow) : max_height
                             this.image_panel.style.height = `${height}px`
                         }
-                        this.image_panel.style.maxHeight = `${max_height}px`
+                        this.image_panel.style.maxHeight = `${max_height * this.images_per_row}px`
                         this.image_image.style.height = `100%`
                         this.image_image.style.width = `auto`
+                        this.image_grid.style.height = `100%`
+                        this.image_grid.style.width = `auto`
                     }
                 }
             } 
@@ -583,6 +600,7 @@ export class NodeBlock extends HTMLSpanElement {
         if (this.imageIndex !== null || doing_compare) {
             this.images_per_row = 1
             this.image_rows = 1
+            this.using_image_grid = false
             classSet(this.image_image, 'hidden', false)
             classSet(this.image_grid, 'hidden', true)
             const url = nothing ? null : (is_blob ? urls[0] : urls[this.imageIndex])
@@ -605,6 +623,7 @@ export class NodeBlock extends HTMLSpanElement {
                 classSet(this.image_next, 'next', true)
             }
         } else if (!nothing) {
+            this.using_image_grid = true
             classSet(this.image_image, 'hidden', true)
             classSet(this.image_grid, 'hidden', false)
             classSet(this.image_paging, 'hidden', true)
@@ -614,35 +633,41 @@ export class NodeBlock extends HTMLSpanElement {
                 const img = create('img', 'nodeblock_image_grid_image', this.image_grid, {src:url})
                 img.addEventListener('click', ()=>{this.node.imageIndex = i; this.show_images(this.urls)})
             })
-            this.images_per_row = this.pick_images_per_row(this.image_grid.firstChild, urls.length)
-            const width = `calc(100% / ${this.images_per_row})`
-            Array.from(this.image_grid.children).forEach((img)=>{img.style.width = width})
-            this.image_rows = Math.ceil(this.urls.length / this.images_per_row)
+            
         }
         this.rescale_image()
     }
 
     pick_images_per_row(an_image, count) {
+        const pinned = this.node.properties.controller_widgets[this.image_panel_id].pinned
         const w = an_image?.naturalWidth
         const h = an_image?.naturalHeight
-        if (w && h) {
+        const box = this.image_panel.getBoundingClientRect()
+
+        if (w && h && box.width && box.height) {
             var best = 0
             var best_pick
             for (var per_row=1; per_row<=count; per_row++) {
                 const rows = Math.ceil(count / per_row)
                 const width = per_row * w
                 const height = rows * h
-                const ratio = Math.min(width / height, height / width)
+                var ratio
+                if (pinned) {
+                    ratio = Math.min(width / height, height / width)
+                } else {
+                    ratio = Math.min(box.width / width, box.height / height)
+                    Debug.important(`ratio ${ratio} for ${per_row} per row, ${rows} rows`)
+                }
                 if (ratio > best) {
                     best = ratio
                     best_pick = per_row
-                } else {
-                    break
-                }
+                    Debug.important(`best yet ${best} for ${best_pick} per row`)
+                } 
             }
             return best_pick
         }
         return Math.ceil(Math.sqrt(count))
+
     }
 
     previousImage() {

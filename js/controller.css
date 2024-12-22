@@ -403,11 +403,14 @@
 .nodeblock_image_grid {
     display: flex;
     flex-wrap: wrap;
+    align-content: center;
+    justify-content: center;
 }
 
 .nodeblock_image_grid_image {
     padding: 1px;
 }
+
 
 .overlay.overlay_show_grid {
     padding: 2px 4px;

@@ -4,7 +4,7 @@ import { OnChangeController } from "./update_controller.js"
 import { FancySlider } from "./input_slider.js"
 import { app } from "../../scripts/app.js";
 import { extension_hiding } from "./utilities.js";
-import { close_context_menu } from "./context_menu.js";
+import { close_context_menu, register_closable } from "./context_menu.js";
 
 class PseudoWidget {
     constructor(target_widget, pil, slider_name, val_name = "strength") {
@@ -47,6 +47,7 @@ export class PLL_Widget extends HTMLSpanElement {
         this.label.addEventListener('click', (e)=>{
             e.stopPropagation()
             close_context_menu()
+            register_closable()
             this.target_widget.hitAreas.lora.onDown.bind(this.target_widget)(e,null,node)
         })
         this.on_off = new Toggle(target_widget._value.on, "", "Active", "Muted")

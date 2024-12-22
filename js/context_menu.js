@@ -1,6 +1,7 @@
 import { app } from "../../scripts/app.js"
 
 var context_menu
+var closable = false
 
 function autoclose(e) {
     if (context_menu?.root?.contains(e.target)) return
@@ -9,8 +10,15 @@ function autoclose(e) {
 
 export function close_context_menu() {
     context_menu?.close()
-    Array.from(document.getElementsByClassName('litecontextmenu')).forEach((e)=>e.remove())
+    if (closable) {
+        Array.from(document.getElementsByClassName('litecontextmenu')).forEach((e)=>e.remove())
+    }
+    closable = false
     context_menu = null
+}
+
+export function register_closable() {
+    closable = true
 }
 
 function _open_context_menu(e, title, values, opts) {
