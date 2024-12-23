@@ -62,6 +62,10 @@ function on_setup() {
         mouse_change(true)
         if (e.button==2) e.target.handle_right_click?.(e)
     })
+    window.addEventListener('click', (e)=>{
+        mouse_change(true)
+        if (e.ctrlKey) e.target.handle_right_click?.(e)
+    })
     window.addEventListener('mouseup', (e)=>{
         mouse_change(false)
         ControllerPanel.handle_mouse_up(e)
