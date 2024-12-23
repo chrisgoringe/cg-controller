@@ -518,6 +518,13 @@ export class NodeBlock extends HTMLSpanElement {
 
             if (is_blob) {
                 this.image_panel.style.maxHeight = 'unset'
+                if (pinned) {
+                    first_image.style.height = `${grid_height_at_available_width}px`
+                    first_image.style.width = `auto`
+                } else {
+                    first_image.style.width = `${available_width}px`
+                    first_image.style.height = `auto`
+                }
             } else {
                 this.image_panel.style.maxHeight = `${pinned ? grid_height_at_available_width : grid_height_at_one_per_row}px`
                 if (pinned) {
