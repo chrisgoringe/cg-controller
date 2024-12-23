@@ -475,6 +475,7 @@ export class NodeBlock extends HTMLSpanElement {
         const children_in_grid = Array.from(this.image_grid.children).filter((c)=>(!c.exclude_from_grid))
         if (!children_in_grid.length) return
         const first_image = children_in_grid[0]
+        const is_blob = image_is_blob(this.urls[0])
 
         const pinned = this.node.properties.controller_widgets[this.image_panel_id].pinned
         const box = this.image_panel.getBoundingClientRect()
@@ -493,22 +494,38 @@ export class NodeBlock extends HTMLSpanElement {
             this.node.properties.controller_widgets[this.image_panel_id].height = box.height
 
             const available_width = box.width - 8
-            const total_images_height = first_image.naturalHeight * this.image_rows
-            const total_images_width  = first_image.naturalWidth  * this.images_per_row
 
-            if (!total_images_height || !total_images_width) return 
+            var img_width  = first_image.naturalWidth
+            var img_height = first_image.naturalHeight
+            if (!img_width || !img_height) {
+                if (is_blob) {
+                    img_width = ImageManager.last_preview_image?.width
+                    img_height = ImageManager.last_preview_image?.height
+                }
+                if (!img_width || !img_height) return 
+                Debug.essential(`Got size from blob: ${img_width} ${img_height}`)
+            } else {
+                Debug.essential(`Got size from image: ${img_width} ${img_height}`)
+            }
 
-            const image_aspect_ratio = first_image.naturalHeight / first_image.naturalWidth
+            const total_images_height = img_height * this.image_rows
+            const total_images_width  = img_width  * this.images_per_row
+
+            const image_aspect_ratio = img_height / img_width
             const grid_aspect_ratio = total_images_height / total_images_width
             const grid_height_at_available_width = available_width * grid_aspect_ratio
             const grid_height_at_one_per_row = available_width * image_aspect_ratio * this.urls.length
 
-            this.image_panel.style.maxHeight = `${pinned ? grid_height_at_available_width : grid_height_at_one_per_row}px`
-            if (pinned) {
-                this.image_panel.style.height = `${grid_height_at_available_width}px`
-            } else if (just_clicked_pin) {
-                const overflow = box.bottom - this.parent_controller.getBoundingClientRect().bottom + 8
-                this.image_panel.style.height = `${Math.min(grid_height_at_available_width, grid_height_at_available_width - overflow)}px`
+            if (is_blob) {
+                this.image_panel.style.maxHeight = 'unset'
+            } else {
+                this.image_panel.style.maxHeight = `${pinned ? grid_height_at_available_width : grid_height_at_one_per_row}px`
+                if (pinned) {
+                    this.image_panel.style.height = `${grid_height_at_available_width}px`
+                } else if (just_clicked_pin) {
+                    const overflow = box.bottom - this.parent_controller.getBoundingClientRect().bottom + 8
+                    this.image_panel.style.height = `${Math.min(grid_height_at_available_width, grid_height_at_available_width - overflow)}px`
+                }
             }
 
             if (this.image_compare_overlay) {
@@ -556,12 +573,13 @@ export class NodeBlock extends HTMLSpanElement {
         this.urls = urls
         const nothing = !(urls && urls.length>0)
         const is_blob = (!nothing && image_is_blob(urls[0]))
+        if (is_blob && this.node.id==18) {
+            let a;
+        }
         const doing_compare = (this.node.type=="Image Comparer (rgthree)" && urls && urls.length==2)
         
         if (nothing || !(this.node.imageIndex < urls.length && this.node.imageIndex>=0)) this.node.imageIndex = null
         this.imageIndex = this.node.imageIndex 
-
-        Debug.important(`node = ${this.node.id}, image_index = ${`${this.imageIndex}`}, urls = ${urls.length}, nothing = ${nothing}, is_blob = ${is_blob}, doing_compare = ${doing_compare}`)
 
         classSet(this.image_panel, 'nodeblock_image_empty', nothing)
         classSet(this.image_grid, 'hidden', nothing)

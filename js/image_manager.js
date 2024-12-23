@@ -31,7 +31,8 @@ export class ImageManager {
     static node_listener_map  = {}  // map to Set: node_id (listened to) to node_id's (listeners)
     static node_urls_map      = {}  // map to urls: node_id to list[str]
     static executing_node     = null
-    static last_preview_node = null
+    static last_preview_node  = null
+    static last_preview_image = null
     static node_image_change = (node_id)=>{}
 
     static reset() {
@@ -107,8 +108,14 @@ export class ImageManager {
 
     static on_b_preview(e) {
         // TODO if (!pim.ours(e)) return
+        const blob_url = window.URL.createObjectURL(e.detail)
         ImageManager.last_preview_node = ImageManager.executing_node
-        ImageManager._images_received( ImageManager.executing_node, [window.URL.createObjectURL(e.detail),], "b_preview" )
+        const i = new Image()
+        i.onload = ()=>{
+            ImageManager.last_preview_image = {width: i.width, height: i.height}
+        }
+        i.src = blob_url
+        ImageManager._images_received( ImageManager.executing_node, [blob_url,], "b_preview" )
     }
 
     static on_executed(e) {
