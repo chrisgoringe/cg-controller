@@ -1,4 +1,5 @@
 import { app } from "../../scripts/app.js"
+import { Timings } from "./constants.js"
 
 var context_menu
 var closable = false
@@ -23,6 +24,7 @@ export function register_closable() {
 
 function _open_context_menu(e, title, values, opts) {
     close_context_menu()
+    
     const options = {
         "title":title, 
         "event":e,
@@ -30,6 +32,9 @@ function _open_context_menu(e, title, values, opts) {
     if (opts) Object.assign(options, opts)
     context_menu = LiteGraph.ContextMenu(values, options, app.canvas.getCanvasWindow())
 }
-export function open_context_menu(e, title, values, opts) { setTimeout(_open_context_menu, 10, e, title, values, opts) }
+export function open_context_menu(e, title, values, opts, node) { 
+    if (node) app.canvas.current_node = node
+    setTimeout(_open_context_menu, Timings.GENERIC_SHORT_DELAY, e, title, values, opts) 
+}
 
 window.addEventListener('click',autoclose)

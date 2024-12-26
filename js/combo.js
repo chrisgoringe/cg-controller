@@ -20,7 +20,7 @@ export class ExtendedCombo extends HTMLSpanElement {
                     target_widget.callback(v, app.canvas, node)
                     WidgetChangeManager.notify(target_widget)
                 },
-            })
+            }, node)
         })
     }
 }
