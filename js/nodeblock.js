@@ -474,26 +474,29 @@ export class NodeBlock extends HTMLSpanElement {
 
         const children_in_grid = Array.from(this.image_grid.children).filter((c)=>(!c.exclude_from_grid))
         if (!children_in_grid.length) return
+
         const first_image = children_in_grid[0]
         const is_blob = image_is_blob(this.urls[0])
-
         const pinned = this.node.properties.controller_widgets[this.image_panel_id].pinned
-        const box = this.image_panel.getBoundingClientRect()
-        if (!box.width) return
+        const panel_box = this.image_panel.getBoundingClientRect()
+        const grid_box = this.image_grid.getBoundingClientRect()
+
+        if (!panel_box.width) return
         
         try {
             this.rescaling = true
+            //const available_width = box.width - 8
+            this.node.properties.controller_widgets[this.image_panel_id].height = panel_box.height
 
             this.images_per_row = this.pick_images_per_row(this.image_grid.firstChild, children_in_grid.length)
             this.image_rows = Math.ceil(children_in_grid.length / this.images_per_row)
+
             children_in_grid.forEach((img, i)=>{
                 img.style.gridArea = `${Math.floor(i/this.images_per_row) + 1} / ${i%this.images_per_row + 1} /  auto / auto`; 
-                img.style.width = `${this.ratio * img.naturalWidth}px`
+                //img.style.width = `${this.ratio * img.naturalWidth}px`
             })
 
-            this.node.properties.controller_widgets[this.image_panel_id].height = box.height
-
-            const available_width = box.width - 8
+            this.node.properties.controller_widgets[this.image_panel_id].height = panel_box.height
 
             var img_width  = first_image.naturalWidth
             var img_height = first_image.naturalHeight
@@ -513,32 +516,40 @@ export class NodeBlock extends HTMLSpanElement {
 
             const image_aspect_ratio = img_height / img_width
             const grid_aspect_ratio = total_images_height / total_images_width
-            const grid_height_at_available_width = available_width * grid_aspect_ratio
-            const grid_height_at_one_per_row = available_width * image_aspect_ratio * this.urls.length
 
-            if (is_blob) {
-                this.image_panel.style.maxHeight = 'unset'
-                if (pinned) {
-                    first_image.style.height = `${grid_height_at_available_width}px`
-                    first_image.style.width = `auto`
-                } else {
-                    first_image.style.width = `${available_width}px`
-                    first_image.style.height = `auto`
-                }
+            const panel_settings = {'maxHeight': 'unset'}
+            const image_settings = {}
+            const grid_settings  = {}
+
+            var grid_height = panel_box.height
+            var grid_width  = panel_box.width
+
+            if (pinned) {
+                panel_settings['maxHeight'] = `${panel_box.width * grid_aspect_ratio}px`
+                panel_settings['height']    = `${panel_box.width * grid_aspect_ratio}px`
+                grid_height = grid_width * grid_aspect_ratio
             } else {
-                this.image_panel.style.maxHeight = `${pinned ? grid_height_at_available_width : grid_height_at_one_per_row}px`
-                if (pinned) {
-                    this.image_panel.style.height = `${grid_height_at_available_width}px`
-                } else if (just_clicked_pin) {
-                    const overflow = box.bottom - this.parent_controller.getBoundingClientRect().bottom + 8
-                    this.image_panel.style.height = `${Math.min(grid_height_at_available_width, grid_height_at_available_width - overflow)}px`
+                panel_settings['maxHeight'] = `${panel_box.width * image_aspect_ratio * this.urls.length}px`
+                if (just_clicked_pin) {
+                    const overflow   = panel_box.bottom - this.parent_controller.getBoundingClientRect().bottom + 8
+                    if (overflow>0) {
+                        grid_height -= overflow
+                    }
                 }
+                grid_width = Math.min(grid_height / grid_aspect_ratio, grid_width)
             }
 
-            if (this.image_compare_overlay) {
-                this.image_compare_overlay.style.width = `${first_image.getBoundingClientRect().width}px`
-            }
+            grid_settings['height'] = `${grid_height}px`
+            grid_settings['width']  = `${grid_width}px`
 
+            //image_settings['maxHeight'] = `${grid_height/this.image_rows}px`
+            image_settings['width']  = `2000px`
+
+            Object.assign(this.image_panel.style, panel_settings)
+            Object.assign(this.image_grid.style, grid_settings)
+            children_in_grid.forEach((img)=>{Object.assign(img.style, image_settings)})
+            if (this.image_compare_overlay) Object.assign(this.image_compare_overlay.style, image_settings)
+            
         } finally { this.rescaling = false }
     }
 
@@ -591,8 +602,8 @@ export class NodeBlock extends HTMLSpanElement {
         classSet(this.image_panel, 'nodeblock_image_empty', nothing)
         classSet(this.image_grid, 'hidden', nothing)
         classSet(this.image_pin, 'blank', nothing)
-        classSet(this.image_paging, 'hidden', doing_compare || this.imageIndex===null)
-        classSet(this.image_show_grid, 'hidden', doing_compare || this.imageIndex===null)
+        classSet(this.image_paging,    'hidden', doing_compare || this.imageIndex===null || this.urls.length<2)
+        classSet(this.image_show_grid, 'hidden', doing_compare || this.imageIndex===null || this.urls.length<2)
 
         this.image_grid.innerHTML = ''
         if (nothing) {
@@ -628,6 +639,7 @@ export class NodeBlock extends HTMLSpanElement {
     }
 
     pick_images_per_row(an_image, count) {
+        if (count==1) return 1
         const pinned = this.node.properties.controller_widgets[this.image_panel_id].pinned
         const w = an_image?.naturalWidth
         const h = an_image?.naturalHeight
