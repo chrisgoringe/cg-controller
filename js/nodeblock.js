@@ -506,9 +506,9 @@ export class NodeBlock extends HTMLSpanElement {
                     img_height = ImageManager.last_preview_image?.height
                 }
                 if (!img_width || !img_height) return 
-                Debug.essential(`Got size from blob: ${img_width} ${img_height}`)
+                Debug.trivia(`Got size from blob: ${img_width} ${img_height}`)
             } else {
-                Debug.essential(`Got size from image: ${img_width} ${img_height}`)
+                Debug.trivia(`Got size from image: ${img_width} ${img_height}`)
             }
 
             const total_images_height = img_height * this.image_rows
@@ -542,8 +542,7 @@ export class NodeBlock extends HTMLSpanElement {
             grid_settings['height'] = `${grid_height}px`
             grid_settings['width']  = `${grid_width}px`
 
-            //image_settings['maxHeight'] = `${grid_height/this.image_rows}px`
-            image_settings['width']  = `2000px`
+            image_settings['width'] = `${grid_width}px`
 
             Object.assign(this.image_panel.style, panel_settings)
             Object.assign(this.image_grid.style, grid_settings)
@@ -657,15 +656,14 @@ export class NodeBlock extends HTMLSpanElement {
                     ratio = Math.min(width / height, height / width)
                 } else {
                     ratio = Math.min(box.width / width, box.height / height)
-                    Debug.important(`ratio ${ratio} for ${per_row} per row, ${rows} rows`)
+                    Debug.trivia(`ratio ${ratio} for ${per_row} per row, ${rows} rows`)
                 }
                 if (ratio > best) {
                     best = ratio
                     best_pick = per_row
-                    Debug.important(`best yet ${best} for ${best_pick} per row`)
+                    Debug.trivia(`best yet ${best} for ${best_pick} per row`)
                 } 
             }
-            this.ratio = best
             return best_pick
         }
         return Math.ceil(Math.sqrt(count))

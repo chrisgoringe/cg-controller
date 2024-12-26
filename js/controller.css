@@ -374,6 +374,7 @@
 }
 
 .nodeblock_image_panel {
+    width: 100%;
     resize: vertical;
     overflow: hidden;
     display: flex;
@@ -381,7 +382,6 @@
     flex-direction: column;
     align-items: center;
     margin-top: 4px;
-    width: 100%;
 }
 
 .nodeblock_image_empty {
