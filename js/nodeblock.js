@@ -583,6 +583,8 @@ export class NodeBlock extends HTMLSpanElement {
     show_images(urls, node_id) {
         if (this.get_rejects_upstream() && node_id!=this.node.id) return
 
+        Debug.important(`called show_images for ${this.node.id} with ${urls.length} images from ${node_id}`)
+
         if (this.entry_controlling_image) setTimeout(()=>{
             this.entry_controlling_image.update_combo_selection()
         }, Timings.GENERIC_SHORT_DELAY)
@@ -604,21 +606,32 @@ export class NodeBlock extends HTMLSpanElement {
         classSet(this.image_paging,    'hidden', doing_compare || this.imageIndex===null || this.urls.length<2)
         classSet(this.image_show_grid, 'hidden', doing_compare || this.imageIndex===null || this.urls.length<2)
 
-        this.image_grid.innerHTML = ''
+        
         if (nothing) {
-            
+            this.image_grid.innerHTML = ''
         } else if (doing_compare) {   
-            const img = create('img', 'nodeblock_image_grid_image', this.image_grid, {src:urls[0], "doing_compare":this})
+            this.image_grid.innerHTML = ''
+            create('img', 'nodeblock_image_grid_image', this.image_grid, {src:urls[0], "doing_compare":this})
             this.image_compare_overlay = create('img', 'nodeblock_image_overlay nodeblock_image_grid_image', this.image_grid, {src:urls[1], "exclude_from_grid":true})
             setTimeout(this.show_part_of_overlay.bind(this), Timings.GENERIC_SHORT_DELAY, 0.0)
         } else if (this.imageIndex !== null) {
-            const img = create('img', 'nodeblock_image_grid_image', this.image_grid, {src:this.urls[this.imageIndex]})
+            if (this.image_grid.children.length != 1) {
+                this.image_grid.innerHTML = ''
+                create('img', 'nodeblock_image_grid_image', this.image_grid, {src:this.urls[this.imageIndex]})
+            } else {
+                this.image_grid.firstChild.src = this.urls[this.imageIndex]
+            }
             this.image_xofy.innerText = `${this.imageIndex+1} of ${this.urls.length}`
         } else {
-            this.urls.forEach((url, i)=>{
-                const img = create('img', 'nodeblock_image_grid_image', this.image_grid, {src:url})
-                img.addEventListener('click', ()=>{this.node.imageIndex = i; this.show_images(this.urls)})
-            })
+            if (this.image_grid.children.length != this.urls.length) {
+                this.image_grid.innerHTML = ''
+                this.urls.forEach((url, i)=>{
+                    const img = create('img', 'nodeblock_image_grid_image', this.image_grid, {src:url})
+                    img.addEventListener('click', ()=>{this.node.imageIndex = i; this.show_images(this.urls)})
+                })
+            } else {
+                this.urls.forEach((url, i)=>{ this.image_grid.children[i].src = url })
+            }
         }
 
         if (!nothing) {
