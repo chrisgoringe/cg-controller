@@ -145,7 +145,7 @@ class GlobalSettings {
 export const global_settings = new GlobalSettings()
 
 export function getSettingValue(comfy_key, _default) {
-    return app.ui.settings.getSettingValue(comfy_key, _default)
+    return app.ui.settings.getSettingValue(comfy_key)
 }
 
 export function add_missing_nodes(order) {

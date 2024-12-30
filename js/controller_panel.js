@@ -633,7 +633,7 @@ export class ControllerPanel extends HTMLDivElement {
 
     _build_controllerPanel() {
         classSet(this, 'hidden', global_settings.hidden)
-        this.style.setProperty('--font-size',`${1.333*getSettingValue(SettingIds.FONT_SIZE, 12)}px`)
+        this.style.setProperty('--font-size',`${1.333*getSettingValue(SettingIds.FONT_SIZE)}px`)
         classSet(this, 'read_only', app.canvas.read_only)
         add_missing_nodes(this.settings.node_order)
 
@@ -695,7 +695,7 @@ export class ControllerPanel extends HTMLDivElement {
 
         this.add_button_actions()
 
-        const bars = getSettingValue(SettingIds.SHOW_SCROLLBARS, "thin")
+        const bars = getSettingValue(SettingIds.SHOW_SCROLLBARS)
         classSet(this, "hide_scrollbars", bars == "no")
         classSet(this, "small_scrollbars", bars == "thin")
 
@@ -748,7 +748,7 @@ export class ControllerPanel extends HTMLDivElement {
                 tab.style.flexShrink = `${nm.length + 2}`
                 tab.style.flexGrow = `${nm.length + 2}`
                 tab.style.flexBasis = `${nm.length * 20}px`
-                tab.style.minWidth = `${getSettingValue(SettingIds.MINIMUM_TAB_WIDTH, 50)}px`
+                tab.style.minWidth = `${getSettingValue(SettingIds.MINIMUM_TAB_WIDTH)}px`
                 tab.addEventListener('mouseenter', ()=>{Highlighter.group(nm)})
                 tab.addEventListener('mouseleave', ()=>{Highlighter.group(null)})
                 tab.addEventListener('mousedown', (e) => {

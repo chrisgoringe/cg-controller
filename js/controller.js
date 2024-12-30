@@ -84,7 +84,7 @@ function on_setup() {
     })
     window.addEventListener('keypress', (e) => {
         if (e.target.tagName=="CANVAS" || e.target.tagName=="BODY") {
-            const keysetting = app.ui.settings.getSettingValue(SettingIds.KEYBOARD_TOGGLE, "C") 
+            const keysetting = app.ui.settings.getSettingValue(SettingIds.KEYBOARD_TOGGLE) 
             if (keysetting==e.key) {
                 ControllerPanel.toggle()
                 e.preventDefault()
