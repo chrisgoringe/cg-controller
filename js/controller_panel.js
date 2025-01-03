@@ -290,7 +290,7 @@ export class ControllerPanel extends HTMLDivElement {
             exit_focus_button.addEventListener('click', () => {
                 UpdateController.make_request('exit focus', 10)
             })
-/* removed from 1.6, will return in 1.7
+
             ControllerPanel.save_button = create('i', 'pi pi-file-export controller_menu_button', ControllerPanel.buttons)
             add_tooltip(ControllerPanel.save_button, 'save controller workspace')
             ControllerPanel.save_button.addEventListener('click', ()=>{ 
@@ -300,19 +300,19 @@ export class ControllerPanel extends HTMLDivElement {
             ControllerPanel.load_button = create('i', 'pi pi-file-import controller_menu_button', ControllerPanel.buttons)
             add_tooltip(ControllerPanel.load_button, 'load controller workspace')
             ControllerPanel.load_button.addEventListener('click', async function() { 
-                await load_workspace((new_instances)=>{
-                    if (new_instances.length>0) {
+                await load_workspace((loaded)=>{
+                    if (loaded.instances.length>0) {
                         Object.values(ControllerPanel.instances).forEach((instance)=>{instance.delete_controller()})
-                        new_instances.forEach((instance)=>{
+                        loaded.instances.forEach((instance)=>{
                             const newcp = ControllerPanel.create_new()
-                            set_settings_for_instance(newcp.settings, instance)
+                            set_settings_for_instance(newcp.settings, instance, loaded.w, loaded.h)
                         })
                         global_settings.hidden = false
                         UpdateController.make_request("loaded workspace")
                     }
                 }, (e)=>{Debug.error("Load_button",e)})                
             })
-*/
+
 
             ControllerPanel.update_buttons()
             

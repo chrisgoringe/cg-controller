@@ -9,7 +9,7 @@ const DEFAULTS = {
     "groups"       : [],
     "group_choice" : Texts.ALL_GROUPS,
     "position"     : {"x" : 0, "y" : 0, "w" : 250, "h" : 180},
-    "userposition" : {"x" : 0, "y" : 0, "w" : 250, "h" : 180},
+    //"userposition" : {"x" : 0, "y" : 0, "w" : 250, "h" : 180},
     "collapsed"    : false,
     "fullheight"   : false,
     "fullwidth"    : false,
@@ -18,7 +18,7 @@ const DEFAULTS = {
     "blocks_rejecting_upstream" : [],
     "stack_tabs"   : false,
 } 
-const KEYS = Object.keys(DEFAULTS)
+export const KEYS = Object.keys(DEFAULTS)
 
 const GLOBAL = {
     "hidden"        : true,
