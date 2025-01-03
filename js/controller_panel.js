@@ -10,7 +10,7 @@ import { observe_resizables, clear_resize_managers } from "./resize_manager.js";
 import { Debug } from "./debug.js";
 
 import { NodeInclusionManager } from "./node_inclusion.js";
-import { get_all_setting_indices, getSettingValue, global_settings, new_controller_setting_index, get_settings, delete_settings, initialise_settings, valid_settings } from "./settings.js";
+import { get_all_setting_indices, getSettingValue, global_settings, new_controller_setting_index, get_settings, delete_settings, initialise_settings, valid_settings, clear_settings } from "./settings.js";
 import { update_node_order, add_missing_nodes } from "./settings.js"
 import { SettingIds, Timings, Texts, Pixels } from "./constants.js";
 import { FancySlider } from "./input_slider.js";
@@ -218,7 +218,7 @@ export class ControllerPanel extends HTMLDivElement {
         this.build_controllerPanel()
     }
 
-    static new_workflow() {
+    static on_new_workflow() {
         Debug.extended('new_workflow')
         Object.keys(ControllerPanel.instances).forEach((k)=>{ControllerPanel.instances[k]._remove()})
         ControllerPanel.instances = {}
@@ -284,35 +284,16 @@ export class ControllerPanel extends HTMLDivElement {
             ControllerPanel.search_button.addEventListener('click', ()=>{ 
                 global_settings.highlight = !global_settings.highlight;
                 classSet(ControllerPanel.search_button, 'litup', global_settings.highlight) 
-             })
+            })
+
+            ControllerPanel.dropdown_button = create('i', 'pi pi-caret-down controller_menu_button', ControllerPanel.buttons)
+            ControllerPanel.dropdown_button.addEventListener('click', ControllerPanel.top_context_menu)
+
 
             const exit_focus_button = document.getElementsByTagName('main')[0].getElementsByTagName('button')[0]
             exit_focus_button.addEventListener('click', () => {
                 UpdateController.make_request('exit focus', 10)
             })
-
-            ControllerPanel.save_button = create('i', 'pi pi-file-export controller_menu_button', ControllerPanel.buttons)
-            add_tooltip(ControllerPanel.save_button, 'save controller workspace')
-            ControllerPanel.save_button.addEventListener('click', ()=>{ 
-                download_workspace_as_json(ControllerPanel.instances, "workspace.json")
-            })
-            
-            ControllerPanel.load_button = create('i', 'pi pi-file-import controller_menu_button', ControllerPanel.buttons)
-            add_tooltip(ControllerPanel.load_button, 'load controller workspace')
-            ControllerPanel.load_button.addEventListener('click', async function() { 
-                await load_workspace((loaded)=>{
-                    if (loaded.instances.length>0) {
-                        Object.values(ControllerPanel.instances).forEach((instance)=>{instance.delete_controller()})
-                        loaded.instances.forEach((instance)=>{
-                            const newcp = ControllerPanel.create_new()
-                            set_settings_for_instance(newcp.settings, instance, loaded.w, loaded.h)
-                        })
-                        global_settings.hidden = false
-                        UpdateController.make_request("loaded workspace")
-                    }
-                }, (e)=>{Debug.error("Load_button",e)})                
-            })
-
 
             ControllerPanel.update_buttons()
             
@@ -321,9 +302,26 @@ export class ControllerPanel extends HTMLDivElement {
         }
     }
 
+    static top_context_menu(e)  {
+        open_context_menu(e, "Workspace", [ 
+            { 
+                "title": "Save workspace", 
+                "callback":()=>{
+                    download_workspace_as_json(ControllerPanel.instances, "workspace.json")
+                }
+            },
+            {
+                "title": "Load workspace",
+                "callback": async ()=>{
+                    await load_workspace( ControllerPanel.on_new_workflow )
+                }
+            }
+        ])
+    }
+
     static redraw(c) { 
         if (!valid_settings()) {
-            ControllerPanel.new_workflow()
+            ControllerPanel.on_new_workflow()
             return
         }
         if (Object.values(ControllerPanel.instances).length>0 && !document.body.contains(Object.values(ControllerPanel.instances)[0])) {

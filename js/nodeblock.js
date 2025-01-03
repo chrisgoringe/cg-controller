@@ -583,7 +583,7 @@ export class NodeBlock extends HTMLSpanElement {
     show_images(urls, node_id) {
         if (this.get_rejects_upstream() && node_id!=this.node.id) return
 
-        Debug.important(`called show_images for ${this.node.id} with ${urls.length} images from ${node_id}`)
+        Debug.trivia(`called show_images for ${this.node.id} with ${urls?.length} images from ${node_id}`)
 
         if (this.entry_controlling_image) setTimeout(()=>{
             this.entry_controlling_image.update_combo_selection()

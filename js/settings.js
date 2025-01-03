@@ -73,6 +73,10 @@ export function delete_settings(index) {
     delete app.graph.extra.controller_panel.controllers[index]
 }
 
+export function clear_settings() {
+    app.graph.extra.controller_panel.controllers = {}
+}
+
 export function get_all_setting_indices() {
     const all_setting_indices = []
     Object.keys(app.graph.extra.controller_panel.controllers).forEach((i)=>{

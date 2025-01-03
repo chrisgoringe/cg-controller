@@ -125,7 +125,7 @@ app.registerExtension({
     async afterConfigureGraph() {
         UpdateController.configuring(false)
         try {
-            ControllerPanel.new_workflow()
+            ControllerPanel.on_new_workflow()
             ImageManager.analyse_graph()
             ImageManager.send_all()
             send_graph_changed(true)

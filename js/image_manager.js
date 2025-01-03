@@ -1,6 +1,7 @@
 import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js";
 import { Debug } from "./debug.js";
+import { Timings } from "./constants.js";
 import { pim } from "./prompt_id_manager.js";
 
 export function is_image_upload_node(node) {
@@ -31,6 +32,7 @@ export class ImageManager {
     static node_listener_map  = {}  // map to Set: node_id (listened to) to node_id's (listeners)
     static node_urls_map      = {}  // map to urls: node_id to list[str]
     static executing_node     = null
+    static just_finished      = false
     static last_preview_node  = null
     static last_preview_image = null
     static node_image_change = (node_id)=>{}
@@ -90,7 +92,7 @@ export class ImageManager {
     }
 
     static node_reported_images(node_id, imgs) {
-        if (ImageManager.executing_node) return
+        if (ImageManager.executing_node || ImageManager.just_finished) return
         const urls = []
         imgs.filter((i)=>(i.src && ! i.src.endsWith('undefined'))).forEach((i)=>{urls.push(i.src)})
         this._set_urls(node_id, urls, node_id)
@@ -100,10 +102,13 @@ export class ImageManager {
         // TODO if (!pim.ours(e)) return
         ImageManager.executing_node = e.detail
         if (!ImageManager.executing_node) {
+            ImageManager.just_finished = true
             Array.from(app.graph._nodes).filter((node)=>(node.imgs && node.imgs.length>0)).forEach((node)=>{
                 ImageManager.node_reported_images(node.id, node.imgs)
             })
+            setTimeout(()=>{ImageManager.just_finished = false}, Timings.GENERIC_LONGER_DELAY)
         }
+
     }
 
     static on_b_preview(e) {
