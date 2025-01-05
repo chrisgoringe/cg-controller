@@ -511,6 +511,9 @@
     width: 80%;
     left: 20%;
     position: relative;
+    overflow: clip;
+    text-wrap-mode: nowrap;
+    text-overflow: ellipsis;
 }
 select.input {
     height: calc(var(--font-size) + 4px)

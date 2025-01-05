@@ -11,6 +11,7 @@ import { WidgetChangeManager } from "./widget_change_manager.js";
 import { Texts } from "./constants.js";
 import { PLL_Widget } from "./power_lora_loader_widget.js";
 import { ImageComparerControlWidget } from "./image_comparer_control_widget.js";
+import { ExtendedCombo } from "./combo.js";
 
 function typecheck_number(v) {
     const vv = parseFloat(v)
@@ -86,9 +87,6 @@ export class Entry extends HTMLDivElement {
                 this.input_element.redraw() 
                 break
             case 'combo':
-                this.entry_label = create('span','entry_label', this, {'innerText':widget_label, 'draggable':false} )  
-                this.entry_value = create('span','entry_label value', this, {'innerText':extension_hiding(target_widget.value), 'draggable':false} )  
-                this.input_element = create("select", 'input', this, {"doesntBlockRefresh":true}) 
                 this.choices = (target_widget.options.values instanceof Function) ? target_widget.options.values() : target_widget.options.values
                 this.input_element =  new ExtendedCombo(this.choices, target_widget, node)
                 this.entry_label = create('span','entry_label text combo', this, {'innerText':widget_label, 'draggable':false} )  
