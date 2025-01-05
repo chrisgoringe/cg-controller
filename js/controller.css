@@ -498,6 +498,15 @@
     background: #00000000;
 }
 
+.entry_label.combo {
+    width: 20%;
+    background-color: var(--second-back-color);
+    padding: 4px 0px 4px 4px;
+    top: 4px;
+    height: 20px;
+    left: 4px;
+}
+
 .entry_label.value {
     right: 20px;
     height: calc(var(--font-size) - 2px);
@@ -521,6 +530,9 @@
     text-align: left;
     padding:  4px;
     font-size: 70%;
+    width: 80%;
+    left: 20%;
+    position: relative;
 }
 select.input {
     height: calc(var(--font-size) + 4px)
