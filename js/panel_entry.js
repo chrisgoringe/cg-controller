@@ -90,9 +90,10 @@ export class Entry extends HTMLDivElement {
                 this.entry_value = create('span','entry_label value', this, {'innerText':extension_hiding(target_widget.value), 'draggable':false} )  
                 this.input_element = create("select", 'input', this, {"doesntBlockRefresh":true}) 
                 this.choices = (target_widget.options.values instanceof Function) ? target_widget.options.values() : target_widget.options.values
-                this.choices.forEach((o) => this.input_element.add(new Option(o,o)))
-                this.input_element.redraw = () => { this.entry_value.innerText = extension_hiding(this.input_element.value) }
-                this.input_element.addEventListener("change", this.input_element.redraw.bind(this))
+                this.input_element =  new ExtendedCombo(this.choices, target_widget, node)
+                this.entry_label = create('span','entry_label text combo', this, {'innerText':widget_label, 'draggable':false} )  
+                this.appendChild(this.entry_label)
+                this.appendChild(this.input_element)
                 break
             case 'RgthreeBetterButtonWidget':
             case 'button':
