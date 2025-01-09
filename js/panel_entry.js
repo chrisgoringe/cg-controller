@@ -90,8 +90,9 @@ export class Entry extends HTMLDivElement {
                 this.choices = (target_widget.options.values instanceof Function) ? target_widget.options.values() : target_widget.options.values
                 this.input_element =  new ExtendedCombo(this.choices, target_widget, node)
                 this.entry_label = create('span','entry_label text combo', this, {'innerText':widget_label, 'draggable':false} )  
-                this.appendChild(this.entry_label)
-                this.appendChild(this.input_element)
+                this.combo_label_wrapper = create('span', 'combo_label_wrapper', this)
+                this.combo_label_wrapper.appendChild(this.entry_label)
+                this.combo_label_wrapper.appendChild(this.input_element)
                 break
             case 'RgthreeBetterButtonWidget':
             case 'button':
