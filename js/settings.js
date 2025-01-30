@@ -16,6 +16,7 @@ const DEFAULTS = {
     "hidden_widgets" : [],
     "minimised_blocks" : [],
     "blocks_rejecting_upstream" : [],
+    "blocks_rejecting_images" : [],
     "stack_tabs"   : false,
 } 
 export const KEYS = Object.keys(DEFAULTS)

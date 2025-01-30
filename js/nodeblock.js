@@ -191,22 +191,36 @@ export class NodeBlock extends HTMLSpanElement {
         return this.parent_controller.settings.minimised_blocks.includes(this.node.id)
     }
 
+    reject_image(is_from_upstream) {
+        return ( (this.get_rejects_images()) || (this.get_rejects_upstream() && is_from_upstream) )
+    }
+
     get_rejects_upstream() {
         return this.parent_controller.settings.blocks_rejecting_upstream.includes(this.node.id)
+    }
+
+    set_rejects_upstream(v) {
+        this.set(this.parent_controller.settings.blocks_rejecting_upstream, v)
+    }
+
+    get_rejects_images() {
+        return this.parent_controller.settings.blocks_rejecting_images.includes(this.node.id)
+    }
+
+    set_rejects_images(v) {
+        this.set(this.parent_controller.settings.blocks_rejecting_images, v)
     }
 
     toggle_minimise() {
         this.set_minimised(!this.get_minimised())
     }
 
-    toggle_rejects_upstream() {
-        this.set_rejects_upstream(!this.get_rejects_upstream())
-    }
-
     set(lst, v) {
-        if (v) {
-            lst.push(this.node.id)
-        } else {
+        if (v && lst.includes(this.node.id)) return
+        if (!v && !lst.includes(this.node.id)) return
+
+        if (v) { lst.push(this.node.id) } 
+        else {
             const index = lst.findIndex((e)=>(e==this.node.id))
             lst.splice(index, 1)
         }        
@@ -220,12 +234,6 @@ export class NodeBlock extends HTMLSpanElement {
         if (this.minimised && this.contains(document.activeElement)) {
             document.activeElement.blur()
         }
-    }
-
-    set_rejects_upstream(v) {
-        if (v == this.get_rejects_upstream()) return
-        this.set(this.parent_controller.settings.blocks_rejecting_upstream, v)
-        this.rejects_updates = v
     }
 
     set_all_widget_visibility(v) {
@@ -285,6 +293,23 @@ export class NodeBlock extends HTMLSpanElement {
                 parentMenu: menu, node:node}
             )
         }
+
+        const eis_submenu = (value, options, e, menu, node) => {
+            new LiteGraph.ContextMenu(
+                [Texts.ACCEPT_UPSTREAM, Texts.REJECT_UPSTREAM, Texts.NO_IMAGES],
+                { 
+                    event: e, 
+                    callback: (v) => {
+                        this.set_rejects_upstream((v==Texts.REJECT_UPSTREAM))
+                        this.set_rejects_images((v==Texts.NO_IMAGES))
+                        UpdateController.make_request('eis', null, null, this.parent_controller)
+                        close_context_menu()
+                    },
+                    parentMenu: menu, node:node
+                }
+            )
+        }
+
         open_context_menu(e, null, [ 
             { 
                 "title"    : Texts.REMOVE, 
@@ -293,12 +318,10 @@ export class NodeBlock extends HTMLSpanElement {
                     NodeInclusionManager.node_change_callback?.('context_menu_remove', Timings.GENERIC_SHORT_DELAY);
                 }
             },
-            { 
-                "title"    : this.rejects_updates ? Texts.ACCEPT_UPSTREAM : Texts.REJECT_UPSTREAM, 
-                "callback" : ()=>{
-                    this.toggle_rejects_upstream()
-                    UpdateController.make_request('accepts updates toggled', null, null, this.parent_controller)
-                }
+            {
+                "title"    : Texts.EDIT_IMAGE_SETTING,
+                has_submenu: true,
+                callback: eis_submenu,
             },
             {
                 "title"    : Texts.EDIT_WV,
@@ -362,7 +385,6 @@ export class NodeBlock extends HTMLSpanElement {
         }
 
         this.minimised = this.get_minimised()
-        this.rejects_updates = this.get_rejects_upstream()
 
         this.mode_button  = create('i', `pi mode_button mode_button_${this.mode}`, this.title_bar_left)
         this.mode_button.addEventListener('click', (e)=>{
@@ -460,7 +482,7 @@ export class NodeBlock extends HTMLSpanElement {
         } 
 
         this.valid_nodeblock = true 
-        if (!(isImageNode(this.node) || this.widget_count || (this.node.imgs && this.node.imgs.length>0))) this.set_minimised(true)
+        //if (!(isImageNode(this.node) || this.widget_count || (this.node.imgs && this.node.imgs.length>0))) this.set_minimised(true)
     }
 
     update_pin(from_click) {
@@ -581,7 +603,7 @@ export class NodeBlock extends HTMLSpanElement {
     }
 
     show_images(urls, node_id) {
-        if (this.get_rejects_upstream() && node_id!=this.node.id) return
+        if (this.reject_image(node_id!=this.node.id)) return
 
         Debug.trivia(`called show_images for ${this.node.id} with ${urls?.length} images from ${node_id}`)
 
