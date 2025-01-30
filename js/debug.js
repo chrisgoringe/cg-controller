@@ -12,7 +12,7 @@ export class _Debug {
 
     _log(message, level, repeatok) {
         if ((message == this.last_message && !repeatok) ||
-            level > app.ui.settings.getSettingValue(SettingIds.DEBUG_LEVEL, 1)) return
+            level > app.ui.settings.getSettingValue(SettingIds.DEBUG_LEVEL)) return
         this.last_message = message
         console.log(`${VERSION} ${(this.prefix instanceof Function) ? this.prefix() : this.prefix}: (${level}) ${message}`)
     }

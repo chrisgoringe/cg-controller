@@ -83,7 +83,7 @@ class SliderOptionEditor extends HTMLSpanElement {
             const n = this.other_like_node.length
             this.apply_also_panel = create('span',  'option_setting_panel', this)
             create('span', 'option_setting_label', this.apply_also_panel, {"innerHTML":`Apply to ${n} similar node${n>1?"s":"" }`})
-            this.apply_also_checkbox = create('input', 'option_setting_also_checkbox', this.apply_also_panel, {'type':'checkbox', "checked":getSettingValue(SettingIds.DEFAULT_APPLY_TO_SIMILAR, true)})
+            this.apply_also_checkbox = create('input', 'option_setting_also_checkbox', this.apply_also_panel, {'type':'checkbox', "checked":getSettingValue(SettingIds.DEFAULT_APPLY_TO_SIMILAR)})
         }
 
         this.buttons       = create('span',  'option_setting_buttons', this)
@@ -262,10 +262,10 @@ export class FancySlider extends HTMLSpanElement {
 
     _wheel(e) {
         if (this.displaying = "graphic") {
-            const shift_setting = getSettingValue(SettingIds.SCROLL_MOVES_SLIDERS, "yes")
+            const shift_setting = getSettingValue(SettingIds.SCROLL_MOVES_SLIDERS)
             if ( shift_setting=="yes" || (shift_setting=="shift" && e.shiftKey) || (shift_setting=="ctrl" && e.ctrlKey) ) {
                 this.wheeling = true
-                const reverse = getSettingValue(SettingIds.SCROLL_REVERSED, false) ? -1 : 1
+                const reverse = getSettingValue(SettingIds.SCROLL_REVERSED) ? -1 : 1
                 const new_value =  this.value + reverse * this.options.step * (e.wheelDelta>0 ? 1 : -1)
                 WidgetChangeManager.set_widget_value(this.widget, new_value)
                 e.preventDefault()
@@ -293,7 +293,7 @@ export class FancySlider extends HTMLSpanElement {
     }
 
     _mousedown(e) { 
-        const shift_setting = getSettingValue(SettingIds.EDIT_SLIDERS, "shift")
+        const shift_setting = getSettingValue(SettingIds.EDIT_SLIDERS)
         if ((e.shiftKey && shift_setting=='shift') || (e.ctrlKey && shift_setting=='ctrl')){
             this.edit_min_max(e)
             e.preventDefault()

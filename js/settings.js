@@ -9,16 +9,17 @@ const DEFAULTS = {
     "groups"       : [],
     "group_choice" : Texts.ALL_GROUPS,
     "position"     : {"x" : 0, "y" : 0, "w" : 250, "h" : 180},
-    "userposition" : {"x" : 0, "y" : 0, "w" : 250, "h" : 180},
+    //"userposition" : {"x" : 0, "y" : 0, "w" : 250, "h" : 180},
     "collapsed"    : false,
     "fullheight"   : false,
     "fullwidth"    : false,
     "hidden_widgets" : [],
     "minimised_blocks" : [],
     "blocks_rejecting_upstream" : [],
+    "blocks_rejecting_images" : [],
     "stack_tabs"   : false,
 } 
-const KEYS = Object.keys(DEFAULTS)
+export const KEYS = Object.keys(DEFAULTS)
 
 const GLOBAL = {
     "hidden"        : true,
@@ -71,6 +72,10 @@ export function get_settings(index) {
 
 export function delete_settings(index) {
     delete app.graph.extra.controller_panel.controllers[index]
+}
+
+export function clear_settings() {
+    app.graph.extra.controller_panel.controllers = {}
 }
 
 export function get_all_setting_indices() {
@@ -145,7 +150,7 @@ class GlobalSettings {
 export const global_settings = new GlobalSettings()
 
 export function getSettingValue(comfy_key, _default) {
-    return app.ui.settings.getSettingValue(comfy_key, _default)
+    return app.ui.settings.getSettingValue(comfy_key)
 }
 
 export function add_missing_nodes(order) {

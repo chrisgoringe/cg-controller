@@ -11,7 +11,7 @@ var started = false
 var sgc_stack = 0
 
 export function extension_hiding(v) {
-    if (!getSettingValue(SettingIds.HIDE_EXTENSIONS, false)) return v
+    if (!getSettingValue(SettingIds.HIDE_EXTENSIONS)) return v
     return v.replace(/\.[^\. ]+$/, "")
 }
 
@@ -124,7 +124,7 @@ export function classSet(element, name, add) {
 
 export function add_tooltip(element, text, extra_classes) {
     if (app.canvas.read_only) return
-    if (getSettingValue(SettingIds.TOOLTIPS, true)) {
+    if (getSettingValue(SettingIds.TOOLTIPS)) {
         element.classList.add('tooltip')
         if (extra_classes) extra_classes.split(" ").forEach((s) => element.classList.add(s))
         create('span', 'tooltiptext', element, {"innerHTML":text.replaceAll(' ','&nbsp;')}) 
@@ -169,7 +169,7 @@ export function focus_mode() {
 }
 
 export function find_controller_parent() {
-  const show_in_focus = getSettingValue(SettingIds.SHOW_IN_FOCUS_MODE, false)
+  const show_in_focus = getSettingValue(SettingIds.SHOW_IN_FOCUS_MODE)
   return document.getElementsByClassName('graph-canvas-panel')[0] ?? 
           (show_in_focus ? (document.getElementsByClassName('graph-canvas-container')[0] ?? null) : null)
 }

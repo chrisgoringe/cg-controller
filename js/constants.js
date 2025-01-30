@@ -121,8 +121,10 @@ export class Texts {
     static EDIT_WV = "Edit widget visibility"
     static IMAGE_WIDGET_NAME = "image viewer"
     static UNCONNECTED = "Unconnected Input"
+    static EDIT_IMAGE_SETTING = "Images"
     static ACCEPT_UPSTREAM = "Show upstream images"
     static REJECT_UPSTREAM = "Only show my images"
+    static NO_IMAGES = "Don't show images"
     static STACK_ALWAYS = "Only show active tab"
     static STACK_IF_NEEDED = "Show all tabs if space allows"
 }
