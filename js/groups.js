@@ -1,7 +1,7 @@
 import { app } from "../../scripts/app.js"
 import { NodeInclusionManager } from "./node_inclusion.js"
-import { Colors, Texts } from "./constants.js"
-import { mode_change } from "./utilities.js"
+import { Colors, Texts, DisplayNames } from "./constants.js"
+import { mode_change, pickContrastingColor, darken } from "./utilities.js"
 import { Debug } from "./debug.js"
 
 function recompute_safely(group) {
@@ -38,10 +38,14 @@ export class GroupManager {
     constructor() {
         this.groups = {}  // maps group name to Set of node ids
         const ungrouped = new Set()
+        const favorites = new Set()
         app.graph._nodes.forEach((node)=>{
             if (NodeInclusionManager.node_includable(node)) ungrouped.add(node.id)
+            if (NodeInclusionManager.favorite(node)) favorites.add(node.id)
         })
-        this.colors = {}  // maps group name to color
+        if (favorites.size>0) this.groups[Texts.FAVORITES] = favorites
+        this.colors = { }
+        this.colors[Texts.FAVORITES] = Colors.FAVORITES_GROUP  // maps group name to color
         app.graph._groups.forEach((group) => {
             if (!group.graph) {
                 group.graph = app.graph
@@ -63,10 +67,10 @@ export class GroupManager {
     }
 
     static check_for_changes() {
-        const gids = []
+        const group_titles = new Set()
         app.graph._groups.forEach((group) => {
             const id = parseInt(group.id)
-            gids.push(id)
+            group_titles.add(group.title)
             if (GroupManager.group_properties[id]) {
                 if (GroupManager.group_properties[id].color != group.color) {
                     GroupManager.change_callback?.(GroupManager.group_properties[id].title, {"color":group.color})
@@ -80,7 +84,7 @@ export class GroupManager {
                 GroupManager.group_properties[id] = {"color":group.color, "title":group.title}
             }
         })
-        Object.keys(GroupManager.group_properties).filter((id)=>(!gids.includes(parseInt(id)))).forEach((id)=>{
+        Object.keys(GroupManager.group_properties).filter((id)=>(!group_titles.has(GroupManager.group_properties[id].title))).forEach((id)=>{
             GroupManager.change_callback?.(GroupManager.group_properties[id].title, {"removed":true})
             delete GroupManager.group_properties[id]
         })
@@ -91,16 +95,30 @@ export class GroupManager {
         return true
     }
 
+    static displayName(group_name) {
+        return DisplayNames[group_name] ?? group_name
+    }
+
     static list_group_names() {
         const names = Object.keys(GroupManager.instance.groups)
-        //Object.keys(GroupManager.instance.groups).forEach((gp) => {names.push(gp)})
         names.sort()
         names.unshift(Texts.ALL_GROUPS)
         return names
     }
 
-    static group_color(group_name) {
-        return GroupManager.instance.colors[group_name] ?? Colors.DARK_BACKGROUND
+    static group_bgcolor(group_name, selected) {
+        var c = GroupManager.instance.colors[group_name] ?? Colors.DARK_BACKGROUND
+        return selected ? c : darken(c, Colors.UNSELECTED_DARKEN)
+    }
+
+    static group_fgcolor(group_name, selected) {
+        var c = (group_name==Texts.FAVORITES) ? Colors.FAVORITES_FG : 
+            pickContrastingColor(GroupManager.group_bgcolor(group_name, selected),Colors.OPTIONS)
+        return selected ? c : darken(c, Colors.UNSELECTED_DARKEN)
+    }
+
+    static normal_group(group_name) {
+        return !(group_name==Texts.ALL_GROUPS || group_name==Texts.UNGROUPED || group_name==Texts.FAVORITES)
     }
 
     static group_node_mode(group_name) {

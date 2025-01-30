@@ -2,6 +2,24 @@ import { SettingIds, SettingNames, Tooltips, Generic } from "./constants.js";
 
 export const OPTIONS = [
     {
+        id: SettingIds.MINIMUM_TAB_WIDTH,
+        name: SettingNames.MINIMUM_TAB_WIDTH,
+        tooltip: Tooltips.MINIMUM_TAB_WIDTH,
+        type: "slider",
+        attrs: {
+            min: 20,
+            max: 150
+          },
+        defaultValue: 50
+    },
+    {
+        id: SettingIds.HIDE_EXTENSIONS,
+        name: SettingNames.HIDE_EXTENSIONS,
+        tooltip: Tooltips.HIDE_EXTENSIONS,
+        type: "boolean",
+        defaultValue: false
+    },
+    {
         id: SettingIds.KEYBOARD_TOGGLE,
         name: SettingNames.KEYBOARD_TOGGLE,
         type: "combo",

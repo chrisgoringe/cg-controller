@@ -1,9 +1,10 @@
 import { app } from "../../scripts/app.js";
 
-import { create, get_node, add_tooltip, clamp, classSet, defineProperty, find_controller_parent, createBounds, title_if_overflowing } from "./utilities.js";
+import { create, get_node, add_tooltip, clamp, classSet, defineProperty, find_controller_parent, createBounds, tooltip_if_overflowing } from "./utilities.js";
 import { family_names, GroupManager } from "./groups.js";
+import { pim } from "./prompt_id_manager.js";
 
-import { UpdateController } from "./update_controller.js";
+import { OnChangeController, UpdateController } from "./update_controller.js";
 import { NodeBlock } from "./nodeblock.js";
 import { observe_resizables, clear_resize_managers } from "./resize_manager.js";
 import { Debug } from "./debug.js";
@@ -14,9 +15,11 @@ import { update_node_order, add_missing_nodes } from "./settings.js"
 import { SettingIds, Timings, Texts, Pixels } from "./constants.js";
 import { FancySlider } from "./input_slider.js";
 import { clear_widget_change_managers } from "./widget_change_manager.js";
-import { clean_image_manager, ImageManager } from "./image_manager.js";
+import { ImageManager } from "./image_manager.js";
 import { SnapManager } from "./snap_manager.js";
 import { Highlighter } from "./highlighter.js";
+import { download_workspace_as_json, load_workspace, set_settings_for_instance } from "./workspace.js"
+import { close_context_menu, open_context_menu } from "./context_menu.js";
 
 export class ControllerPanel extends HTMLDivElement {
     static instances = {}
@@ -105,6 +108,7 @@ export class ControllerPanel extends HTMLDivElement {
 
         this.should_update_size = false
         this.addEventListener('mousedown', (e)=>{this.mouse_down(e)})
+        this.clear_stacking_threshold()
         
         this.resize_observer = new ResizeObserver((x) => this.on_size_change()).observe(this)
     }
@@ -126,21 +130,25 @@ export class ControllerPanel extends HTMLDivElement {
                 this.settings.groups = this.settings.groups.filter((g)=>g!=oldname)
             }
             this.settings.groups = Array.from(new Set(this.settings.groups))
-            UpdateController.make_request('group change', Timings.GROUP_CHANGE_DELAY, false, this)
+            //UpdateController.make_request('group change', Timings.GENERIC_SHORT_DELAY, false, this)
         }
+        this.clear_stacking_threshold()
     }
 
 
     static on_progress(e) {
+        if (!pim.ours(e)) return
         const node_id = e.detail.node
         const value = e.detail.value
         const max = e.detail.max
-        Object.values(ControllerPanel.instances).filter((cp)=>cp.have_node(node_id)).forEach((cp)=>cp.on_progress(node_id, value, max))
-        ImageManager.send_progress_update(node_id, value, max)
+        Object.values(ControllerPanel.instances).filter((cp)=>cp.have_node(node_id)).forEach((cp)=>cp.on_progress(node_id, value, max, true))
+        ImageManager.get_listeners(node_id).forEach((upstream)=>{
+            Object.values(ControllerPanel.instances).filter((cp)=>cp.have_node(upstream)).forEach((cp)=>cp.on_progress(upstream, value, max, false))
+        })
     }
 
-    on_progress(node_id, value, max) {
-        this.node_blocks[node_id]?.on_progress(value, max)
+    on_progress(node_id, value, max, me) {
+        this.node_blocks[node_id]?.image_progress_update(value, max, me)
     }
 
     static focus_mode_changed() {
@@ -150,12 +158,13 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     static on_executing(e) {
+        //if (!pim.ours(e)) return
         const node_id = e.detail
         Debug.trivia(`ControllerPanel.on_executing ${node_id}`)
         Object.values(ControllerPanel.instances).forEach((cp)=>{
             Object.values(cp.node_blocks).forEach((nb)=>{
                 try {
-                    nb.on_progress()
+                    nb.image_progress_update()
                     classSet(nb, 'active', nb.node.id==node_id)
                 } catch (e) {
                     Debug.error(`on_executing: controller ${cp.index}, node ${node_id}`, e)
@@ -217,18 +226,20 @@ export class ControllerPanel extends HTMLDivElement {
         ControllerPanel.add_controllers()
         if (ControllerPanel.menu_button) classSet(ControllerPanel.menu_button, 'litup', !global_settings.hidden) 
         if (!global_settings.hidden && Object.keys(ControllerPanel.instances).length==0 && find_controller_parent()) ControllerPanel.create_new()
-        UpdateController.make_request('new workflow', 100)
+        OnChangeController.on_change('new workflow')
         ControllerPanel.update_buttons()
+        ImageManager.reset()
     }
 
     static on_graphCleared() {
-        UpdateController.make_request("graph_cleared")
+        OnChangeController.on_change("graph_cleared")
     }
 
     static create_new(e) {
         const newcp = new ControllerPanel()
         if (e && e.layerX && e.layerY) newcp.settings.set_position(e.layerX,e.layerY,null,null)
         newcp.build_controllerPanel()
+        return newcp
     }
 
     delete_controller() {
@@ -279,6 +290,29 @@ export class ControllerPanel extends HTMLDivElement {
             exit_focus_button.addEventListener('click', () => {
                 UpdateController.make_request('exit focus', 10)
             })
+/* removed from 1.6, will return in 1.7
+            ControllerPanel.save_button = create('i', 'pi pi-file-export controller_menu_button', ControllerPanel.buttons)
+            add_tooltip(ControllerPanel.save_button, 'save controller workspace')
+            ControllerPanel.save_button.addEventListener('click', ()=>{ 
+                download_workspace_as_json(ControllerPanel.instances, "workspace.json")
+            })
+            
+            ControllerPanel.load_button = create('i', 'pi pi-file-import controller_menu_button', ControllerPanel.buttons)
+            add_tooltip(ControllerPanel.load_button, 'load controller workspace')
+            ControllerPanel.load_button.addEventListener('click', async function() { 
+                await load_workspace((new_instances)=>{
+                    if (new_instances.length>0) {
+                        Object.values(ControllerPanel.instances).forEach((instance)=>{instance.delete_controller()})
+                        new_instances.forEach((instance)=>{
+                            const newcp = ControllerPanel.create_new()
+                            set_settings_for_instance(newcp.settings, instance)
+                        })
+                        global_settings.hidden = false
+                        UpdateController.make_request("loaded workspace")
+                    }
+                }, (e)=>{Debug.error("Load_button",e)})                
+            })
+*/
 
             ControllerPanel.update_buttons()
             
@@ -305,7 +339,6 @@ export class ControllerPanel extends HTMLDivElement {
         } else {
             clear_resize_managers()
             clear_widget_change_managers()
-            clean_image_manager()
             Object.values(ControllerPanel.instances).forEach((cp)=>{cp.redraw()})
         }
         ControllerPanel.update_buttons()
@@ -345,10 +378,17 @@ export class ControllerPanel extends HTMLDivElement {
     }
 
     static node_change(node_id, moreinfo) {
+        if (UpdateController._configuring) return;
+        OnChangeController.on_change(moreinfo, node_id)
         setTimeout(ControllerPanel._node_change, Timings.GENERIC_SHORT_DELAY, node_id, moreinfo)
     }
     static _node_change(node_id, moreinfo) {
         Object.values(ControllerPanel.instances).forEach((cp)=>{cp._node_change(node_id, moreinfo)})
+    }
+
+    static node_image_change(node_id, caused_by_node_id) {
+        const urls = ImageManager.get_urls(node_id)
+        Object.values(ControllerPanel.instances).filter((cp)=>(cp.have_node(node_id))).forEach((cp)=>{cp.node_blocks[node_id].show_images(urls, caused_by_node_id)})
     }
 
     static group_change(group_name) {
@@ -444,6 +484,7 @@ export class ControllerPanel extends HTMLDivElement {
             this.being_resized = true
             this.show_overlay(`${Math.round(this.getBoundingClientRect().width)} x ${Math.round(this.getBoundingClientRect().height)}px`, this)
             this.settings.set_position(null,null,this.getBoundingClientRect().width,this.getBoundingClientRect().height)
+            this.checkIfTabsShouldStack()
         }
     }
 
@@ -625,7 +666,7 @@ export class ControllerPanel extends HTMLDivElement {
             this.delete_button = create('i', 'pi pi-times header_button', this.header1_right)
         } else {
             this.add_group_button = create('i', 'pi pi-plus header_button last', this.header1_left)
-            if (this.settings.group_choice != Texts.ALL_GROUPS && this.settings.group_choice != Texts.UNGROUPED) {
+            if (GroupManager.normal_group(this.settings.group_choice)) {
                 this.group_mode_button = create('i', 'pi header_button mode', this.header2_left)
             }
             this.show_advanced_button = create('i', `pi pi-bolt header_button${this.settings.advanced ? " clicked":""}`, this.header2_left)
@@ -661,8 +702,12 @@ export class ControllerPanel extends HTMLDivElement {
         /*
         Finalise
         */
-        this.replaceChild(this._main, this.main)
-        this.replaceChild(this._header, this.header)
+        try {
+            this.replaceChild(this._main, this.main)
+            this.replaceChild(this._header, this.header)
+        } catch (e) {
+            Debug.error("finalise controller panel", e)
+        }
         this.header = this._header
         this.main = this._main
         
@@ -677,52 +722,97 @@ export class ControllerPanel extends HTMLDivElement {
         this.groups_not_included = all_options.filter((g)=>!(all_used.has(g)))
     }
 
+    tab_context_menu(e) {
+        open_context_menu(e, "Tabs", [ 
+            { 
+                "title": this.settings.stack_tabs ? Texts.STACK_IF_NEEDED : Texts.STACK_ALWAYS, 
+                "callback":()=>{
+                    this.settings.stack_tabs = !this.settings.stack_tabs
+                    this.clear_stacking_threshold()
+                    UpdateController.make_single_request("tab options", this)
+                }
+            },
+        ])
+    }
+
     add_tabs() {
+        this.stack_tabs = (this.settings.stack_tabs || this.forced_stacking)
         this.settings.groups.forEach((nm) => {
-            const tab = create('span','tab',this.header1_left,{"innerHTML":nm.replaceAll(' ','&nbsp;')})
-            classSet(tab,'selected',(this.settings.group_choice == nm))
-            tab.style.setProperty('--base-color', GroupManager.group_color(nm))
-            tab.addEventListener('mouseenter', ()=>{Highlighter.group(nm)})
-            tab.addEventListener('mouseleave', ()=>{Highlighter.group(null)})
-            tab.addEventListener('mousedown', (e) => {
-                if (e.ctrlKey) return
-                this.mouse_down_at_x = e.x
-                this.mouse_down_at_y = e.y
-                this.mouse_down_on = tab
-                if (document.activeElement) document.activeElement.blur()
-            })
-            tab.addEventListener('mouseup', (e) => {
-                if (this.mouse_down_on == tab && Math.abs(this.mouse_down_at_x - e.x) < 2 && Math.abs(this.mouse_down_at_y - e.y) < 2) {
-                    if (this.settings.collapsed) {
-                        this.settings.collapsed = false
-                        UpdateController.make_single_request('uncollapse', this) 
-                    } else {
-                        if (this.settings.group_choice == nm) {
-                            return
+            if (!this.stack_tabs || this.settings.group_choice == nm) {
+                const tab = create('span','tab',this.header1_left,{"innerHTML":nm.replaceAll(' ','&nbsp;')})
+                classSet(tab,'selected',(this.settings.group_choice == nm))
+                classSet(tab,'stack',(this.stack_tabs && this.settings.groups.length>1))
+                tab.handle_right_click = (e) => { this.tab_context_menu.bind(this)(e) }
+                tab.style.backgroundColor = GroupManager.group_bgcolor(nm, (this.settings.group_choice == nm))
+                tab.style.color = GroupManager.group_fgcolor(nm, (this.settings.group_choice == nm))
+                tab.style.flexShrink = `${nm.length + 2}`
+                tab.style.flexGrow = `${nm.length + 2}`
+                tab.style.flexBasis = `${nm.length * 20}px`
+                tab.style.minWidth = `${getSettingValue(SettingIds.MINIMUM_TAB_WIDTH, 50)}px`
+                tab.addEventListener('mouseenter', ()=>{Highlighter.group(nm)})
+                tab.addEventListener('mouseleave', ()=>{Highlighter.group(null)})
+                tab.addEventListener('mousedown', (e) => {
+                    if (e.ctrlKey) return
+                    this.mouse_down_at_x = e.x
+                    this.mouse_down_at_y = e.y
+                    this.mouse_down_on = tab
+                    if (document.activeElement) document.activeElement.blur()
+                })
+                tab.addEventListener('mouseup', (e) => {
+                    if (this.mouse_down_on == tab && Math.abs(this.mouse_down_at_x - e.x) < 2 && Math.abs(this.mouse_down_at_y - e.y) < 2) {
+                        if (this.settings.collapsed) {
+                            this.settings.collapsed = false
+                            this.clear_stacking_threshold()
+                            UpdateController.make_single_request('uncollapse', this) 
+                        } else {
+                            if (this.settings.group_choice == nm) {
+                                return
+                            }
+                            this.settings.group_choice = nm
+                            this.clear_stacking_threshold()
+                            UpdateController.make_single_request(`tab ${nm} clicked`, this) 
                         }
-                        this.settings.group_choice = nm
-                        UpdateController.make_single_request(`tab ${nm} clicked`, this) 
+                        this.mouse_up()
+                        e.preventDefault()
+                        e.stopPropagation()
                     }
-                    this.mouse_up()
+                    this.mouse_down_on = null
+                })
+
+                tab.addEventListener('click', (e)=>{
                     e.preventDefault()
                     e.stopPropagation()
-                }
-                this.mouse_down_on = null
-            })
-
-            tab.addEventListener('click', (e)=>{
-                e.preventDefault()
-                e.stopPropagation()
-                if (e.ctrlKey) {
-                    app.canvas.animateToBounds(createBounds(app.graph._groups.filter((g)=>(g.title==nm))))
-                } else {
-                    if (this.settings.groups.length==1) this.show_group_select(e, true)
-                }
-            })
-
-            title_if_overflowing(tab, nm)
-
+                    if (e.ctrlKey) {
+                        app.canvas.animateToBounds(createBounds(app.graph._groups.filter((g)=>(g.title==nm))))
+                    } else {
+                        if (this.stack_tabs) {
+                            if (this.settings.groups.length>1) this.show_group_select(e, 'select')
+                        } else {
+                            if (this.settings.groups.length==1) this.show_group_select(e, 'replace')
+                        }
+                    }
+                })
+                tooltip_if_overflowing(tab)
+            }
         })
+        setTimeout(this.checkIfTabsShouldStack.bind(this), Timings.GENERIC_SHORT_DELAY)
+    }
+
+    clear_stacking_threshold() { this.stacking_threshold = 0 }
+
+    checkIfTabsShouldStack() {
+        const below_stacking_threshold = (this.stacking_threshold && this.clientWidth <= this.stacking_threshold)
+        const need_to_stack = (this.add_group_button.getBoundingClientRect().right > this.header1_right.getBoundingClientRect().left + 10) || (below_stacking_threshold)
+        
+        if (need_to_stack == this.forced_stacking) return
+        this.forced_stacking = need_to_stack
+
+        if (need_to_stack) this.stacking_threshold = Math.max(this.clientWidth, this.stacking_threshold ?? 0)
+        
+        if ((this.settings.stack_tabs || this.forced_stacking) != this.stack_tabs) {
+            UpdateController.make_single_request(`tab forced stacking now ${this.forced_stacking}`, this)
+        }
+
     }
 
     add_button_actions() {
@@ -731,7 +821,7 @@ export class ControllerPanel extends HTMLDivElement {
                 e.preventDefault()
                 e.stopPropagation()
                 if (app.canvas.read_only) return
-                this.show_group_select(e)
+                this.show_group_select(e, 'add')
             })
             add_tooltip(this.add_group_button, 'Add new group tab', 'right')
             classSet(this.add_group_button, 'hidden', (this.groups_not_included.length==0))
@@ -743,9 +833,7 @@ export class ControllerPanel extends HTMLDivElement {
                 e.stopPropagation(); 
                 if (app.canvas.read_only) return
                 this.settings.groups = this.settings.groups.filter((g)=>g!=this.settings.group_choice)
-                //if (this.settings.groups.length==0) {
-                //    this.delete_controller()
-                //}
+                this.clear_stacking_threshold()
                 UpdateController.make_single_request('group removed', this)
             })
             add_tooltip(this.remove_group_button, 'Remove active group tab', 'right')
@@ -759,7 +847,9 @@ export class ControllerPanel extends HTMLDivElement {
                 if (app.canvas.read_only) return
                 GroupManager.change_group_mode(this.settings.group_choice, node_mode, e)
                 app.canvas.setDirty(true,true)
+                this.clear_stacking_threshold()
                 ControllerPanel.group_change(this.settings.group_choice)
+                OnChangeController.on_change("Group mode changed")
             })
             add_tooltip(this.group_mode_button, Texts.MODE_TOOLTIP[node_mode], 'right')
             
@@ -800,20 +890,27 @@ export class ControllerPanel extends HTMLDivElement {
         }
     }
 
-    show_group_select(e, replace) {
+    show_group_select(e, mode) {
         const the_select = create('span','group_add_select', document.body)
-        this.groups_not_included.forEach((g)=>{
-            const the_choice = create('div', 'group_add_option', the_select, {"innerText":g})
-            the_choice.style.backgroundColor = GroupManager.group_color(g)
+        const groups_to_show = (mode!='select') ? this.groups_not_included : this.settings.groups
+        groups_to_show.filter((g)=>(g!=this.settings.group_choice)).forEach((g)=>{
+            const the_choice = create('div', 'group_add_option', the_select, {"innerHTML":GroupManager.displayName(g)})
+            the_choice.style.backgroundColor = GroupManager.group_bgcolor(g, true)
+            the_choice.style.color = GroupManager.group_fgcolor(g, true)
             the_choice.addEventListener('click', (e)=> {
-                if (replace) {
+                if (mode=='replace') {
                     this.settings.groups = [g,]
-                } else {
+                } else if (mode=='add') {
                     this.settings.groups.push(g)
+                } else if (mode=='select') {
+                    // don't need to change the group list
+                } else {
+                    Debug.essential(`show_group_select called with unknown mode ${mode}`)
                 }
                 this.settings.group_choice = g
                 the_select.remove()
-                UpdateController.make_single_request('group tab added', this)
+                this.clear_stacking_threshold()
+                UpdateController.make_single_request('group tab change', this)
             })
         })
         the_select.addEventListener('mouseleave', (e)=>{the_select.remove()})

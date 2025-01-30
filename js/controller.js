@@ -6,13 +6,16 @@ import { OPTIONS } from "./options.js"
 import { add_control_panel_options, NodeInclusionManager,  } from "./node_inclusion.js"
 import { OnChangeController, UpdateController } from "./update_controller.js"
 import { Debug } from "./debug.js"
-import { BASE_PATH, SettingIds } from "./constants.js"
+import { BASE_PATH, SettingIds, Timings } from "./constants.js"
 import { ImageManager } from "./image_manager.js"
 import { global_settings } from "./settings.js"
 import { FancySlider } from "./input_slider.js"
 import { WindowResizeManager } from "./snap_manager.js"
 import { Highlighter } from "./highlighter.js"
 import { GroupManager } from "./groups.js"
+import { NodeBlock } from "./nodeblock.js"
+import { ImagePopup } from "./image_popup.js"
+import { pim } from "./prompt_id_manager.js"
 
 const MINIMUM_UE = 500006
 async function check_ue() {
@@ -29,14 +32,22 @@ async function check_ue() {
     }
 }
 
+function stop_event(e) {
+    e.preventDefault()
+    e.stopImmediatePropagation()
+    return false
+}
+
 function on_setup() {
     UpdateController.setup(ControllerPanel.redraw, ControllerPanel.can_refresh, ControllerPanel.node_change)
     NodeInclusionManager.node_change_callback = UpdateController.make_request
     GroupManager.change_callback = ControllerPanel.on_group_details_change
+    ImageManager.node_image_change = ControllerPanel.node_image_change
     
     api.addEventListener('graphCleared', ControllerPanel.on_graphCleared) 
 
     api.addEventListener('executed', ImageManager.on_executed)
+    api.addEventListener('executed', pim.on_executed)
     api.addEventListener('execution_start', ImageManager.on_execution_start)
     api.addEventListener('executing', ImageManager.on_executing)
     api.addEventListener('b_preview', ImageManager.on_b_preview)
@@ -44,16 +55,28 @@ function on_setup() {
     api.addEventListener('progress', ControllerPanel.on_progress)
     api.addEventListener('executing', ControllerPanel.on_executing)
 
+    api.addEventListener('executing', OnChangeController.on_executing)
+
     window.addEventListener("resize", WindowResizeManager.onWindowResize)
-    window.addEventListener('mousedown', (e)=>{mouse_change(true)})
+    window.addEventListener('mousedown', (e)=>{
+        mouse_change(true)
+        if (e.button==2) e.target.handle_right_click?.(e)
+    })
     window.addEventListener('mouseup', (e)=>{
         mouse_change(false)
         ControllerPanel.handle_mouse_up(e)
         FancySlider.handle_mouse_up(e)
     })
+    window.addEventListener('click', (e)=>{
+        ImagePopup.handle_click(e)
+    })
     window.addEventListener('mousemove', (e)=>{
         ControllerPanel.handle_mouse_move(e)
         FancySlider.handle_mouse_move(e)
+        NodeBlock.handle_mouse_move(e)
+    })
+    window.addEventListener('contextmenu', (e)=>{
+        if (e.target.handle_right_click) return stop_event(e);
     })
     window.addEventListener('keypress', (e) => {
         if (e.target.tagName=="CANVAS" || e.target.tagName=="BODY") {
@@ -98,8 +121,9 @@ app.registerExtension({
     async afterConfigureGraph() {
         UpdateController.configuring(false)
         try {
-            ImageManager.init()
             ControllerPanel.new_workflow()
+            ImageManager.analyse_graph()
+            ImageManager.send_all()
             send_graph_changed(true)
         } catch (e) {
             console.error(e)
@@ -171,6 +195,13 @@ app.registerExtension({
             if (focus_change) ControllerPanel.focus_mode_changed()
         }).observe(document.getElementsByClassName('graph-canvas-container')[0], {"childList":true})
 
+        const queuePrompt = api.queuePrompt
+        api.queuePrompt = async function() {
+            const r = await queuePrompt.apply(api, arguments)
+            pim.add(r.prompt_id)
+            return r
+        }
+
         check_ue()
     },
 
@@ -194,6 +225,13 @@ app.registerExtension({
     },
 
     async beforeRegisterNodeDef(nodeType, nodeData, app) {
+        nodeType.prototype.__controller_tooltips = {}
+        Object.values(nodeData.input).forEach((list)=>{
+            Object.keys(list).filter((k)=>(list[k].length>1 && list[k][1].tooltip)).forEach((k)=>{
+                nodeType.prototype.__controller_tooltips[k] = list[k][1].tooltip
+            })
+        })
+
         const getExtraMenuOptions = nodeType.prototype.getExtraMenuOptions;
         nodeType.prototype.getExtraMenuOptions = function(_, options) {
             getExtraMenuOptions?.apply(this, arguments);
@@ -204,29 +242,29 @@ app.registerExtension({
         const onInputRemoved = nodeType.prototype.onInputRemoved
         nodeType.prototype.onInputRemoved = function () {
             onInputRemoved?.apply(this,arguments)
-            ControllerPanel.node_change(this.id)
+            ControllerPanel.node_change(this.id, "onInputRemoved")
         }
         const onInputAdded = nodeType.prototype.onInputAdded
         nodeType.prototype.onInputAdded = function () {
             onInputAdded?.apply(this,arguments)
-            ControllerPanel.node_change(this.id)
+            ControllerPanel.node_change(this.id, "onInputAdded")
             app.graph.afterChange()
         }
         const onOutputRemoved = nodeType.prototype.onOutputRemoved
         nodeType.prototype.onOutputRemoved = function () {
             onOutputRemoved?.apply(this,arguments)
-            ControllerPanel.node_change(this.id)
+            ControllerPanel.node_change(this.id, "onOutputRemoved")
         }
         const onOutputAdded = nodeType.prototype.onOutputAdded
         nodeType.prototype.onOutputAdded = function () {
             onOutputAdded?.apply(this,arguments)
-            ControllerPanel.node_change(this.id)
+            ControllerPanel.node_change(this.id, "onOutputAdded")
         }
 
         const onModeChange = nodeType.prototype.onModeChange
         nodeType.prototype.onModeChange = function () {
             onModeChange?.apply(this,arguments)
-            ControllerPanel.node_change(this.id)
+            ControllerPanel.node_change(this.id, "onModeChange")
         }
     },
 
@@ -235,21 +273,16 @@ app.registerExtension({
         const onRemoved = node.onRemoved
         node.onRemoved = function() {
             onRemoved?.apply(this, arguments)
-            UpdateController.make_request("node_removed", 20)
+            UpdateController.make_request_unless_configuring("node_removed", Timings.GENERIC_SHORT_DELAY)
         }
 
         const onDrawForeground = node.onDrawForeground
         node.onDrawForeground = function() {
             onDrawForeground?.apply(this,arguments)
-
-            if (node._controller_imgs !== node.imgs && node.imgs && node.imgs.length>0) {
-                ImageManager.node_img_change(node)
-            }
-            node._controller_imgs = node.imgs
-
+            if (node.imgs) ImageManager.node_reported_images(node.id, node.imgs)
         }
 
-        UpdateController.make_request_unless_configuring("node_created", 20)
+        UpdateController.make_request_unless_configuring("node_created", Timings.GENERIC_SHORT_DELAY)
     },
 
 })

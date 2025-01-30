@@ -1,13 +1,17 @@
 import { app } from "../../scripts/app.js";
-import { create } from "./utilities.js";
+import { create, tooltip_if_overflowing, extension_hiding } from "./utilities.js";
 import { FancySlider } from "./input_slider.js";
 import { rounding } from "./utilities.js";
 import { make_resizable } from "./resize_manager.js";
-import { UpdateController } from "./update_controller.js";
+import { OnChangeController, UpdateController } from "./update_controller.js";
 import { Debug } from "./debug.js";
 import { SettingIds } from "./constants.js";
 import { Toggle } from "./toggle.js";
 import { WidgetChangeManager } from "./widget_change_manager.js";
+import { Texts } from "./constants.js";
+import { PLL_Widget } from "./power_lora_loader_widget.js";
+import { ImageComparerControlWidget } from "./image_comparer_control_widget.js";
+import { ExtendedCombo } from "./combo.js";
 
 function typecheck_number(v) {
     const vv = parseFloat(v)
@@ -36,7 +40,7 @@ export class Entry extends HTMLDivElement {
         if (target_widget.disabled) return
         if (target_widget.name=='control_after_generate' && !app.ui.settings.getSettingValue(SettingIds.CONTROL_AFTER_GENERATE, false)) return
 
-        const widget_label = target_widget.label ?? target_widget.name
+        const widget_label = (target_widget.label && target_widget.label!="") ? target_widget.label : target_widget.name
         this.display_name = widget_label
 
         this.classList.add('entry')
@@ -48,7 +52,12 @@ export class Entry extends HTMLDivElement {
 
         target_widget.type = target_widget.type ?? target_widget.constructor.name
 
-        switch (target_widget.type) {
+        var implementation_type = target_widget.type
+        if (node.type=="ImpactSwitch" && target_widget.type=="number") implementation_type = "switch-combo"
+        if (node.type=="Fast Groups Muter (rgthree)") implementation_type = "toggle"
+        if (node.type=="Fast Groups Bypasser (rgthree)") implementation_type = "toggle"
+
+        switch (implementation_type) {
             case 'text':
                 this.entry_label = create('span','entry_label text', this, {'innerText':widget_label, 'draggable':false} )  
                 this.input_element = create('input', 'input', this) 
@@ -63,28 +72,69 @@ export class Entry extends HTMLDivElement {
                 this.input_element.addEventListener('keydown', this.keydown_callback.bind(this))
                 this.appendChild(this.input_element)
                 break
-            case 'combo':
+            case 'switch-combo':
+                this.choices_value_to_name = {}
+                for (var idx=0; idx<node.inputs.length; idx++) { this.choices_value_to_name[idx+1] = node.inputs[idx].label ?? node.inputs[idx].name }
                 this.entry_label = create('span','entry_label', this, {'innerText':widget_label, 'draggable':false} )  
-                this.entry_value = create('span','entry_label value', this, {'innerText':target_widget.value, 'draggable':false} )  
+                this.entry_value = create('span','entry_label value', this, {'draggable':false} ) 
                 this.input_element = create("select", 'input', this, {"doesntBlockRefresh":true}) 
-                const choices = (target_widget.options.values instanceof Function) ? target_widget.options.values() : target_widget.options.values
-                choices.forEach((o) => this.input_element.add(new Option(o,o)))
-                this.input_element.addEventListener("change", (e)=>{
-                    this.entry_value.innerText = e.target.value
+                Object.keys(this.choices_value_to_name).forEach((value) => {
+                    this.input_element.add(new Option(this.choices_value_to_name[value], value ))
                 })
-                this.input_element.redraw = () => {
-                    this.entry_value.innerText = this.input_element.value
-                }
+                this.input_element.value = target_widget.value
+                this.input_element.redraw = () => { this.entry_value.innerText = this.choices_value_to_name[this.input_element.value] } 
+                this.input_element.addEventListener("change", this.input_element.redraw.bind(this))
+                this.input_element.redraw() 
                 break
-            //case 'RgthreeBetterButtonWidget':
+            case 'combo':
+                this.choices = (target_widget.options.values instanceof Function) ? target_widget.options.values() : target_widget.options.values
+                this.input_element =  new ExtendedCombo(this.choices, target_widget, node)
+                this.entry_label = create('span','entry_label text combo', this, {'innerText':widget_label, 'draggable':false} )  
+                this.appendChild(this.entry_label)
+                this.appendChild(this.input_element)
+                break
+            case 'RgthreeBetterButtonWidget':
             case 'button':
                 this.input_element = create("button", 'input', this, {"innerText":widget_label, "doesntBlockRefresh":true})
                 break
             case 'toggle':
-                this.input_element = new Toggle(target_widget.value, widget_label)
+                this.input_element = new Toggle(target_widget.value, widget_label, target_widget.options?.on, target_widget.options?.off)
                 this.appendChild(this.input_element)
                 break
+            case 'PowerLoraLoaderHeaderWidget':
+                var state = null
+                node.widgets.filter((w)=>(w.type=="PowerLoraLoaderWidget")).forEach((w)=>{
+                    if (w.value.on) {
+                        if (state=='mixed' || state=='off') state = 'mixed'
+                        else state = 'on'
+                    } else {
+                        if (state=='mixed' || state=='on') state = 'mixed'
+                        else state = 'off'
+                    }
+                })
+                this.input_element = new Toggle(state, "Toggle All", "On", "Off", "Mixed")
+                this.input_element.addEventListener('click', (e)=>{
+                    target_widget.hitAreas.toggle.onDown.bind(target_widget)(e, null, node)
+                    app.graph.setDirtyCanvas(true,true);
+                    OnChangeController.on_change('Power lora toggle all')
+                })
+                this.appendChild(this.input_element)
+                break
+            case 'PowerLoraLoaderWidget':
+                this.input_element =  new PLL_Widget(this.parent_controller, node, target_widget)
+                this.appendChild(this.input_element)
+                break
+            case 'RgthreeImageComparerWidget':
+                this.input_element =  new ImageComparerControlWidget(this.parent_controller, node, target_widget)
+                this.appendChild(this.input_element)
+            case 'converted-widget':
+            case 'converted-widget:seed':
+            case 'RgthreeDividerWidget':
+            case 'string':
+                Debug.trivia(`Not adding known widget type ${implementation_type}`)
+                return
             default:
+                Debug.extended(`Not adding unknown widget type ${implementation_type}`)
                 return
         }  
         
@@ -92,15 +142,20 @@ export class Entry extends HTMLDivElement {
 
         this.combo_for_image = (this.target_widget.name=='image' && this.target_widget._real_value && this.target_widget.type=="combo")
   
-        switch (target_widget.type) {
+        switch (implementation_type) {
+            case 'RgthreeBetterButtonWidget':
             case 'button':
                 this.input_element.addEventListener('click', this.button_click_callback.bind(this)) 
+                break
+            case 'PowerLoraLoaderWidget':
+            case 'PowerLoraLoaderHeaderWidget':
                 break
             default:
                 this.input_element.addEventListener('input', this.input_callback.bind(this))  
         }
 
         this.typecheck = (target_widget.type=='number') ? typecheck_number : typecheck_other
+        if (node.__controller_tooltips && node.__controller_tooltips[target_widget.name]) this.tooltip = node.__controller_tooltips[target_widget.name]
 
         if (target_widget.element) {
             target_widget.element.addEventListener('input', (e)=>{WidgetChangeManager.notify(target_widget)})
@@ -158,24 +213,27 @@ export class Entry extends HTMLDivElement {
 
     keydown_callback(e) {
         Debug.trivia("keydown_callback")
-        UpdateController.push_pause()
-        try {
-            if (e.key=="Enter") document.activeElement.blur();
-        } finally { UpdateController.pop_pause() }
+        if (e.key=="Enter") document.activeElement.blur();
     }
 
     button_click_callback(e) {
         Debug.trivia("button_click_callback")
         UpdateController.push_pause()
         try {
-            this.target_widget.callback(); 
+            if (this.target_widget.mouseUpCallback) {
+                this.target_widget.mouseUpCallback(e); // RgthreeBetterButtonWidget uses mouseUpCallback
+            } else {
+                this.target_widget.callback()
+            }
             app.graph.setDirtyCanvas(true,true); 
-            UpdateController.make_request("button clicked")
+            OnChangeController.on_change("button clicked")
         } finally { UpdateController.pop_pause() }
     }
 
     render() {
         if (document.activeElement == this.input_element) return
+        tooltip_if_overflowing(this.entry_label, this)
+        tooltip_if_overflowing(this.entry_value, this)
         if (this.input_element.value == this.target_widget.value) return
         this.input_element.value = rounding(this.target_widget.value, this.target_widget.options)
     }

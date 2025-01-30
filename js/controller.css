@@ -45,10 +45,12 @@
 
     --toggle-on: #8899aa;
     --toggle-off: #333333;
+    --toggle-intermediate: #556677;
 
     --main-border-color: rgb(53 53 53);
 
     --progress-color: green;
+    --alien-progress-color: rgb(0, 122, 128);
     --active-color: green;
 
     --border_width: 4px;
@@ -163,36 +165,32 @@
     justify-content: flex-start;
     flex-direction: row;
     align-items: center;
-    /* allow the group to shirnk */
+    /* allow the group to shrink */
     min-width: 0px;
     flex-shrink: 1;
+    flex-grow: 1;
 }
 .tab { 
     --base-color: black;
     border-radius: 6px;
-    padding: 2px 6px;
+    padding: 2px 5px;
     border: 1px solid var(--deep-back-color);
-    background-color: color-mix(in srgb, var(--base-color), transparent);
-    color: var(--muted-fore-color);
-    /*color : color-contrast(var(--base-color) vs var(--muted-fore-color), var(--second-back-color)) */
+    /*background-color: var(--base-color);
+    color: var(--muted-fore-color);           set programatically*/
     cursor: pointer;
     text-align: center;
     margin: 0px 1px 4px 1px;
-
-    /* allow the group to shirnk */
-    min-width: 0px;
-    flex-shrink: 1;
+    max-width: fit-content;
+    /* min-width, flex-basis, flex-sshrink, flex-grow all set programatically */
     text-overflow: ellipsis;
     overflow: hidden;
 }
 .tab.selected {
 
-    color: var(--main-fore-color);
-    background-color: var(--base-color);
-    /*border-bottom-left-radius: 0px;
-    border-bottom-right-radius: 0px;
-    border-bottom: none; 
-    margin-bottom:0px;*/
+}
+
+.tab.stack {
+    box-shadow: 1px 1px var(--muted-fore-color);
 }
 
 .controller.grabbed .tab {
@@ -354,8 +352,9 @@
 }
 
 .nodeblock_draghandle {
-    /*cursor: grab;*/
-    flex-grow:1;
+    flex-grow: 1;
+    flex-shrink: 1;
+    max-width: calc(100% - 30px);
 }
 
 .nodeblock_title {
@@ -364,6 +363,10 @@
     padding-left: 4px;
     position: relative;
     bottom: 1px;
+    overflow: clip;
+    text-wrap-mode: nowrap;
+    text-overflow: ellipsis;
+    display: block;
 }
 .nodeblock_title::after {
     content: " ";
@@ -386,6 +389,15 @@
     height: 10px;
     border: none;
     display:none;
+}
+
+.nodeblock_image_overlay {
+    position: absolute;
+    width: calc(100% - 8px);
+    left: 4px;
+    clip: rect(0, 0, 0, 0);
+  /* clip: shape(top, right, bottom, left); NB 'rect' is the only available option */
+
 }
 
 .nodeblock.minimised .nodeblock_image_panel {
@@ -416,33 +428,69 @@
     padding:4px 3px 0px 3px;
 }
 
+.two_line_entry {
+    display:flex;
+    flex-direction:column;
+}
+
+.two_line_entry .line {
+    display:flex;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--third-back-color);
+}
+
+.line .toggle {
+    width: unset;
+    padding-left:4px;
+}
+
+.line .label {
+    font-size: 70%;
+    flex-grow: 1;
+    background-color: var(--second-back-color);
+    height: 20px;
+    padding: 4px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    text-wrap-mode: nowrap;
+}
+
 .entry_label {
     position: absolute;
     height: calc(var(--font-size) - 2px);
     top: 9px;
     padding-right: 6px;
     background: var(--second-back-color);
-    color: var(--mid-fore-color);
+    color: var(--muted-fore-color);
     text-align: left;
     left: 6px;
     font-size: 70%;
     pointer-events: none;
     width: calc(var(--element_width) - 40px);
+    overflow: clip;
+    text-overflow: ellipsis;
+    text-wrap-mode: nowrap;
 }
 
 .entry_label.text {
     background: #00000000;
 }
 
+.entry_label.combo {
+    width: 20%;
+    background-color: var(--second-back-color);
+    padding: 4px 0px 4px 4px;
+    top: 4px;
+    height: 20px;
+    left: 4px;
+}
+
 .entry_label.value {
     right: 20px;
     height: calc(var(--font-size) - 2px);
     top: 9px;
-    left: unset;
-    width: unset;
     color: var(--main-fore-color);
-    max-width: calc(100% - 24px);
-    overflow: clip;
+    width: calc(100% - 24px);
 }
 
 .input {
@@ -454,6 +502,18 @@
     border: none;
     height: 20px;
     text-align: right;
+}
+.input.clickabletext {
+    display: block;
+    text-align: right;
+    padding:  4px;
+    font-size: 70%;
+    width: 80%;
+    left: 20%;
+    position: relative;
+    overflow: clip;
+    text-wrap-mode: nowrap;
+    text-overflow: ellipsis;
 }
 select.input {
     height: calc(var(--font-size) + 4px)
@@ -484,14 +544,9 @@ textarea.input {
     background-color:var(--second-back-color)
 }
 
-.toggle.false .toggle_value .toggle_text {
-    color: var(--muted-fore-color);
-}
-
 .toggle_label {
     font-size: 70%;
     padding-left: 4px;
-    color: var(--muted-fore-color);
 }
 
 .toggle_value {
@@ -515,6 +570,39 @@ textarea.input {
 
 .toggle_graphic.false {
     color: var(--toggle-off);
+}
+.toggle_graphic.intermediate {
+    color: var(--toggle-intermediate);
+}
+
+.muted .toggle_value .toggle_text {
+    color: var(--muted-fore-color);
+}
+
+.muted .toggle_label {
+    color: var(--muted-fore-color);
+}
+
+.muted .line {
+    color: var(--muted-fore-color);
+}
+
+.muted .line .fancy_slider .fs_graphic .fs_graphic_fill {
+    opacity: 50%;
+}
+
+.image_comparer_widget {
+    display:flex;
+    justify-content: center;
+}
+
+.image_comparer_option {
+    padding: 0px 8px;
+    color: var(--muted-fore-color)
+}
+
+.image_comparer_option.selected {
+    color: var(--main-fore-color)
 }
 
 /* Footer */
@@ -653,4 +741,33 @@ i {
 .read_only .header_button {
     opacity: 0.5;
     cursor: unset;
+}
+
+.image_popup {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.image_popup_frame {
+    background-color: #333333;
+    /*border: thin solid #333333;*/
+    display: flex;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+}
+
+.image_popup_image {
+    border: 12px solid black;
+    max-width: 100%;
+    max-height: 100%;
+    background-color: white;
+    padding: 16px;
 }

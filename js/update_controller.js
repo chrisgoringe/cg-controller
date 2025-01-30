@@ -3,6 +3,7 @@ import { Timings } from "./constants.js"
 import { _Debug } from "./debug.js"
 import { GroupManager } from "./groups.js"
 import { send_graph_changed } from "./utilities.js"
+import { pim } from "./prompt_id_manager.js"
 
 const Debug = new _Debug(()=>(new Date().toISOString()))
 
@@ -53,7 +54,10 @@ export class UpdateController {
 
         } else {
             var wait_time = 0
-            if (wait_time==0 && UpdateController.pause_stack>0) wait_time = Timings.PAUSE_STACK_WAIT
+            if (wait_time==0 && UpdateController.pause_stack>0) {
+                Debug.extended("Delayed by pause_stack")
+                wait_time = Timings.PAUSE_STACK_WAIT
+            }
             if (wait_time==0 && UpdateController._configuring) wait_time = -2
             if (wait_time==0) wait_time = UpdateController.permission(controller)
             Debug.extended(`Update ${cont_name} requested because '${label}'. ${message(wait_time)}`)
@@ -91,13 +95,18 @@ function hash_node(node) {
     /* 
     hash all the things we want to check for changes.
     */
+    if (!node) return "nonode"
     var hash = `${node.bgcolor} ${node.title} ${node.mode} `
-    node.inputs.forEach((i)=>{hash += `${i.name} `})
-    node.outputs.forEach((o)=>{hash += `${o.name} `})
+    node.inputs?.forEach(                                 (i)=>{hash += `${i.label ?? i.name} `})
+    node.outputs?.forEach(                                (o)=>{hash += `${o.name} `})
+    node.widgets?.filter((w)=>(w.element?.value)).forEach((w)=>{hash += `${w.element.value} `})
+    node.widgets?.filter((w)=>(w.value)).forEach(         (w)=>{hash += JSON.stringify(w.value)})
+    node.widget_values?.forEach(                          (w)=>{hash += `${w} `})
     return hash
 }
 
 function node_changed(node) {
+    if (!node) return false
     const new_hash = hash_node(node)
     if (new_hash == node._controller_hash) return false
     node._controller_hash = new_hash
@@ -105,6 +114,8 @@ function node_changed(node) {
 }
 
 export class OnChangeController {
+    static nodes_requested = new Set()
+    static all_nodes = false
     constructor() {
         setTimeout(OnChangeController.start, Timings.GENERIC_LONGER_DELAY)
     }
@@ -112,17 +123,27 @@ export class OnChangeController {
         setInterval(OnChangeController.on_change, Timings.PERIODIC_CHECK, "tick")
     }
     static gap_request_stack = 0
-    static on_change(details) {
+    static on_change(details, node_id) {
         OnChangeController.gap_request_stack += 1
+        if (node_id) OnChangeController.nodes_requested.add(node_id)
+        else OnChangeController.all_nodes = true
         setTimeout(OnChangeController._on_change, Timings.ON_CHANGE_GAP, details)
     }
+
     static _on_change(details) {
+        const log = (details=="tick") ? Debug.trivia : Debug.extended
         OnChangeController.gap_request_stack -= 1
         if (OnChangeController.gap_request_stack == 0) {
             if (GroupManager.check_for_changes()) {
                 UpdateController.make_request(`on_change (${details}), change in groups`)
             } else {
-                const changed_nodes = app.graph._nodes.filter((node)=>(node_changed(node)))
+                var nodes_to_check = []
+                if (OnChangeController.all_nodes) {
+                    nodes_to_check = Array.from(app.graph._nodes)
+                } else {
+                    Array.from(OnChangeController.nodes_requested).forEach((nid)=>{ nodes_to_check.push(app.graph._nodes_by_id[nid])})
+                }
+                const changed_nodes = nodes_to_check.filter((node)=>(node_changed(node))) 
                 if (changed_nodes.length > 1) {
                     UpdateController.make_request(`on_change (${details}), ${changed_nodes.length} nodes changed`)
                 } else if (changed_nodes.length == 1) {
@@ -131,13 +152,30 @@ export class OnChangeController {
                     UpdateController.make_request(`on_change (${details}), read_only changed to ${app.canvas.read_only}`)
                     app.canvas._controller_read_only = app.canvas.read_only
                 } else {
-                    Debug.trivia(`on_change (${details}), no changes`, true)
+                    log(`on_change (${details}), no changes`, true)
                 }
+                OnChangeController.all_nodes = false
+                OnChangeController.nodes_to_check = new Set()
             } 
         } else {
-            Debug.trivia(`on_change (${details}), too soon`, true)
+            log(`on_change (${details}), too soon`, true)
         }
     }
+    static on_executing(e) {
+        //if (!pim.ours(e)) return
+        if (OnChangeController.executing_node && OnChangeController.executing_node!=e.detail) {
+            OnChangeController.on_change(`on_executing ${e.detail}`)
+        }
+        OnChangeController.executing_node = e.detail
+    }
+    /*static _on_executing(nid) {
+        if (node_changed(app.graph._nodes_by_id[nid])) {
+            Debug.extended(`Node (${nid} on_executing changed)`)
+            UpdateController.single_node(nid, `on_executing, node ${nid} changed`)
+        } else {
+            Debug.extended(`Node (${nid} on_executing unchanged)`)
+        }
+    }*/
 }
 
 const occ = new OnChangeController()
