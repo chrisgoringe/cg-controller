@@ -537,6 +537,7 @@
     text-align: right;
 }
 .input.clickabletext {
+    /*display:block;*/
     text-align: right;
     padding: 4px;
     font-size: 70%;
