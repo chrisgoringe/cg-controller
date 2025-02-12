@@ -13,6 +13,14 @@ When you want to edit the workflow, it's still there, untouched.
 The controller gets saved with the workflow, so once you've set it up, it's always there for you.
 And if you share the workflow with someone else, they get your controller as well...
 
+## Latest update - v1.7, 14th Feb 2025
+
+- Added workspaces (WIP)
+- Image viewers now work with batches
+- Better support for some rgthree COMBO features
+- Option to hide file types such as .safetensors in loader nodes (main settings)
+- Option to specify that a node shouldn't show images in controller (right-click nodeblock title)
+
 ## Getting started
 
 The Controller is toggled using a button in the top menu. When the sliders icon is blue, the Controller is active.
@@ -99,7 +107,13 @@ Nodes which include an image also have a pin in the top right corner: ![pin](ima
 When this is active (blue, the default) the image will be shown at the full width of the controller. 
 If you unpin the image, you will find a handle at the bottom right of the image that can be used to resize it (vertically).
 
+Right-clicking the title of a nodeblock brings up options to control which widgets should be shown, and which images (if any) should be shown, in this nodeblock.
+
 ## Other things to explore
+
+### Workspaces
+
+WIP - you can save and then reload the setup of your controllers from the dropdown triangle ![screenshot](images/dropdown.png). This may be useful if you use the same workflow in different ways. There are plans to make this feature more useful!
 
 ### Batches
 
@@ -155,8 +169,12 @@ but you just need to click the refresh button (top right of the Controller) to b
 
 ### Settings
 
-In the main settings menu are a few things you can tweak - hiding control_after_generate, a keyboard shortcut to show or hide the Controller,
-and settings to control how you can interact with the sliders.
+In the main settings menu are a few things you can tweak such as:
+
+- hiding control_after_generate 
+- keyboard shortcut to show or hide the Controller
+- settings to control how you can interact with the sliders
+- option to hide filename extensions
 
 There's also a debug setting that I might ask you to use if you report a problem!
 
