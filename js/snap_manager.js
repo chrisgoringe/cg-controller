@@ -95,6 +95,7 @@ export class WindowResizeManager {
         
         Array.from(WindowResizeManager.vertical_snapped).forEach((i)=>{
             const panel = SnapManager.panels[i]
+            if (!panel) return
             const frac = WindowResizeManager.vertical_fraction[i]
             const new_height = parent_height * frac + 2*OVERLAP
             const new_y = (panel.settings.position.y == -OVERLAP) ? -OVERLAP : parent_height - new_height
