@@ -62,6 +62,10 @@ function on_setup() {
         mouse_change(true)
         if (e.button==2) e.target.handle_right_click?.(e)
     })
+    window.addEventListener('click', (e)=>{
+        mouse_change(true)
+        if (e.ctrlKey) e.target.handle_right_click?.(e)
+    })
     window.addEventListener('mouseup', (e)=>{
         mouse_change(false)
         ControllerPanel.handle_mouse_up(e)
@@ -80,7 +84,7 @@ function on_setup() {
     })
     window.addEventListener('keypress', (e) => {
         if (e.target.tagName=="CANVAS" || e.target.tagName=="BODY") {
-            const keysetting = app.ui.settings.getSettingValue(SettingIds.KEYBOARD_TOGGLE, "C") 
+            const keysetting = app.ui.settings.getSettingValue(SettingIds.KEYBOARD_TOGGLE) 
             if (keysetting==e.key) {
                 ControllerPanel.toggle()
                 e.preventDefault()
@@ -121,7 +125,7 @@ app.registerExtension({
     async afterConfigureGraph() {
         UpdateController.configuring(false)
         try {
-            ControllerPanel.new_workflow()
+            ControllerPanel.on_new_workflow()
             ImageManager.analyse_graph()
             ImageManager.send_all()
             send_graph_changed(true)

@@ -96,7 +96,7 @@ function hash_node(node) {
     hash all the things we want to check for changes.
     */
     if (!node) return "nonode"
-    var hash = `${node.bgcolor} ${node.title} ${node.mode} `
+    var hash = `${node.bgcolor} ${node.title} ${node.mode} ${node.imageIndex}`
     node.inputs?.forEach(                                 (i)=>{hash += `${i.label ?? i.name} `})
     node.outputs?.forEach(                                (o)=>{hash += `${o.name} `})
     node.widgets?.filter((w)=>(w.element?.value)).forEach((w)=>{hash += `${w.element.value} `})
